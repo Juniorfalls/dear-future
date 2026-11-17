@@ -294,6 +294,9 @@ def find_overlay(explicit=None):
     return None
 
 
+OVERLAY_FPS = 30
+
+
 def overlay_geometry(video_size):
     width, height = video_size
     ov_w = max(80, int(width * OVERLAY_WIDTH_RATIO))
@@ -303,25 +306,45 @@ def overlay_geometry(video_size):
     return ov_w, x, y
 
 
-def apply_overlay(video_path, overlay_path, out_path, video_size):
-    """Composite the looping Remotion overlay in a single ffmpeg pass.
+def extract_overlay_frames(overlay_path):
+    """Expand the transparent WebM to RGBA PNGs.
 
-    Doing this in MoviePy means one composite layer per loop, which gets slower
-    the longer the video is. One ffmpeg pass keeps the cost constant, and
-    overriding the VP8 decoder with libvpx is what preserves the alpha channel
-    (ffmpeg's default VP8 decoder silently drops it and paints a black box).
+    `-c:v libvpx` is required: ffmpeg's default VP8 decoder silently drops the
+    alpha plane (WebM keeps alpha in a side channel) and the overlay would be
+    composited as an opaque black box.
+    """
+    ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
+    frames_dir = Path(tempfile.mkdtemp(prefix="overlay-"))
+    subprocess.run(
+        [ffmpeg, "-v", "error", "-y", "-c:v", "libvpx", "-i", str(overlay_path),
+         "-pix_fmt", "rgba", str(frames_dir / "f%04d.png")],
+        check=True,
+    )
+    if not sorted(frames_dir.glob("f*.png")):
+        shutil.rmtree(frames_dir, ignore_errors=True)
+        raise RuntimeError(f"no frames decoded from {overlay_path}")
+    return frames_dir
+
+
+def apply_overlay(video_path, frames_dir, out_path, video_size):
+    """Composite the looping overlay in a single ffmpeg pass.
+
+    The PNG sequence is looped (`-stream_loop -1`) instead of the WebM: looping
+    a VP8 file back through the decoder loses the alpha plane after a couple of
+    iterations, which made the badge vanish mid-video.
     """
     ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
     ov_w, x, y = overlay_geometry(video_size)
     filter_complex = (
-        f"[1:v]scale={ov_w}:-1[ov];"
+        f"[1:v]scale={ov_w}:-1,format=yuva420p[ov];"
         f"[0:v][ov]overlay={x}:{y}:shortest=1,format=yuv420p[v]"
     )
     subprocess.run(
         [
             ffmpeg, "-v", "error", "-y",
             "-i", str(video_path),
-            "-stream_loop", "-1", "-c:v", "libvpx", "-i", str(overlay_path),
+            "-framerate", str(OVERLAY_FPS), "-stream_loop", "-1",
+            "-i", str(frames_dir / "f%04d.png"),
             "-filter_complex", filter_complex,
             "-map", "[v]", "-map", "0:a?",
             "-c:v", "libx264", "-preset", "veryfast", "-crf", "18",
@@ -363,7 +386,11 @@ def build_final(video_path, mp3_path, cues, out_path, overlay_path=None):
             logger=None,
         )
         if overlay_path is not None:
-            apply_overlay(captioned, overlay_path, out_path, (video.w, video.h))
+            frames_dir = extract_overlay_frames(overlay_path)
+            try:
+                apply_overlay(captioned, frames_dir, out_path, (video.w, video.h))
+            finally:
+                shutil.rmtree(frames_dir, ignore_errors=True)
             captioned.unlink(missing_ok=True)
             print(f"  overlay: {overlay_path.name} over {video.duration:.1f}s")
         return video.duration, speech.duration

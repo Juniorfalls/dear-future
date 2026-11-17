@@ -2,11 +2,12 @@ import React from 'react';
 import {AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 
 const BLUE = '#58C4DD';
-const INK = '#EBEBEB';
+const INK = '#F5F5F5';
 
 /**
- * "Math Explained" lower-third card. Everything outside the rounded card stays
- * fully transparent so the render can be muxed over the Manim video.
+ * "Dear Future" brand pill. Elegant and minimal: a translucent dark pill, wide
+ * letter spacing, a soft drop shadow and one thin blue accent. Everything
+ * outside the pill stays fully transparent so it can be muxed over any video.
  */
 export const Overlay: React.FC = () => {
   const frame = useCurrentFrame();
@@ -27,35 +28,39 @@ export const Overlay: React.FC = () => {
           bottom: 0,
           display: 'flex',
           alignItems: 'center',
-          gap: 16,
-          padding: '18px 28px',
+          gap: 18,
+          padding: '20px 34px 20px 26px',
           transform: `translateX(${offsetX}px)`,
           opacity,
-          backgroundColor: 'rgba(16, 16, 16, 0.92)',
-          border: '2px solid rgba(235, 235, 235, 0.16)',
-          borderRadius: 20,
-          boxShadow: '0 12px 32px rgba(0, 0, 0, 0.45)',
+          backgroundColor: 'rgba(10, 10, 10, 0.82)',
+          border: '1px solid rgba(245, 245, 245, 0.18)',
+          borderRadius: 999,
+          backdropFilter: 'blur(2px)',
+          boxShadow: '0 10px 28px rgba(0, 0, 0, 0.35)',
         }}
       >
         <div
           style={{
-            width: 10,
-            height: 48,
-            borderRadius: 5,
+            width: 5,
+            height: 34,
+            borderRadius: 999,
             backgroundColor: BLUE,
+            boxShadow: '0 0 10px rgba(88, 196, 221, 0.35)',
           }}
         />
         <div
           style={{
-            fontFamily: 'sans-serif',
-            fontSize: 46,
-            fontWeight: 700,
-            letterSpacing: 1.5,
+            fontFamily:
+              '"Helvetica Neue", "Segoe UI", "DejaVu Sans", Arial, sans-serif',
+            fontSize: 44,
+            fontWeight: 400,
+            letterSpacing: 2.5,
             color: INK,
             whiteSpace: 'nowrap',
+            textShadow: '0 2px 10px rgba(0, 0, 0, 0.75)',
           }}
         >
-          Math Explained
+          Dear Future
         </div>
       </div>
     </AbsoluteFill>

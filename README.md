@@ -19,7 +19,7 @@ build output, and `media/`, `outputs/` and `audio/` are gitignored).
 | --- | --- |
 | **`final-videos`** | `final_<topic_id>.mp4` (Manim video + Remotion overlay + voiceover + burned-in captions) and `<topic_id>.srt` |
 | **`rendered-videos`** | the silent Manim renders from the render job, kept for debugging |
-| **`remotion-overlay`** | `overlay.webm`, the transparent "Math Explained" card |
+| **`remotion-overlay`** | `overlay.webm`, the transparent "Dear Future" brand pill |
 
 From a terminal:
 
@@ -101,9 +101,11 @@ node render.js          # → remotion-overlay/out/overlay.webm
 The overlay is read from `remotion-overlay/out/overlay.webm` (falling back to
 `./overlay.webm`). It is looped for the whole video and scaled to 26% of the
 video width, sitting bottom-right above the caption band. Compositing happens in
-a single `ffmpeg` pass (`overlay` filter over `-stream_loop -1` input) rather
-than as one MoviePy layer per loop, so assembly time does not grow with video
-length. If no overlay file is
+a single `ffmpeg` pass: the transparent WebM is expanded to RGBA PNGs and that
+sequence is looped (`-stream_loop -1`) under the `overlay` filter, rather than
+adding one MoviePy layer per loop. Looping the WebM itself is not safe — the VP8
+alpha plane is lost after a couple of iterations and the badge disappears
+mid-video. If no overlay file is
 present the assembly still succeeds, just without the card.
 
 Real narration, when it exists, can be dropped in as `voiceover.json`:
