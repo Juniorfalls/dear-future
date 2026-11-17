@@ -22,6 +22,7 @@ env:
   QUALITY: ${{ github.event.inputs.quality || 'h' }}
 
 jobs:
+  # ---------------------------------------------------------------- rendering
   render:
     runs-on: ubuntu-latest
     container:
@@ -59,24 +60,68 @@ jobs:
             echo "::endgroup::"
           done
 
-      - name: Collect videos
+      - name: Collect silent renders
         run: |
+          set -euo pipefail
           mkdir -p outputs
           find media/videos -name "*.mp4" -not -path "*partial_movie_files*" -exec cp {} outputs/ \;
           ls -lh outputs
 
-      - name: Add voiceover audio
-        run: |
-          set -euo pipefail
-          # `pip` on PATH belongs to the system python, `python` is the venv, so
-          # install through the interpreter that will run the script.
-          python -m pip install -q --no-cache-dir -r requirements.txt
-          python add_audio.py
-          ls -lh outputs
-
-      - name: Upload artifact
+      - name: Upload silent renders
         uses: actions/upload-artifact@v7
         with:
-          name: manim-videos
-          path: outputs/
+          name: rendered-videos
+          path: outputs/*.mp4
+          if-no-files-found: error
+
+  # ------------------------------------------------------- voiceover+subtitles
+  # Separate job on Python 3.11: whisperx pins ctranslate2==4.4.0, which has no
+  # wheel for the 3.14 interpreter inside the Manim image.
+  assemble:
+    needs: render
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.11-slim
+      options: --user root
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install ffmpeg and fonts
+        run: |
+          set -euo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends ffmpeg fonts-dejavu-core
+          ffmpeg -version | head -1
+
+      - name: Install assembly requirements
+        run: |
+          set -euo pipefail
+          python -m pip install --no-cache-dir --upgrade pip
+          python -m pip install --no-cache-dir -r requirements.txt
+          python -c "import whisperx, moviepy, gTTS, soundfile; print('assembly stack ok')"
+
+      - name: Download silent renders
+        uses: actions/download-artifact@v5
+        with:
+          name: rendered-videos
+          path: media/videos
+
+      - name: Assemble final videos
+        run: |
+          set -euo pipefail
+          python assemble.py
+          ls -lh outputs
+
+      - name: Upload final videos
+        uses: actions/upload-artifact@v7
+        with:
+          name: final-videos
+          path: |
+            outputs/final_*.mp4
+            outputs/*.srt
           if-no-files-found: error
