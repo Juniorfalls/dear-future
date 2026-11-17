@@ -1,8 +1,9 @@
 # dear-future — automated Manim explainer factory
 
 Short finance-psychology explainers, rendered by Manim Community Edition in CI.
-A topic queue drives prompt generation, each scene is a plain Python file, and a
-second CI job adds a gTTS voiceover plus WhisperX captions and muxes the result.
+A topic queue drives prompt generation, each scene is a plain Python file, and
+follow-up CI jobs add a Remotion overlay, a gTTS voiceover and WhisperX captions
+before compositing everything into one file.
 
 ## Where the videos are
 
@@ -16,8 +17,9 @@ build output, and `media/`, `outputs/` and `audio/` are gitignored).
 
 | Artifact | Contents |
 | --- | --- |
-| **`final-videos`** | `final_<topic_id>.mp4` (video + voiceover + burned-in captions) and `<topic_id>.srt` |
+| **`final-videos`** | `final_<topic_id>.mp4` (Manim video + Remotion overlay + voiceover + burned-in captions) and `<topic_id>.srt` |
 | **`rendered-videos`** | the silent Manim renders from the render job, kept for debugging |
+| **`remotion-overlay`** | `overlay.webm`, the transparent "Math Explained" card |
 
 From a terminal:
 
@@ -31,16 +33,24 @@ Runs started by hand (**workflow_dispatch**) accept a `quality` input
 
 ## Pipeline
 
-The workflow has two jobs, because WhisperX pins `ctranslate2==4.4.0`, which has
-no wheel for the Python 3.14 interpreter inside the Manim image.
+The workflow has three jobs. `render` and `overlay` run in parallel; `assemble`
+needs both.
 
 1. **render** (`manimcommunity/manim:stable`, Python 3.14) — plan the queue,
    render every `scenes/*.py`, upload the silent mp4s as `rendered-videos`.
-2. **assemble** (`python:3.11-slim`, with `ffmpeg` and DejaVu fonts) — install
-   `requirements.txt` (CPU torch from PyTorch's index), download the silent
-   renders, then run `assemble.py`: gTTS voiceover → WhisperX `tiny` (int8, CPU)
-   → `.srt` → MoviePy mux and caption burn-in → `outputs/final_<id>.mp4` →
-   upload `final-videos`.
+2. **overlay** (hosted runner + Node 22) — `npm ci` in `remotion-overlay/`, then
+   `node render.js` bundles the Remotion composition and renders it to a
+   transparent VP8/`yuva420p` WebM, uploaded as `remotion-overlay`.
+3. **assemble** (`python:3.11-slim`, with `ffmpeg` and DejaVu fonts) — install
+   `requirements.txt` (CPU torch from PyTorch's index, cached in `~/.cache/pip`),
+   download the silent renders plus the overlay, then run `assemble.py`: gTTS
+   voiceover → WhisperX `tiny` (int8, CPU) → `.srt` → MoviePy mux, overlay
+   composite and caption burn-in → `outputs/final_<id>.mp4` → upload
+   `final-videos`.
+
+Assembling lives in its own Python 3.11 job because WhisperX pins
+`ctranslate2==4.4.0`, which has no wheel for the 3.14 interpreter inside the
+Manim image. The overlay job lives outside the container because it needs Node.
 
 ## Repository layout
 
@@ -51,7 +61,9 @@ no wheel for the Python 3.14 interpreter inside the Manim image.
 | `scripts/<id>.txt` | optional narration as a plain text file |
 | `factory.py` | turns each topic into `prompts/<id>_prompt.txt` (Style Contract + brief) |
 | `scenes/*.py` | one Manim scene file per topic (class name derived from the id) |
-| `assemble.py` | gTTS + WhisperX + MoviePy: silent render → captioned `final_<id>.mp4` |
+| `assemble.py` | gTTS + WhisperX + MoviePy: silent render → captioned, overlaid `final_<id>.mp4` |
+| `remotion-overlay/` | Remotion (React) project producing the transparent corner card |
+| `remotion-overlay/render.js` | bundles + renders the `Overlay` composition to `out/overlay.webm` |
 | `add_audio.py` | earlier, simpler muxer (no captions); kept for ad-hoc use |
 | `requirements.txt` | `gTTS`, `moviepy`, `whisperx`, `soundfile` (+ CPU torch index) |
 | `.github/workflows/render.yml` | render job → assemble job → artifacts |
@@ -73,9 +85,23 @@ python -m pip install -r requirements.txt
 python assemble.py
 ```
 
+Rendering the overlay locally needs Node 18+:
+
+```bash
+cd remotion-overlay
+npm install
+node render.js          # → remotion-overlay/out/overlay.webm
+```
+
 `assemble.py` writes `outputs/audio/<id>.mp3`, `outputs/<id>.srt` and
 `outputs/final_<id>.mp4`. Flags: `--text "..."` to override the voiceover,
-`--model` for a bigger WhisperX model, `--caption-mode even` to skip WhisperX.
+`--model` for a bigger WhisperX model, `--caption-mode even` to skip WhisperX,
+`--overlay <path>` to pick another WebM and `--no-overlay` to skip it entirely.
+
+The overlay is read from `remotion-overlay/out/overlay.webm` (falling back to
+`./overlay.webm`). It is looped for the whole video and scaled to 26% of the
+video width, sitting bottom-right above the caption band. If no overlay file is
+present the assembly still succeeds, just without the card.
 
 Real narration, when it exists, can be dropped in as `voiceover.json`:
 

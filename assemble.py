@@ -20,6 +20,11 @@ import sys
 import time
 from pathlib import Path
 
+import shutil
+import subprocess
+import tempfile
+
+import imageio_ffmpeg
 import numpy as np
 from gtts import gTTS
 from PIL import Image, ImageDraw, ImageFont
@@ -28,6 +33,7 @@ from moviepy import (
     CompositeAudioClip,
     CompositeVideoClip,
     ImageClip,
+    ImageSequenceClip,
     VideoFileClip,
 )
 from moviepy.audio.AudioClip import AudioClip
@@ -41,6 +47,10 @@ QUEUE_PATH = Path("topics.json")
 VOICEOVER_JSON = Path("voiceover.json")
 SCRIPT_DIR = Path("scripts")
 DEFAULT_VOICE = "en"
+OVERLAY_CANDIDATES = (Path("remotion-overlay/out/overlay.webm"), Path("overlay.webm"))
+OVERLAY_WIDTH_RATIO = 0.26
+OVERLAY_RIGHT_MARGIN = 0.035
+OVERLAY_BOTTOM_MARGIN = 0.15
 FONT_CANDIDATES = (
     "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
     "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf",
@@ -273,9 +283,55 @@ def caption_clips(cues, size, offset=0.0):
     return clips
 
 
-def build_final(video_path, mp3_path, cues, out_path):
+def find_overlay(explicit=None):
+    if explicit:
+        candidate = Path(explicit)
+        return candidate if candidate.exists() else None
+    for path in OVERLAY_CANDIDATES:
+        if path.exists():
+            return path
+    return None
+
+
+def overlay_clips(path, video_size, duration, fps=30):
+    """Loop the Remotion overlay over the whole video, alpha preserved.
+
+    MoviePy drops the alpha channel when it decodes a VP8/VP9 WebM, which would
+    paint a black box over the corner. So the WebM is first expanded to RGBA PNG
+    frames with ffmpeg and those are composited as an ImageSequenceClip.
+    """
+    ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
+    frames_dir = Path(tempfile.mkdtemp(prefix="overlay-"))
+    # `-c:v libvpx` matters: ffmpeg's default VP8 decoder silently drops the
+    # alpha plane, libvpx keeps it (WebM stores alpha in a side channel).
+    subprocess.run(
+        [ffmpeg, "-v", "error", "-y", "-c:v", "libvpx", "-i", str(path),
+         "-pix_fmt", "rgba", str(frames_dir / "f%04d.png")],
+        check=True,
+    )
+    frames = sorted(frames_dir.glob("f*.png"))
+    if not frames:
+        shutil.rmtree(frames_dir, ignore_errors=True)
+        raise RuntimeError(f"no frames decoded from {path}")
+
+    sequence = ImageSequenceClip([str(f) for f in frames], fps=fps, with_mask=True)
+    sequence = sequence.resized(width=max(80, int(video_size[0] * OVERLAY_WIDTH_RATIO)))
+
+    x = video_size[0] - sequence.w - int(video_size[0] * OVERLAY_RIGHT_MARGIN)
+    y = video_size[1] - sequence.h - int(video_size[1] * OVERLAY_BOTTOM_MARGIN)
+
+    clips = []
+    start = 0.0
+    while start < duration:
+        clips.append(sequence.with_start(start).with_position((x, y)))
+        start += sequence.duration
+    return clips, frames_dir
+
+
+def build_final(video_path, mp3_path, cues, out_path, overlay_path=None, overlay_fps=30):
     video = VideoFileClip(str(video_path))
     speech = AudioFileClip(str(mp3_path))
+    frames_dir = None
     try:
         if speech.duration < video.duration:
             pad = video.duration - speech.duration
@@ -290,7 +346,13 @@ def build_final(video_path, mp3_path, cues, out_path):
 
         layer = video.with_audio(audio)
         clips = caption_clips(cues, (video.w, video.h))
-        final = CompositeVideoClip([layer, *clips], size=(video.w, video.h))
+        extra, frames_dir = [], None
+        if overlay_path is not None:
+            extra, frames_dir = overlay_clips(
+                overlay_path, (video.w, video.h), video.duration, overlay_fps
+            )
+            print(f"  overlay: {overlay_path.name} looped {len(extra)}x")
+        final = CompositeVideoClip([layer, *clips, *extra], size=(video.w, video.h))
         out_path.parent.mkdir(parents=True, exist_ok=True)
         final.write_videofile(
             str(out_path),
@@ -303,6 +365,8 @@ def build_final(video_path, mp3_path, cues, out_path):
     finally:
         video.close()
         speech.close()
+        if frames_dir is not None:
+            shutil.rmtree(frames_dir, ignore_errors=True)
 
 
 # --------------------------------------------------------------------------- #
@@ -315,12 +379,24 @@ def main(argv=None):
     parser.add_argument("--text", default=None, help="override voiceover for every video")
     parser.add_argument("--model", default="tiny", help="whisperx model name")
     parser.add_argument("--caption-mode", choices=("whisper", "even"), default="whisper")
+    parser.add_argument("--overlay", default=None,
+                        help="Remotion overlay .webm (default: remotion-overlay/out/overlay.webm)")
+    parser.add_argument("--no-overlay", action="store_true", help="skip the overlay")
+    parser.add_argument("--overlay-fps", type=int, default=30)
     args = parser.parse_args(argv)
 
     out_dir = Path(args.out_dir)
     audio_dir = out_dir / "audio"
     out_dir.mkdir(parents=True, exist_ok=True)
     audio_dir.mkdir(parents=True, exist_ok=True)
+
+    overlay_path = None if args.no_overlay else find_overlay(args.overlay)
+    if args.no_overlay:
+        print("Overlay disabled (--no-overlay).")
+    elif overlay_path:
+        print(f"Overlay: {overlay_path}")
+    else:
+        print("warning: no Remotion overlay found; rendering without it")
 
     by_class, titles = topic_maps()
     overrides = load_voiceovers()
@@ -357,7 +433,10 @@ def main(argv=None):
                     cues = even_cues(text, AudioFileClip(str(mp3_path)).duration)
             write_srt(cues, srt_path)
 
-            video_len, speech_len = build_final(video_path, mp3_path, cues, out_path)
+            video_len, speech_len = build_final(
+                video_path, mp3_path, cues, out_path,
+                overlay_path=overlay_path, overlay_fps=args.overlay_fps,
+            )
         except Exception as exc:  # noqa: BLE001 - collected and reported below
             print(f"  FAILED: {exc}", file=sys.stderr)
             failures.append(f"{topic_id}: {exc}")

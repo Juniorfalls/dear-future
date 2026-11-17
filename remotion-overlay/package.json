@@ -1,0 +1,18 @@
+{
+  "name": "remotion-overlay",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Transparent animated overlay for the Manim explainers",
+  "scripts": {
+    "render": "node render.js",
+    "studio": "remotion studio src/index.ts"
+  },
+  "dependencies": {
+    "@remotion/bundler": "^4.0.200",
+    "@remotion/cli": "^4.0.200",
+    "@remotion/renderer": "^4.0.200",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.200"
+  }
+}

@@ -15,6 +15,9 @@ on:
     branches: [main]
     paths:
       - "scenes/**"
+      - "remotion-overlay/**"
+      - "assemble.py"
+      - "requirements.txt"
       - ".github/workflows/render.yml"
 
 env:
@@ -74,11 +77,52 @@ jobs:
           path: outputs/*.mp4
           if-no-files-found: error
 
+  # --------------------------------------------------- remotion overlay (webm)
+  # Needs Node, so it runs on the host runner instead of the Python container.
+  overlay:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: remotion-overlay/package-lock.json
+
+      - name: Cache Remotion browser
+        uses: actions/cache@v4
+        with:
+          path: remotion-overlay/node_modules/.remotion
+          key: ${{ runner.os }}-remotion-${{ hashFiles('remotion-overlay/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-remotion-
+
+      - name: Install overlay dependencies
+        working-directory: remotion-overlay
+        run: npm ci --no-audit --no-fund
+
+      - name: Render transparent overlay
+        working-directory: remotion-overlay
+        run: node render.js
+
+      - name: Upload overlay
+        uses: actions/upload-artifact@v7
+        with:
+          name: remotion-overlay
+          path: remotion-overlay/out/overlay.webm
+          if-no-files-found: error
+
   # ------------------------------------------------------- voiceover+subtitles
   # Separate job on Python 3.11: whisperx pins ctranslate2==4.4.0, which has no
   # wheel for the 3.14 interpreter inside the Manim image.
   assemble:
-    needs: render
+    needs: [render, overlay]
     runs-on: ubuntu-latest
     container:
       image: python:3.11-slim
@@ -98,18 +142,33 @@ jobs:
           apt-get install -y -qq --no-install-recommends ffmpeg fonts-dejavu-core
           ffmpeg -version | head -1
 
+      - name: Cache pip downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install assembly requirements
         run: |
           set -euo pipefail
-          python -m pip install --no-cache-dir --upgrade pip
-          python -m pip install --no-cache-dir -r requirements.txt
+          # No --no-cache-dir: the pip cache above is what makes reruns fast.
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
           python -c "import whisperx, moviepy, gtts, soundfile; print('assembly stack ok')"
 
       - name: Download silent renders
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: rendered-videos
           path: media/videos
+
+      - name: Download Remotion overlay
+        uses: actions/download-artifact@v7
+        with:
+          name: remotion-overlay
+          path: remotion-overlay/out
 
       - name: Assemble final videos
         run: |

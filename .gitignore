@@ -3,3 +3,8 @@ __pycache__/
 *.pyc
 outputs/
 audio/
+
+# Remotion overlay
+remotion-overlay/node_modules/
+remotion-overlay/out/
+overlay.webm
