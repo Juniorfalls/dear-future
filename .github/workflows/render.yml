@@ -33,7 +33,7 @@ jobs:
         shell: bash
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Plan topic queue
         run: |
@@ -65,8 +65,17 @@ jobs:
           find media/videos -name "*.mp4" -not -path "*partial_movie_files*" -exec cp {} outputs/ \;
           ls -lh outputs
 
+      - name: Add voiceover audio
+        run: |
+          set -euo pipefail
+          # `pip` on PATH belongs to the system python, `python` is the venv, so
+          # install through the interpreter that will run the script.
+          python -m pip install -q --no-cache-dir -r requirements.txt
+          python add_audio.py
+          ls -lh outputs
+
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: manim-videos
           path: outputs/
