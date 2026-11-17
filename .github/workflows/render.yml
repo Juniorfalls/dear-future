@@ -31,6 +31,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Plan topic queue
+        run: |
+          set -euo pipefail
+          # Prints the queue and regenerates prompts/<id>_prompt.txt for each topic.
+          python3 factory.py
+
       - name: Render every scene file
         run: |
           set -euo pipefail
