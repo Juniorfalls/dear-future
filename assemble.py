@@ -51,6 +51,7 @@ OVERLAY_CANDIDATES = (Path("remotion-overlay/out/overlay.webm"), Path("overlay.w
 OVERLAY_WIDTH_RATIO = 0.26
 OVERLAY_RIGHT_MARGIN = 0.035
 OVERLAY_BOTTOM_MARGIN = 0.15
+OVERLAY_ASPECT = 190 / 600  # Overlay composition is 600x190
 FONT_CANDIDATES = (
     "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
     "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf",
@@ -293,45 +294,47 @@ def find_overlay(explicit=None):
     return None
 
 
-def overlay_clips(path, video_size, duration, fps=30):
-    """Loop the Remotion overlay over the whole video, alpha preserved.
+def overlay_geometry(video_size):
+    width, height = video_size
+    ov_w = max(80, int(width * OVERLAY_WIDTH_RATIO))
+    ov_h = int(round(ov_w * OVERLAY_ASPECT))
+    x = width - ov_w - int(width * OVERLAY_RIGHT_MARGIN)
+    y = height - ov_h - int(height * OVERLAY_BOTTOM_MARGIN)
+    return ov_w, x, y
 
-    MoviePy drops the alpha channel when it decodes a VP8/VP9 WebM, which would
-    paint a black box over the corner. So the WebM is first expanded to RGBA PNG
-    frames with ffmpeg and those are composited as an ImageSequenceClip.
+
+def apply_overlay(video_path, overlay_path, out_path, video_size):
+    """Composite the looping Remotion overlay in a single ffmpeg pass.
+
+    Doing this in MoviePy means one composite layer per loop, which gets slower
+    the longer the video is. One ffmpeg pass keeps the cost constant, and
+    overriding the VP8 decoder with libvpx is what preserves the alpha channel
+    (ffmpeg's default VP8 decoder silently drops it and paints a black box).
     """
     ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
-    frames_dir = Path(tempfile.mkdtemp(prefix="overlay-"))
-    # `-c:v libvpx` matters: ffmpeg's default VP8 decoder silently drops the
-    # alpha plane, libvpx keeps it (WebM stores alpha in a side channel).
+    ov_w, x, y = overlay_geometry(video_size)
+    filter_complex = (
+        f"[1:v]scale={ov_w}:-1[ov];"
+        f"[0:v][ov]overlay={x}:{y}:shortest=1,format=yuv420p[v]"
+    )
     subprocess.run(
-        [ffmpeg, "-v", "error", "-y", "-c:v", "libvpx", "-i", str(path),
-         "-pix_fmt", "rgba", str(frames_dir / "f%04d.png")],
+        [
+            ffmpeg, "-v", "error", "-y",
+            "-i", str(video_path),
+            "-stream_loop", "-1", "-c:v", "libvpx", "-i", str(overlay_path),
+            "-filter_complex", filter_complex,
+            "-map", "[v]", "-map", "0:a?",
+            "-c:v", "libx264", "-preset", "veryfast", "-crf", "18",
+            "-c:a", "copy", "-movflags", "+faststart",
+            str(out_path),
+        ],
         check=True,
     )
-    frames = sorted(frames_dir.glob("f*.png"))
-    if not frames:
-        shutil.rmtree(frames_dir, ignore_errors=True)
-        raise RuntimeError(f"no frames decoded from {path}")
-
-    sequence = ImageSequenceClip([str(f) for f in frames], fps=fps, with_mask=True)
-    sequence = sequence.resized(width=max(80, int(video_size[0] * OVERLAY_WIDTH_RATIO)))
-
-    x = video_size[0] - sequence.w - int(video_size[0] * OVERLAY_RIGHT_MARGIN)
-    y = video_size[1] - sequence.h - int(video_size[1] * OVERLAY_BOTTOM_MARGIN)
-
-    clips = []
-    start = 0.0
-    while start < duration:
-        clips.append(sequence.with_start(start).with_position((x, y)))
-        start += sequence.duration
-    return clips, frames_dir
 
 
-def build_final(video_path, mp3_path, cues, out_path, overlay_path=None, overlay_fps=30):
+def build_final(video_path, mp3_path, cues, out_path, overlay_path=None):
     video = VideoFileClip(str(video_path))
     speech = AudioFileClip(str(mp3_path))
-    frames_dir = None
     try:
         if speech.duration < video.duration:
             pad = video.duration - speech.duration
@@ -346,27 +349,27 @@ def build_final(video_path, mp3_path, cues, out_path, overlay_path=None, overlay
 
         layer = video.with_audio(audio)
         clips = caption_clips(cues, (video.w, video.h))
-        extra, frames_dir = [], None
-        if overlay_path is not None:
-            extra, frames_dir = overlay_clips(
-                overlay_path, (video.w, video.h), video.duration, overlay_fps
-            )
-            print(f"  overlay: {overlay_path.name} looped {len(extra)}x")
-        final = CompositeVideoClip([layer, *clips, *extra], size=(video.w, video.h))
+        final = CompositeVideoClip([layer, *clips], size=(video.w, video.h))
         out_path.parent.mkdir(parents=True, exist_ok=True)
+        captioned = out_path
+        if overlay_path is not None:
+            captioned = out_path.with_name(out_path.stem + "_captioned.mp4")
         final.write_videofile(
-            str(out_path),
+            str(captioned),
             codec="libx264",
             audio_codec="aac",
             fps=video.fps,
+            preset="veryfast",
             logger=None,
         )
+        if overlay_path is not None:
+            apply_overlay(captioned, overlay_path, out_path, (video.w, video.h))
+            captioned.unlink(missing_ok=True)
+            print(f"  overlay: {overlay_path.name} over {video.duration:.1f}s")
         return video.duration, speech.duration
     finally:
         video.close()
         speech.close()
-        if frames_dir is not None:
-            shutil.rmtree(frames_dir, ignore_errors=True)
 
 
 # --------------------------------------------------------------------------- #
@@ -382,7 +385,6 @@ def main(argv=None):
     parser.add_argument("--overlay", default=None,
                         help="Remotion overlay .webm (default: remotion-overlay/out/overlay.webm)")
     parser.add_argument("--no-overlay", action="store_true", help="skip the overlay")
-    parser.add_argument("--overlay-fps", type=int, default=30)
     args = parser.parse_args(argv)
 
     out_dir = Path(args.out_dir)
@@ -434,8 +436,7 @@ def main(argv=None):
             write_srt(cues, srt_path)
 
             video_len, speech_len = build_final(
-                video_path, mp3_path, cues, out_path,
-                overlay_path=overlay_path, overlay_fps=args.overlay_fps,
+                video_path, mp3_path, cues, out_path, overlay_path=overlay_path
             )
         except Exception as exc:  # noqa: BLE001 - collected and reported below
             print(f"  FAILED: {exc}", file=sys.stderr)

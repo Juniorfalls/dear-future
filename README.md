@@ -100,7 +100,10 @@ node render.js          # → remotion-overlay/out/overlay.webm
 
 The overlay is read from `remotion-overlay/out/overlay.webm` (falling back to
 `./overlay.webm`). It is looped for the whole video and scaled to 26% of the
-video width, sitting bottom-right above the caption band. If no overlay file is
+video width, sitting bottom-right above the caption band. Compositing happens in
+a single `ffmpeg` pass (`overlay` filter over `-stream_loop -1` input) rather
+than as one MoviePy layer per loop, so assembly time does not grow with video
+length. If no overlay file is
 present the assembly still succeeds, just without the card.
 
 Real narration, when it exists, can be dropped in as `voiceover.json`:
