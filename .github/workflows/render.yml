@@ -103,7 +103,7 @@ jobs:
           set -euo pipefail
           python -m pip install --no-cache-dir --upgrade pip
           python -m pip install --no-cache-dir -r requirements.txt
-          python -c "import whisperx, moviepy, gTTS, soundfile; print('assembly stack ok')"
+          python -c "import whisperx, moviepy, gtts, soundfile; print('assembly stack ok')"
 
       - name: Download silent renders
         uses: actions/download-artifact@v5
