@@ -1,0 +1,12 @@
+[
+  {
+    "id": "compound_interest",
+    "title": "The Magic of Compound Interest",
+    "narrative": "Show how a small amount of money grows exponentially over time, contrasted with linear savings. Use a growing tree or an exponential graph."
+  },
+  {
+    "id": "loss_aversion",
+    "title": "Why Losing $10 Hurts More Than Winning $10",
+    "narrative": "Explain the psychology of loss aversion. Show a balanced scale where the 'loss' side is visually heavier than the 'gain' side."
+  }
+]

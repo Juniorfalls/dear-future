@@ -1,0 +1,63 @@
+name: Render Manim Scenes
+
+on:
+  workflow_dispatch:
+    inputs:
+      quality:
+        description: "Manim quality flag: l, m, h, or k"
+        required: false
+        default: "h"
+      scene_files:
+        description: "Glob of scene files to render"
+        required: false
+        default: "scenes/*.py"
+  push:
+    branches: [main]
+    paths:
+      - "scenes/**"
+      - ".github/workflows/render.yml"
+
+env:
+  SCENE_GLOB: ${{ github.event.inputs.scene_files || 'scenes/*.py' }}
+  QUALITY: ${{ github.event.inputs.quality || 'h' }}
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    container:
+      image: manimcommunity/manim:stable
+      options: --user root
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Render every scene file
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          FLAG="-q${QUALITY}"
+          files=( $SCENE_GLOB )
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No scene files matched ${SCENE_GLOB}" >&2
+            exit 1
+          fi
+          echo "Rendering ${#files[@]} scene file(s) at ${FLAG}"
+          for f in "${files[@]}"; do
+            echo "::group::manim ${f}"
+            # -a renders every Scene class defined in the file
+            manim $FLAG --verbosity INFO --progress_bar none -a "$f"
+            echo "::endgroup::"
+          done
+
+      - name: Collect videos
+        run: |
+          mkdir -p outputs
+          find media/videos -name "*.mp4" -not -path "*partial_movie_files*" -exec cp {} outputs/ \;
+          ls -lh outputs
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: manim-videos
+          path: outputs/
+          if-no-files-found: error
