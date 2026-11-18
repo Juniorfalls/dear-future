@@ -1,10 +1,14 @@
-media/
+# Node
+node_modules/
+remotion/out/
+remotion-overlay/out/
+
+# local scratch
+_look/
 __pycache__/
 *.pyc
+
+# render leftovers from the retired Manim pipeline
+media/
 outputs/
 audio/
-
-# Remotion overlay
-remotion-overlay/node_modules/
-remotion-overlay/out/
-overlay.webm

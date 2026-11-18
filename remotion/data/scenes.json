@@ -1,0 +1,20 @@
+{
+  "title": "12th Street",
+  "scenes": [
+    {
+      "image": "https://picsum.photos/seed/12th-street-1/1920/1080",
+      "caption": "The year is 1942, and 12th Street is the loudest street in the city.",
+      "kicker": "Chapter One"
+    },
+    {
+      "image": "https://picsum.photos/seed/12th-street-2/1920/1080",
+      "caption": "By six in the evening the shops are shuttered and the sidewalks are empty.",
+      "kicker": "The Quiet Hours"
+    },
+    {
+      "image": "https://picsum.photos/seed/12th-street-3/1920/1080",
+      "caption": "But everything was about to change, and no one on the block knew it yet.",
+      "kicker": "Everything Changes"
+    }
+  ]
+}

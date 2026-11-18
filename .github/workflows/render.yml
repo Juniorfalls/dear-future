@@ -1,89 +1,19 @@
-name: Render Manim Scenes
+name: Render Cinematic Video
 
 on:
   workflow_dispatch:
-    inputs:
-      quality:
-        description: "Manim quality flag: l, m, h, or k"
-        required: false
-        default: "h"
-      scene_files:
-        description: "Glob of scene files to render"
-        required: false
-        default: "scenes/*.py"
   push:
     branches: [main]
     paths:
-      - "scenes/**"
-      - "remotion-overlay/**"
-      - "assemble.py"
-      - "requirements.txt"
+      - "remotion/**"
       - ".github/workflows/render.yml"
 
-env:
-  SCENE_GLOB: ${{ github.event.inputs.scene_files || 'scenes/*.py' }}
-  QUALITY: ${{ github.event.inputs.quality || 'h' }}
-
 jobs:
-  # ---------------------------------------------------------------- rendering
   render:
     runs-on: ubuntu-latest
-    container:
-      image: manimcommunity/manim:stable
-      options: --user root
-    # GitHub defaults container jobs to `sh`, which has no `shopt`/arrays.
     defaults:
       run:
-        shell: bash
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Plan topic queue
-        run: |
-          set -euo pipefail
-          # Prints the queue and regenerates prompts/<id>_prompt.txt for each topic.
-          python3 factory.py
-
-      - name: Render every scene file
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-          FLAG="-q${QUALITY}"
-          files=( $SCENE_GLOB )
-          if [ ${#files[@]} -eq 0 ]; then
-            echo "No scene files matched ${SCENE_GLOB}" >&2
-            exit 1
-          fi
-          echo "Rendering ${#files[@]} scene file(s) at ${FLAG}"
-          for f in "${files[@]}"; do
-            echo "::group::manim ${f}"
-            # -a renders every Scene class defined in the file
-            manim $FLAG --verbosity INFO --progress_bar none -a "$f"
-            echo "::endgroup::"
-          done
-
-      - name: Collect silent renders
-        run: |
-          set -euo pipefail
-          mkdir -p outputs
-          find media/videos -name "*.mp4" -not -path "*partial_movie_files*" -exec cp {} outputs/ \;
-          ls -lh outputs
-
-      - name: Upload silent renders
-        uses: actions/upload-artifact@v7
-        with:
-          name: rendered-videos
-          path: outputs/*.mp4
-          if-no-files-found: error
-
-  # --------------------------------------------------- remotion overlay (webm)
-  # Needs Node, so it runs on the host runner instead of the Python container.
-  overlay:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
+        working-directory: remotion
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -91,96 +21,27 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version: "20"
           cache: npm
-          cache-dependency-path: remotion-overlay/package-lock.json
+          cache-dependency-path: remotion/package-lock.json
 
       - name: Cache Remotion browser
         uses: actions/cache@v6
         with:
-          path: remotion-overlay/node_modules/.remotion
-          key: ${{ runner.os }}-remotion-${{ hashFiles('remotion-overlay/package-lock.json') }}
+          path: remotion/node_modules/.remotion
+          key: ${{ runner.os }}-remotion-browser-${{ hashFiles('remotion/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-remotion-
+            ${{ runner.os }}-remotion-browser-
 
-      - name: Install overlay dependencies
-        working-directory: remotion-overlay
+      - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Render transparent overlay
-        working-directory: remotion-overlay
+      - name: Render cinematic video
         run: node render.js
 
-      - name: Upload overlay
+      - name: Upload video
         uses: actions/upload-artifact@v7
         with:
-          name: remotion-overlay
-          path: remotion-overlay/out/overlay.webm
-          if-no-files-found: error
-
-  # ------------------------------------------------------- voiceover+subtitles
-  # Separate job on Python 3.11: whisperx pins ctranslate2==4.4.0, which has no
-  # wheel for the 3.14 interpreter inside the Manim image.
-  assemble:
-    needs: [render, overlay]
-    runs-on: ubuntu-latest
-    container:
-      image: python:3.11-slim
-      options: --user root
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Install ffmpeg and fonts
-        run: |
-          set -euo pipefail
-          export DEBIAN_FRONTEND=noninteractive
-          apt-get update -qq
-          apt-get install -y -qq --no-install-recommends ffmpeg fonts-dejavu-core
-          ffmpeg -version | head -1
-
-      - name: Cache pip downloads
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install assembly requirements
-        run: |
-          set -euo pipefail
-          # No --no-cache-dir: the pip cache above is what makes reruns fast.
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-          python -c "import whisperx, moviepy, gtts, soundfile; print('assembly stack ok')"
-
-      - name: Download silent renders
-        uses: actions/download-artifact@v7
-        with:
-          name: rendered-videos
-          path: media/videos
-
-      - name: Download Remotion overlay
-        uses: actions/download-artifact@v7
-        with:
-          name: remotion-overlay
-          path: remotion-overlay/out
-
-      - name: Assemble final videos
-        run: |
-          set -euo pipefail
-          python assemble.py
-          ls -lh outputs
-
-      - name: Upload final videos
-        uses: actions/upload-artifact@v7
-        with:
-          name: final-videos
-          path: |
-            outputs/final_*.mp4
-            outputs/*.srt
+          name: cinematic-video
+          path: remotion/out/cinematic_video.mp4
           if-no-files-found: error
