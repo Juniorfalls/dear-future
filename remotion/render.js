@@ -74,7 +74,13 @@ const main = async () => {
   };
 
   console.log(`Bundling Remotion project (${scenes.length} scenes)...`);
-  const serveUrl = await bundle({entryPoint: path.join(ROOT, 'src', 'index.ts')});
+  // publicDir is explicit: scene stills live in remotion/public/episodes/... and
+  // are referenced as "/episodes/...". Without this, bundle() looks for a public
+  // folder relative to the process cwd and every local still 404s.
+  const serveUrl = await bundle({
+    entryPoint: path.join(ROOT, 'src', 'index.ts'),
+    publicDir: path.join(ROOT, 'public'),
+  });
 
   const composition = await selectComposition({
     serveUrl,

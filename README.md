@@ -34,9 +34,16 @@ that every image URL resolves. Pass `--beats lines.json` to supply your own
 captions (that is the hook for an LLM script writer later), and `--no-verify` to
 skip the HTTP check.
 
-Stills come from `picsum.photos` placeholders for now. `image_urls()` in
-`generate_video.py` is the single swap point for a real generator (DALL·E,
-Stable Diffusion, a hosted endpoint); it only has to return one URL per scene.
+Images are resolved in this order (`--images auto`, the default):
+
+1. **Committed stills** — `remotion/public/episodes/<topic-slug>/scene-1.jpg`,
+   `scene-2.jpg`, … are picked up automatically and served by Remotion through
+   `staticFile()`. Episode 1 ships with five generated stills there.
+2. **Placeholders** — otherwise free `picsum.photos` photos, so a brand-new
+   topic still renders.
+
+`--images assets` requires committed stills, `--images picsum` forces
+placeholders, and `--images openai` generates the art (next section).
 
 The generated file looks like this:
 
@@ -107,6 +114,40 @@ npm run studio                     # Remotion Studio for live editing
 
 The first render downloads a headless Chrome build (~100 MB); CI caches it.
 
+## Plugging in a real image API (DALL·E 3)
+
+`generate_video.py` already calls OpenAI's Images API — it just needs a key.
+
+1. Create one at **platform.openai.com → API keys**.
+2. Repo → **Settings → Secrets and variables → Actions → New repository
+   secret**, name `OPENAI_API_KEY`.
+3. Actions → **Render Cinematic Video** → **Run workflow**, and set
+   `images: openai`.
+
+Locally:
+
+```bash
+export OPENAI_API_KEY=sk-...
+python generate_video.py "The Fall of Rome" --images openai
+```
+
+What the script does per scene: `POST https://api.openai.com/v1/images/generations`
+with the chapter prompt from `IMAGE_PROMPTS` plus the topic, `model=dall-e-3`
+(change with `--model gpt-image-1`), `size=1792x1024` — or `1024x1792` when
+`--height > --width`. Both response shapes are handled (a temporary URL for
+`dall-e-3`, base64 for `gpt-image-1`). The files land in
+`remotion/public/episodes/<topic-slug>/scene-N.jpg`, so every later
+`--images auto` run reuses them.
+
+Cost: `dall-e-3` at 1792×1024 is about **$0.08 per image**, so roughly
+**$0.40 per five-scene episode**. The CI job only calls the API when dispatched
+with `images: openai` — plain pushes never spend money. Commit the generated
+folder to keep the artwork, otherwise each online run regenerates it.
+
+Any other provider (Stable Diffusion, a hosted endpoint): replace
+`openai_images()`. It only has to write `scene-N.jpg` files into
+`episode_dir(topic)` and return `local_images(topic, count)`.
+
 ## Repository layout
 
 | Path | Purpose |
@@ -114,6 +155,7 @@ The first render downloads a headless Chrome build (~100 MB); CI caches it.
 | `generate_video.py` | topic → `remotion/data/scenes.json` (chapters, captions, image URLs) |
 | `requirements.txt` | Python dependency for the generator (`requests`) |
 | `remotion/src/CinematicDoc.tsx` | the film: scenes, Ken Burns, captions, wordmark |
+| `remotion/public/episodes/<slug>/` | committed stills for an episode (scene-1.jpg, …) |
 | `remotion/src/Root.tsx` | `CinematicDoc` composition + dynamic duration/dimensions |
 | `remotion/data/scenes.json` | episode content (images + captions) |
 | `remotion/render.js` | bundles the composition and renders it with `@remotion/renderer` |

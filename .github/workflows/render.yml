@@ -7,6 +7,11 @@ on:
         description: "Episode topic, e.g. The Fall of Rome"
         required: false
         default: "The History of Rome"
+      images:
+        description: "Image source: auto (committed stills, else placeholders) or openai"
+        type: choice
+        options: [auto, openai]
+        default: auto
   push:
     branches: [main]
     paths:
@@ -17,6 +22,7 @@ on:
 
 env:
   TOPIC: ${{ github.event.inputs.topic || 'The History of Rome' }}
+  IMAGES: ${{ github.event.inputs.images || 'auto' }}
 
 jobs:
   render:
@@ -53,7 +59,10 @@ jobs:
           python -m pip install -r requirements.txt
 
       - name: Generate scenes from the topic
-        run: python generate_video.py "$TOPIC"
+        env:
+          # Only needed when the run is dispatched with images=openai.
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: python generate_video.py "$TOPIC" --images "$IMAGES"
 
       - name: Install Remotion dependencies
         working-directory: remotion

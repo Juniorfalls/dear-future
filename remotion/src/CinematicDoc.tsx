@@ -5,6 +5,7 @@ import {
   Img,
   Sequence,
   interpolate,
+  staticFile,
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
@@ -97,7 +98,9 @@ const CinematicScene: React.FC<SceneProps> = ({scene, index, sceneFrames, overla
     <AbsoluteFill style={{opacity: reveal}}>
       <AbsoluteFill style={{overflow: 'hidden'}}>
         <Img
-          src={scene.image}
+          // Local stills (committed under remotion/public) go through
+          // staticFile(); remote URLs are used as-is.
+          src={scene.image.startsWith('http') ? scene.image : staticFile(scene.image)}
           style={{
             width: '100%',
             height: '100%',
