@@ -5,7 +5,7 @@ const BLUE = '#58C4DD';
 const INK = '#F5F5F5';
 
 /**
- * "Dear Future" brand pill. Elegant and minimal: a translucent dark pill, wide
+ * "12th Street" brand pill. Elegant and minimal: a translucent dark pill, wide
  * letter spacing, a soft drop shadow and one thin blue accent. Everything
  * outside the pill stays fully transparent so it can be muxed over any video.
  */
@@ -60,7 +60,7 @@ export const Overlay: React.FC = () => {
             textShadow: '0 2px 10px rgba(0, 0, 0, 0.75)',
           }}
         >
-          Dear Future
+          12th Street
         </div>
       </div>
     </AbsoluteFill>

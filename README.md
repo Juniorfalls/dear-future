@@ -19,7 +19,7 @@ build output, and `media/`, `outputs/` and `audio/` are gitignored).
 | --- | --- |
 | **`final-videos`** | `final_<topic_id>.mp4` (Manim video + Remotion overlay + voiceover + burned-in captions) and `<topic_id>.srt` |
 | **`rendered-videos`** | the silent Manim renders from the render job, kept for debugging |
-| **`remotion-overlay`** | `overlay.webm`, the transparent "Dear Future" brand pill |
+| **`remotion-overlay`** | `overlay.webm`, the transparent "12th Street" brand pill |
 
 From a terminal:
 
