@@ -16,16 +16,17 @@ export const defaultProps: CinematicProps = {
 
 export const calculateMetadata: CalculateMetadataFunction<CinematicProps> = ({props}) => {
   const fps = props.fps ?? defaultProps.fps;
-  const sceneFrames = Math.max(1, Math.round((props.sceneDurationInSeconds ?? 6) * fps));
-  const overlap = Math.min(
-    sceneFrames - 1,
-    Math.round((props.overlapInSeconds ?? 1) * fps),
+  const durations = props.scenes.map((scene) =>
+    Math.max(1, Math.round((scene.durationInSeconds ?? props.sceneDurationInSeconds ?? 6) * fps)),
   );
-  const step = sceneFrames - overlap;
-  const count = Math.max(1, props.scenes.length);
+  const overlap = Math.min(
+    Math.round((props.overlapInSeconds ?? 1) * fps),
+    Math.min(...durations) - 1,
+  );
+  const total = durations.reduce((sum, duration) => sum + duration, 0) - overlap * (durations.length - 1);
 
   return {
-    durationInFrames: Math.max(sceneFrames, (count - 1) * step + sceneFrames),
+    durationInFrames: Math.max(durations[0], total),
     fps,
     width: props.width ?? defaultProps.width,
     height: props.height ?? defaultProps.height,

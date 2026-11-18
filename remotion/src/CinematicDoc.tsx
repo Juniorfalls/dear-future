@@ -243,9 +243,22 @@ export const CinematicDoc: React.FC<CinematicProps> = ({
   overlapInSeconds,
 }) => {
   const {fps, height} = useVideoConfig();
-  const sceneFrames = Math.max(1, Math.round(sceneDurationInSeconds * fps));
-  const overlap = Math.min(sceneFrames - 1, Math.round(overlapInSeconds * fps));
-  const step = sceneFrames - overlap;
+
+  // Scenes may carry their own duration (the generator writes one per scene);
+  // otherwise every scene uses the composition default.
+  const durations = scenes.map((scene) =>
+    Math.max(1, Math.round((scene.durationInSeconds ?? sceneDurationInSeconds) * fps)),
+  );
+  const overlap = Math.min(
+    Math.round(overlapInSeconds * fps),
+    Math.min(...durations) - 1,
+  );
+  const starts: number[] = [];
+  let cursor = 0;
+  for (const duration of durations) {
+    starts.push(cursor);
+    cursor += duration - overlap;
+  }
   const bar = Math.round(height * LETTERBOX_RATIO);
 
   return (
@@ -253,14 +266,14 @@ export const CinematicDoc: React.FC<CinematicProps> = ({
       {scenes.map((scene, index) => (
         <Sequence
           key={`${index}-${scene.image}`}
-          from={index * step}
-          durationInFrames={sceneFrames}
+          from={starts[index]}
+          durationInFrames={durations[index]}
           name={`Scene ${index + 1}`}
         >
           <CinematicScene
             scene={scene}
             index={index}
-            sceneFrames={sceneFrames}
+            sceneFrames={durations[index]}
             overlap={overlap}
             bar={bar}
           />

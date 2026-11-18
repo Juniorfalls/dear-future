@@ -1,2 +1,1 @@
-# The video pipeline is Node-only now: see remotion/package.json.
-# Nothing is installed here; kept so tooling that expects the file still works.
+requests>=2.32,<3

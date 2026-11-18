@@ -1,24 +1,41 @@
 {
   "_notes": {
-    "image_source": "PLACEHOLDER IMAGES. Every `image` below is a picsum.photos stand-in that merely holds the composition's layout. Swap each one for an AI-generated still (ruins, artifacts, dramatic landscapes) served from the image API, e.g. `https://cdn.12thstreet.tv/episodes/0001/scene-1.jpg`; nothing else in the pipeline changes.",
-    "orientation": "Long-form stills should be 1920x1080. For vertical shorts use 1080x1920 stills and `node render.js --vertical`."
+    "generated_by": "generate_video.py",
+    "topic": "The History of Rome",
+    "image_source": "PLACEHOLDER IMAGES from picsum.photos. Replace image_urls() in generate_video.py with the AI image API; scene schema stays the same."
   },
   "title": "12th Street",
+  "topic": "The History of Rome",
   "scenes": [
     {
-      "image": "https://picsum.photos/seed/ziggurat-dawn-1/1920/1080",
-      "kicker": "Chapter One — The First Cities",
-      "caption": "Six thousand years ago, the first cities rose out of the mud of the Tigris and the Euphrates."
+      "image_url": "https://picsum.photos/seed/the-history-of-rome-1-ancient-city-at-dawn-mon/1920/1080",
+      "text": "The History of Rome. It began like any other story — with ambition, and with time.",
+      "durationInSeconds": 5.0,
+      "kicker": "Chapter One — The Beginning"
     },
     {
-      "image": "https://picsum.photos/seed/clay-tablet-2/1920/1080",
-      "kicker": "Chapter Two — Writing the World",
-      "caption": "Priests read the night sky from the ziggurats, and pressed the harvest into clay."
+      "image_url": "https://picsum.photos/seed/the-history-of-rome-2-aerial-view-of-a-vast-em/1920/1080",
+      "text": "At its height, its reach was measured not in miles, but in months of travel.",
+      "durationInSeconds": 5.0,
+      "kicker": "Chapter Two — The Height"
     },
     {
-      "image": "https://picsum.photos/seed/ruins-columns-3/1920/1080",
-      "kicker": "Chapter Three — What Remains",
-      "caption": "Empires rose, burned, and were buried. Their stones are still speaking."
+      "image_url": "https://picsum.photos/seed/the-history-of-rome-3-cracked-marble-column-in/1920/1080",
+      "text": "Then the borders thinned, and the cost of holding them rose year after year.",
+      "durationInSeconds": 5.0,
+      "kicker": "Chapter Three — The Turn"
+    },
+    {
+      "image_url": "https://picsum.photos/seed/the-history-of-rome-4-ruined-walls-at-dusk-emb/1920/1080",
+      "text": "The end did not arrive in a single day. It arrived in a hundred small surrenders.",
+      "durationInSeconds": 5.0,
+      "kicker": "Chapter Four — The Unravelling"
+    },
+    {
+      "image_url": "https://picsum.photos/seed/the-history-of-rome-5-artifacts-in-museum-ligh/1920/1080",
+      "text": "What survives of The History of Rome is stone, dust, and a warning we are still learning to read.",
+      "durationInSeconds": 5.0,
+      "kicker": "Chapter Five — What Remains"
     }
   ]
 }

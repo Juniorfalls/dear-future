@@ -27,30 +27,53 @@ const parseArgs = (argv) => {
   return args;
 };
 
+/**
+ * scenes.json is written by generate_video.py using the {image_url, text,
+ * durationInSeconds} schema. Older hand-written files use {image, caption}, so
+ * accept both and hand the composition one canonical shape.
+ */
+const normalizeScenes = (raw) => {
+  if (!Array.isArray(raw) || raw.length === 0) {
+    throw new Error('data/scenes.json has no "scenes" array');
+  }
+  return raw.map((scene, index) => {
+    const image = scene.image_url || scene.image;
+    const caption = scene.text || scene.caption;
+    if (!image) throw new Error(`scene ${index + 1} has no image_url/image`);
+    if (!caption) throw new Error(`scene ${index + 1} has no text/caption`);
+    return {
+      image,
+      caption,
+      kicker: scene.kicker,
+      durationInSeconds: scene.durationInSeconds,
+    };
+  });
+};
+
 const main = async () => {
   const args = parseArgs(process.argv.slice(2));
   const data = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'scenes.json'), 'utf8'));
-  if (!Array.isArray(data.scenes) || data.scenes.length === 0) {
-    throw new Error('data/scenes.json has no "scenes" array');
-  }
+  const scenes = normalizeScenes(data.scenes);
+  const topic = data.topic || data._notes?.topic;
 
   // `data._notes.image_source` documents that the stills are placeholders; the
-  // eventual AI image API feeds the same `image` fields, nothing else changes.
+  // eventual AI image API feeds the same scene URLs, nothing else changes.
   if (data._notes?.image_source) {
     console.log(`Image source: ${data._notes.image_source.split('.')[0]}.`);
   }
+  if (topic) console.log(`Episode: ${topic}`);
 
   const inputProps = {
     title: data.title || '12th Street',
-    scenes: data.scenes,
-    sceneDurationInSeconds: args.sceneSeconds ?? 6,
+    scenes,
+    sceneDurationInSeconds: args.sceneSeconds ?? data.sceneDurationInSeconds ?? 6,
     overlapInSeconds: args.overlapSeconds ?? 1,
     fps: args.fps ?? 30,
     width: args.vertical ? 1080 : 1920,
     height: args.vertical ? 1920 : 1080,
   };
 
-  console.log(`Bundling Remotion project (${data.scenes.length} scenes)...`);
+  console.log(`Bundling Remotion project (${scenes.length} scenes)...`);
   const serveUrl = await bundle({entryPoint: path.join(ROOT, 'src', 'index.ts')});
 
   const composition = await selectComposition({

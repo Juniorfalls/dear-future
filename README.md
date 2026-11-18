@@ -20,31 +20,50 @@ gh run watch                                           # follow a render
 
 ## Writing an episode
 
-Everything an episode needs lives in `remotion/data/scenes.json`:
+`generate_video.py` turns a topic into the scene list:
+
+```bash
+pip install -r requirements.txt
+python generate_video.py "The Fall of Rome"     # → remotion/data/scenes.json (5 scenes / 25s)
+python generate_video.py "Ancient Egypt" --scene-seconds 6 --count 7
+```
+
+It writes five chapters — beginning, height, turn, unravelling, what remains —
+with dramatic narration, per-scene durations and one still per scene, then checks
+that every image URL resolves. Pass `--beats lines.json` to supply your own
+captions (that is the hook for an LLM script writer later), and `--no-verify` to
+skip the HTTP check.
+
+Stills come from `picsum.photos` placeholders for now. `image_urls()` in
+`generate_video.py` is the single swap point for a real generator (DALL·E,
+Stable Diffusion, a hosted endpoint); it only has to return one URL per scene.
+
+The generated file looks like this:
 
 ```json
 {
-  "_notes": {
-    "image_source": "PLACEHOLDER IMAGES — swap each `image` for an AI-generated still."
-  },
   "title": "12th Street",
+  "topic": "The History of Rome",
   "scenes": [
     {
-      "image": "https://picsum.photos/seed/ziggurat-dawn-1/1920/1080",
-      "kicker": "Chapter One — The First Cities",
-      "caption": "Six thousand years ago, the first cities rose out of the mud of the Tigris and the Euphrates."
+      "image_url": "https://picsum.photos/seed/the-history-of-rome-1-.../1920/1080",
+      "text": "The History of Rome. It began like any other story — with ambition, and with time.",
+      "durationInSeconds": 5,
+      "kicker": "Chapter One — The Beginning"
     }
   ]
 }
 ```
 
-- `image` — any URL or a file under `remotion/public/`, cropped to cover the
-  frame. **These are placeholders today.** The `_notes.image_source` field marks
-  the exact spot where images from the (future) AI image API drop in — one URL
-  per scene, nothing else in the pipeline changes.
-- `kicker` — optional gold uppercase chapter line, e.g. "Chapter Two — Writing
-  the World".
-- `caption` — the narration line burned into the lower third.
+- `image_url` — any URL or a file under `remotion/public/`, cropped to cover the
+  frame. Placeholders today; the AI image API drops in here.
+- `text` — the narration line burned into the lower third.
+- `durationInSeconds` — how long that shot holds (the composition falls back to
+  a global default when it is missing).
+- `kicker` — optional gold uppercase chapter line.
+
+`render.js` also accepts the older `image` / `caption` keys, so a hand-written
+scene file still renders.
 
 Change the file, push to `main`, and CI renders the new episode. Scene length
 and crossfade length are `--scene-seconds` / `--overlap-seconds` flags (defaults
@@ -92,15 +111,25 @@ The first render downloads a headless Chrome build (~100 MB); CI caches it.
 
 | Path | Purpose |
 | --- | --- |
+| `generate_video.py` | topic → `remotion/data/scenes.json` (chapters, captions, image URLs) |
+| `requirements.txt` | Python dependency for the generator (`requests`) |
 | `remotion/src/CinematicDoc.tsx` | the film: scenes, Ken Burns, captions, wordmark |
 | `remotion/src/Root.tsx` | `CinematicDoc` composition + dynamic duration/dimensions |
 | `remotion/data/scenes.json` | episode content (images + captions) |
 | `remotion/render.js` | bundles the composition and renders it with `@remotion/renderer` |
 | `remotion/remotion.config.ts` | codec/CRF/image-format defaults |
-| `.github/workflows/render.yml` | installs dependencies, renders, uploads the artifact |
-| `remotion-overlay/` | retired Manim-era overlay project; unused, kept for history |
+| `.github/workflows/render.yml` | generates the scenes for a topic, renders, uploads the artifact |
 
 ## Requirements
 
-Node 18+ and network access (images and Google Fonts are fetched at render time).
-There are no Python dependencies — `requirements.txt` is intentionally a stub.
+Python 3.10+ (`requests`) for the generator, Node 18+ for Remotion, and network
+access (images and Google Fonts are fetched at render time).
+
+## The workflow
+
+`Render Cinematic Video` takes an optional **topic** input (manual runs; defaults
+to *The History of Rome*) and on every push to `main`:
+
+1. installs the Python requirements and runs `generate_video.py "<topic>"`,
+2. installs Remotion and runs `node render.js`,
+3. uploads `cinematic-video` with the MP4 **and** the generated `scenes.json`.

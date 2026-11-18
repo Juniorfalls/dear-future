@@ -9,6 +9,8 @@ export type Scene = {
   caption: string;
   /** Optional small line above the caption, e.g. "Chapter One". */
   kicker?: string;
+  /** Optional per-scene hold in seconds; falls back to the composition default. */
+  durationInSeconds?: number;
 };
 
 export type CinematicProps = {
