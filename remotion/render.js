@@ -34,6 +34,12 @@ const main = async () => {
     throw new Error('data/scenes.json has no "scenes" array');
   }
 
+  // `data._notes.image_source` documents that the stills are placeholders; the
+  // eventual AI image API feeds the same `image` fields, nothing else changes.
+  if (data._notes?.image_source) {
+    console.log(`Image source: ${data._notes.image_source.split('.')[0]}.`);
+  }
+
   const inputProps = {
     title: data.title || '12th Street',
     scenes: data.scenes,

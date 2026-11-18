@@ -1,10 +1,10 @@
 # 12th Street — cinematic documentary engine
 
-Documentary-style shorts for the **12th Street** channel, rendered entirely in
-[Remotion](https://remotion.dev). The whole film — photos, Ken Burns camera
-moves, crossfades, lower-third captions and the wordmark — is React code, driven
-by one JSON file per episode. GitHub Actions renders it and publishes the MP4 as
-an artifact.
+Cinematic **history and ancient-civilization** documentaries for the **12th
+Street** channel, rendered entirely in [Remotion](https://remotion.dev). The
+whole film — stills, Ken Burns camera moves, crossfades, letterbox, lower-third
+captions and the wordmark — is React code driven by one JSON file per episode.
+GitHub Actions renders it and publishes the MP4 as an artifact.
 
 ## Where the video is
 
@@ -24,20 +24,26 @@ Everything an episode needs lives in `remotion/data/scenes.json`:
 
 ```json
 {
+  "_notes": {
+    "image_source": "PLACEHOLDER IMAGES — swap each `image` for an AI-generated still."
+  },
   "title": "12th Street",
   "scenes": [
     {
-      "image": "https://picsum.photos/1920/1080?random=1",
-      "kicker": "Chapter One",
-      "caption": "The year is 1942, and 12th Street is the loudest street in the city."
+      "image": "https://picsum.photos/seed/ziggurat-dawn-1/1920/1080",
+      "kicker": "Chapter One — The First Cities",
+      "caption": "Six thousand years ago, the first cities rose out of the mud of the Tigris and the Euphrates."
     }
   ]
 }
 ```
 
-- `image` — any URL or a file under `remotion/public/`. It is cropped to cover
-  the frame, so portrait and landscape photos both work.
-- `kicker` — optional small serif line above the caption ("Chapter One").
+- `image` — any URL or a file under `remotion/public/`, cropped to cover the
+  frame. **These are placeholders today.** The `_notes.image_source` field marks
+  the exact spot where images from the (future) AI image API drop in — one URL
+  per scene, nothing else in the pipeline changes.
+- `kicker` — optional gold uppercase chapter line, e.g. "Chapter Two — Writing
+  the World".
 - `caption` — the narration line burned into the lower third.
 
 Change the file, push to `main`, and CI renders the new episode. Scene length
@@ -48,14 +54,20 @@ and crossfade length are `--scene-seconds` / `--overlap-seconds` flags (defaults
 
 `remotion/src/CinematicDoc.tsx`:
 
-- **Ken Burns** — every still is pushed from 1.05× to 1.24× with a slow eased
-  scale plus a small pan, so a static photo reads as a camera move.
+- **Letterbox** — solid black bars (9.5% of frame height, top and bottom) drawn
+  over everything, for the 2.35:1 film feel.
+- **Ken Burns** — every still pushes from 1.04× to 1.17× on a linear ramp with a
+  slow lateral drift that alternates per shot, so nothing ever sits still.
 - **Crossfades** — the incoming scene fades in on top of the outgoing one, which
   stays fully opaque underneath, so transitions never dip to black.
-- **Captions** — Merriweather 58px, off-white, rising 28px on a spring, over a
-  bottom gradient wash; they fade in after the crossfade and out before the cut.
-- **Typography** — Cinzel for the `12TH STREET` wordmark (top-left, with a hair
-  rule under it) and the kicker; Merriweather for narration.
+- **Captions** — Merriweather 56px off-white, center-aligned, fading in over
+  ~1.1s after each shot settles, holding, then fading out before the cut; they
+  sit above the bottom bar on a gradient that reaches solid black so the text is
+  always readable.
+- **Typography** — Cinzel (a Trajan-style capital serif, the documentary
+  standard) for the `12TH STREET` wordmark and gold chapter kickers;
+  Merriweather for narration. Both load from Google Fonts through
+  `@remotion/google-fonts`, so renders wait for the real font files.
 - **Finish** — a radial vignette over everything and a 0.8s fade to black at the
   end.
 

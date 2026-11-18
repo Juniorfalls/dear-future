@@ -1,20 +1,24 @@
 {
+  "_notes": {
+    "image_source": "PLACEHOLDER IMAGES. Every `image` below is a picsum.photos stand-in that merely holds the composition's layout. Swap each one for an AI-generated still (ruins, artifacts, dramatic landscapes) served from the image API, e.g. `https://cdn.12thstreet.tv/episodes/0001/scene-1.jpg`; nothing else in the pipeline changes.",
+    "orientation": "Long-form stills should be 1920x1080. For vertical shorts use 1080x1920 stills and `node render.js --vertical`."
+  },
   "title": "12th Street",
   "scenes": [
     {
-      "image": "https://picsum.photos/seed/12th-street-1/1920/1080",
-      "caption": "The year is 1942, and 12th Street is the loudest street in the city.",
-      "kicker": "Chapter One"
+      "image": "https://picsum.photos/seed/ziggurat-dawn-1/1920/1080",
+      "kicker": "Chapter One — The First Cities",
+      "caption": "Six thousand years ago, the first cities rose out of the mud of the Tigris and the Euphrates."
     },
     {
-      "image": "https://picsum.photos/seed/12th-street-2/1920/1080",
-      "caption": "By six in the evening the shops are shuttered and the sidewalks are empty.",
-      "kicker": "The Quiet Hours"
+      "image": "https://picsum.photos/seed/clay-tablet-2/1920/1080",
+      "kicker": "Chapter Two — Writing the World",
+      "caption": "Priests read the night sky from the ziggurats, and pressed the harvest into clay."
     },
     {
-      "image": "https://picsum.photos/seed/12th-street-3/1920/1080",
-      "caption": "But everything was about to change, and no one on the block knew it yet.",
-      "kicker": "Everything Changes"
+      "image": "https://picsum.photos/seed/ruins-columns-3/1920/1080",
+      "kicker": "Chapter Three — What Remains",
+      "caption": "Empires rose, burned, and were buried. Their stones are still speaking."
     }
   ]
 }
