@@ -1,40 +1,40 @@
 {
   "_notes": {
     "generated_by": "generate_video.py",
-    "topic": "The History of Rome",
-    "image_source": "local-assets:the-history-of-rome",
-    "swap_images": "Put stills in remotion/public/episodes/<topic-slug>/ as scene-1.jpg, scene-2.jpg, ... and they are picked up automatically, or run with --images openai to have the image API generate them."
+    "topic": "The Fall of Rome",
+    "image_source": "pollinations-ai",
+    "swap_images": "Put stills in remotion/public/episodes/<topic-slug>/ as scene-1.jpg, scene-2.jpg, ... and they are picked up automatically. Otherwise Pollinations.ai generates a still per scene from its prompt, or run with --images openai to use OpenAI's image API."
   },
   "title": "12th Street",
-  "topic": "The History of Rome",
+  "topic": "The Fall of Rome",
   "scenes": [
     {
-      "image_url": "episodes/the-history-of-rome/scene-1.jpg",
-      "text": "The History of Rome. It began like any other story — with ambition, and with time.",
+      "image_url": "episodes/the-fall-of-rome/scene-1.jpg",
+      "text": "The Fall of Rome. It began like any other story — with ambition, and with time.",
       "durationInSeconds": 5.0,
       "kicker": "Chapter One — The Beginning"
     },
     {
-      "image_url": "episodes/the-history-of-rome/scene-2.jpg",
+      "image_url": "episodes/the-fall-of-rome/scene-2.jpg",
       "text": "At its height, its reach was measured not in miles, but in months of travel.",
       "durationInSeconds": 5.0,
       "kicker": "Chapter Two — The Height"
     },
     {
-      "image_url": "episodes/the-history-of-rome/scene-3.jpg",
+      "image_url": "episodes/the-fall-of-rome/scene-3.jpg",
       "text": "Then the borders thinned, and the cost of holding them rose year after year.",
       "durationInSeconds": 5.0,
       "kicker": "Chapter Three — The Turn"
     },
     {
-      "image_url": "episodes/the-history-of-rome/scene-4.jpg",
+      "image_url": "episodes/the-fall-of-rome/scene-4.jpg",
       "text": "The end did not arrive in a single day. It arrived in a hundred small surrenders.",
       "durationInSeconds": 5.0,
       "kicker": "Chapter Four — The Unravelling"
     },
     {
-      "image_url": "episodes/the-history-of-rome/scene-5.jpg",
-      "text": "What survives of The History of Rome is stone, dust, and a warning we are still learning to read.",
+      "image_url": "episodes/the-fall-of-rome/scene-5.jpg",
+      "text": "What survives of The Fall of Rome is stone, dust, and a warning we are still learning to read.",
       "durationInSeconds": 5.0,
       "kicker": "Chapter Five — What Remains"
     }
