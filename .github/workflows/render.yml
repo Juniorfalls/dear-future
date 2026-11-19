@@ -8,9 +8,9 @@ on:
         required: false
         default: "The History of Rome"
       images:
-        description: "Image source: auto (committed stills, else placeholders) or openai"
+        description: "Image source: auto (committed stills, else Pollinations.ai) or openai"
         type: choice
-        options: [auto, openai]
+        options: [auto, pollinations, openai]
         default: auto
   push:
     branches: [main]

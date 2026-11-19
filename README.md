@@ -39,11 +39,27 @@ Images are resolved in this order (`--images auto`, the default):
 1. **Committed stills** — `remotion/public/episodes/<topic-slug>/scene-1.jpg`,
    `scene-2.jpg`, … are picked up automatically and served by Remotion through
    `staticFile()`. Episode 1 ships with five generated stills there.
-2. **Placeholders** — otherwise free `picsum.photos` photos, so a brand-new
-   topic still renders.
+2. **AI stills** — otherwise **Pollinations.ai** generates one free,
+   keyless, cinematic historical still per scene from that chapter's prompt.
 
-`--images assets` requires committed stills, `--images picsum` forces
-placeholders, and `--images openai` generates the art (next section).
+`--images assets` requires committed stills, `--images pollinations` forces AI
+stills, and `--images openai` uses OpenAI's image API instead (next section).
+Pollinations needs no key or account: the script builds a prompt such as
+*"ruined columns and broken walls at dusk… Subject: The Fall of Rome. cinematic
+historical documentary still, 35mm film grain…"* and requests
+`https://image.pollinations.ai/prompt/<encoded prompt>?width=1080&height=1920&nologo=true`
+for that scene. The still is then downloaded to
+`remotion/public/episodes/<topic-slug>/scene-N.jpg` and `scenes.json` points at
+the local file, so Remotion renders offline and the artwork can be committed.
+The anonymous tier allows one image every ~45 seconds per IP, so the script
+waits out any `402`/`503` (about a minute per extra scene) and re-runs keep
+already-downloaded stills. Free-tier output currently comes back at ~576×1024
+with a small bottom-right watermark, which the frame's dark lower gradient
+covers; the requested 1080×1920 is a hint, not a guarantee, and a pollen key
+lifts both the cap and the resolution. Stills are requested at 1080×1920
+(vertical) by default; pass `--width 1920 --height 1080` for the landscape
+composition, since the frame crops to fill either way. Identical prompts are
+cached upstream, so re-running the same topic keeps the same artwork.
 
 The generated file looks like this:
 
@@ -53,7 +69,7 @@ The generated file looks like this:
   "topic": "The History of Rome",
   "scenes": [
     {
-      "image_url": "https://picsum.photos/seed/the-history-of-rome-1-.../1920/1080",
+      "image_url": "episodes/the-history-of-rome/scene-1.jpg",
       "text": "The History of Rome. It began like any other story — with ambition, and with time.",
       "durationInSeconds": 5,
       "kicker": "Chapter One — The Beginning"
@@ -63,7 +79,8 @@ The generated file looks like this:
 ```
 
 - `image_url` — any URL or a file under `remotion/public/`, cropped to cover the
-  frame. Placeholders today; the AI image API drops in here.
+  frame. Pollinations.ai stills are downloaded there; the AI image API drops in
+  here too.
 - `text` — the narration line burned into the lower third.
 - `durationInSeconds` — how long that shot holds (the composition falls back to
   a global default when it is missing).
@@ -133,8 +150,8 @@ python generate_video.py "The Fall of Rome" --images openai
 
 What the script does per scene: `POST https://api.openai.com/v1/images/generations`
 with the chapter prompt from `IMAGE_PROMPTS` plus the topic, `model=dall-e-3`
-(change with `--model gpt-image-1`), `size=1792x1024` — or `1024x1792` when
-`--height > --width`. Both response shapes are handled (a temporary URL for
+(change with `--model gpt-image-1`), `size=1024x1792` — or `1792x1024` when
+`--width > --height`. Both response shapes are handled (a temporary URL for
 `dall-e-3`, base64 for `gpt-image-1`). The files land in
 `remotion/public/episodes/<topic-slug>/scene-N.jpg`, so every later
 `--images auto` run reuses them.

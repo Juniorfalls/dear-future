@@ -8,9 +8,9 @@
 Where the pictures come from, in priority order:
 
   auto (default)  local stills in remotion/public/episodes/<topic-slug>/ if any,
-                  otherwise free picsum.photos placeholders
+                  otherwise free AI-generated stills from Pollinations.ai
   assets          local stills only (fails if the folder is empty)
-  picsum          placeholders only, useful before art exists
+  pollinations    free AI-generated stills only, no API key or account needed
   openai          generate stills with OpenAI's image API into the episode
                   folder, then use them (see README for the key setup)
 """
@@ -22,6 +22,7 @@ import json
 import os
 import re
 import sys
+import time
 from pathlib import Path
 from urllib.parse import quote
 
@@ -29,22 +30,35 @@ ROOT = Path(__file__).resolve().parent
 PUBLIC = ROOT / "remotion" / "public"
 DEFAULT_OUT = ROOT / "remotion" / "data" / "scenes.json"
 
-PLACEHOLDER_URL = "https://picsum.photos/seed/{seed}/{width}/{height}"
+# Free, keyless text-to-image endpoint. The prompt is URL-encoded into the path.
+POLLINATIONS_URL = (
+    "https://image.pollinations.ai/prompt/{prompt}"
+    "?width={width}&height={height}&nologo=true"
+)
 
-# Visual prompts per chapter, used both as the AI image prompt and as the seed
-# for placeholder photos, so the pairing between chapter and artwork is stable.
+# Chapter beats, turned into cinematic historical prompts below. Keeping the
+# same prompt for a given chapter keeps the artwork stable across re-runs
+# (Pollinations caches identical prompts).
 IMAGE_PROMPTS = [
-    "epic cinematic still of an ancient city at dawn, monumental stone "
-    "architecture, golden haze, birds in a wide sky, documentary photography, no text",
-    "epic cinematic still of the height of a civilisation, temples and processions, "
-    "warm light, immense scale, documentary photography, no text",
-    "cinematic still of a weathered clay tablet covered in cuneiform script on dark "
-    "stone, raking tungsten light, dust in the air, shallow depth of field, no text",
-    "cinematic still of ruined columns and broken walls at dusk, smoke and embers, "
-    "long shadows, storm light, desaturated teal and gold, no text",
-    "cinematic still of ancient artefacts in dim museum light, broken marble bust, "
-    "dust motes, single warm spotlight, deep black background, no text",
+    "the birth of an ancient civilisation at dawn, monumental stone architecture "
+    "rising above a river valley, processions of robed figures, golden haze, "
+    "birds wheeling in a wide sky",
+    "the height of a great civilisation, crowded marble forum and temples, banners "
+    "and colonnades, merchants and soldiers, warm late-afternoon light, immense scale",
+    "a weathered clay tablet covered in cuneiform script on dark stone, a scholar's "
+    "hand in the frame, raking tungsten light, dust in the air, shallow depth of field",
+    "ruined columns and broken walls at dusk, smoke and embers drifting, long "
+    "shadows, storm light, desaturated teal and gold",
+    "ancient artefacts in dim museum light, a broken marble bust, dust motes, "
+    "single warm spotlight, deep black background",
 ]
+
+# Shared look for every generated still, so the episode reads as one film.
+CINEMATIC_STYLE = (
+    "cinematic historical documentary still, 35mm film grain, dramatic volumetric "
+    "light, rich period detail, muted gold and teal colour grade, shallow depth of "
+    "field, highly detailed, no text, no watermark"
+)
 
 CHAPTERS = [
     "Chapter One — The Beginning",
@@ -103,18 +117,66 @@ def local_images(topic: str, count: int) -> list[str]:
 
 
 def scene_prompt(topic: str, index: int) -> str:
-    return f"{IMAGE_PROMPTS[index % len(IMAGE_PROMPTS)]}, subject: {topic}"
+    """A cinematic historical prompt for one chapter of the topic."""
+    beat = IMAGE_PROMPTS[index % len(IMAGE_PROMPTS)]
+    return f"{beat}. Subject: {topic}. {CINEMATIC_STYLE}"
 
 
-def picsum_images(topic: str, count: int, width: int, height: int) -> list[str]:
-    return [
-        PLACEHOLDER_URL.format(
-            seed=quote(f"{slug(topic)}-{index + 1}-{slug(IMAGE_PROMPTS[index % len(IMAGE_PROMPTS)])[:32]}"),
+def pollinations_images(topic: str, count: int, width: int, height: int) -> list[str]:
+    """Generate one still per scene with Pollinations.ai and save it locally.
+
+    Free and keyless, but the anonymous tier allows one image every ~45s per IP
+    and answers 402 with a retry hint when that is exceeded. Downloading here
+    (instead of leaving remote URLs in scenes.json) keeps Remotion's render
+    from tripping that limit, and identical prompts are cached upstream so a
+    re-run reproduces the same artwork.
+    """
+    try:
+        import requests
+    except ImportError:
+        raise SystemExit(
+            "Pollinations images need the requests package (pip install -r requirements.txt)"
+        )
+
+    folder = episode_dir(topic)
+    folder.mkdir(parents=True, exist_ok=True)
+
+    for index in range(count):
+        target = folder / f"scene-{index + 1}.jpg"
+        if target.is_file() and target.stat().st_size > 0:
+            print(f"  keeping existing {target.relative_to(ROOT)}")
+            continue
+
+        url = POLLINATIONS_URL.format(
+            prompt=quote(scene_prompt(topic, index), safe=""),
             width=width,
             height=height,
         )
-        for index in range(count)
-    ]
+        for attempt in range(1, 9):
+            print(f"  generating scene {index + 1}/{count} with Pollinations.ai...")
+            response = requests.get(url, timeout=240, stream=True)
+            content_type = response.headers.get("Content-Type", "")
+            if response.status_code == 200 and "image" in content_type:
+                blob = response.content
+                response.close()
+                target.write_bytes(blob)
+                print(f"    wrote {target.relative_to(ROOT)} ({len(blob) // 1024} kB)")
+                break
+
+            detail = response.text[:300].replace("\n", " ")
+            response.close()
+            wait = 10.0
+            match = re.search(r"Retry after (\d+)s", detail)
+            if response.status_code == 402 and match:
+                wait = float(match.group(1)) + 2
+            if attempt == 8:
+                raise SystemExit(
+                    f"Pollinations.ai error {response.status_code} for scene {index + 1}: {detail}"
+                )
+            print(f"    {response.status_code}: waiting {wait:.0f}s for the free tier")
+            time.sleep(wait)
+
+    return local_images(topic, count)
 
 
 # --------------------------------------------------------------------------- #
@@ -175,6 +237,12 @@ def resolve_images(topic: str, count: int, width: int, height: int,
     if provider == "openai":
         return openai_images(topic, count, width, height, model), f"openai:{model}"
 
+    if provider == "pollinations":
+        urls = pollinations_images(topic, count, width, height)
+        if not urls:
+            raise SystemExit("Pollinations.ai returned no images")
+        return urls, f"pollinations-ai:{slug(topic)}"
+
     if provider in ("auto", "assets"):
         assets = local_images(topic, count)
         if assets:
@@ -185,7 +253,7 @@ def resolve_images(topic: str, count: int, width: int, height: int,
                 f"(expected scene-1.jpg, scene-2.jpg, ...)"
             )
 
-    return picsum_images(topic, count, width, height), "picsum-placeholder"
+    return pollinations_images(topic, count, width, height), "pollinations-ai"
 
 
 # --------------------------------------------------------------------------- #
@@ -221,8 +289,9 @@ def build(topic: str, count: int, scene_seconds: float, width: int, height: int,
             "image_source": source,
             "swap_images": (
                 "Put stills in remotion/public/episodes/<topic-slug>/ as scene-1.jpg, "
-                "scene-2.jpg, ... and they are picked up automatically, or run with "
-                "--images openai to have the image API generate them."
+                "scene-2.jpg, ... and they are picked up automatically. Otherwise "
+                "Pollinations.ai generates a still per scene from its prompt, or run "
+                "with --images openai to use OpenAI's image API."
             ),
         },
         "title": "12th Street",
@@ -262,15 +331,22 @@ def verify(urls: list[str]) -> bool:
         return ok
 
     for url in remote:
-        try:
-            response = requests.get(url, timeout=20, stream=True, allow_redirects=True)
-            response.close()
-            fine = response.status_code == 200 and "image" in response.headers.get("Content-Type", "")
-        except Exception as error:  # noqa: BLE001 - report, do not crash the build
-            print(f"  ! {url} -> {error}")
-            ok = False
-            continue
-        print(f"  {'ok' if fine else '!!'} {response.status_code} {url}")
+        # Pollinations renders on demand, so the first hit for a prompt can
+        # take a while; allow for that and retry once on a transient error.
+        fine = False
+        for attempt in range(2):
+            try:
+                response = requests.get(url, timeout=120, stream=True, allow_redirects=True)
+                content_type = response.headers.get("Content-Type", "")
+                response.close()
+                fine = response.status_code == 200 and "image" in content_type
+                if fine:
+                    break
+                print(f"  ! {url} -> {response.status_code} {content_type} (attempt {attempt + 1})")
+            except Exception as error:  # noqa: BLE001 - report, do not crash the build
+                print(f"  ! {url} -> {error} (attempt {attempt + 1})")
+            time.sleep(3 * (attempt + 1))
+        print(f"  {'ok' if fine else '!!'} {url}")
         ok = ok and fine
     return ok
 
@@ -281,13 +357,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--count", type=int, default=5, help="number of scenes (default 5)")
     parser.add_argument("--scene-seconds", type=float, default=5.0)
-    parser.add_argument("--width", type=int, default=1920, help="still width in px")
-    parser.add_argument("--height", type=int, default=1080, help="still height in px")
+    parser.add_argument("--width", type=int, default=1080, help="still width in px")
+    parser.add_argument("--height", type=int, default=1920, help="still height in px")
     parser.add_argument("--beats", type=Path, default=None,
                         help="JSON list (or {'beats': [...]}) of caption templates")
     parser.add_argument("--images", default="auto",
-                        choices=("auto", "assets", "picsum", "openai"),
-                        help="image source (default: auto = local stills, else placeholders)")
+                        choices=("auto", "assets", "pollinations", "openai"),
+                        help="image source (default: auto = local stills, else Pollinations.ai)")
     parser.add_argument("--model", default="dall-e-3", help="OpenAI image model (with --images openai)")
     parser.add_argument("--no-verify", action="store_true", help="skip checking that images resolve")
     parser.add_argument("--strict", action="store_true", help="fail if any image does not resolve")
