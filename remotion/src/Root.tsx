@@ -1,12 +1,33 @@
 import React from 'react';
 import {CalculateMetadataFunction, Composition} from 'remotion';
 import {CinematicDoc} from './CinematicDoc';
-import type {CinematicProps} from './types';
+import type {CinematicProps, Scene} from './types';
 import scenesData from '../data/scenes.json';
+
+/**
+ * scenes.json is written by generate_video.py in the {image_url, text} schema;
+ * older hand-written files use {image, caption}. Normalise both here so the
+ * Studio preview matches what render.js feeds the composition.
+ */
+const rawScenes = scenesData.scenes as Array<{
+  image_url?: string;
+  image?: string;
+  text?: string;
+  caption?: string;
+  kicker?: string;
+  durationInSeconds?: number;
+}>;
+
+const scenes: Scene[] = rawScenes.map((scene) => ({
+  image: (scene.image_url ?? scene.image) as string,
+  caption: (scene.text ?? scene.caption) as string,
+  kicker: scene.kicker,
+  durationInSeconds: scene.durationInSeconds,
+}));
 
 export const defaultProps: CinematicProps = {
   title: scenesData.title,
-  scenes: scenesData.scenes,
+  scenes,
   sceneDurationInSeconds: 6,
   overlapInSeconds: 1,
   fps: 30,

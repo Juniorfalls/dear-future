@@ -99,8 +99,16 @@ and crossfade length are `--scene-seconds` / `--overlap-seconds` flags (defaults
 
 - **Letterbox** — solid black bars (9.5% of frame height, top and bottom) drawn
   over everything, for the 2.35:1 film feel.
-- **Ken Burns** — every still pushes from 1.04× to 1.17× on a linear ramp with a
+- **Ken Burns** — every still pushes from 1.06× to 1.26× on a linear ramp with a
   slow lateral drift that alternates per shot, so nothing ever sits still.
+- **2.5D camera** — the still sits on a perspective plane and orbits a couple of
+  degrees over the shot, while a softened, dimmed copy of the same still drifts
+  behind it at 30% of the travel. That differential motion reads as depth and
+  fills the edges the tilt exposes. The bottom 20px of the frame are cropped to
+  drop the watermark some free image hosts bake into their output.
+- **Atmosphere** — a 12% dust-and-fog layer (24 deterministic motes plus three
+  slow fog banks) and a soft diagonal shaft of light that crosses the frame
+  every 5s. Both are frame-driven, so previews and MP4s match exactly.
 - **Crossfades** — the incoming scene fades in on top of the outgoing one, which
   stays fully opaque underneath, so transitions never dip to black.
 - **Captions** — Merriweather 56px off-white, center-aligned, fading in over
@@ -171,7 +179,7 @@ Any other provider (Stable Diffusion, a hosted endpoint): replace
 | --- | --- |
 | `generate_video.py` | topic → `remotion/data/scenes.json` (chapters, captions, image URLs) |
 | `requirements.txt` | Python dependency for the generator (`requests`) |
-| `remotion/src/CinematicDoc.tsx` | the film: scenes, Ken Burns, captions, wordmark |
+| `remotion/src/CinematicDoc.tsx` | the film: scenes, 2.5D camera, dust/light overlays, captions, wordmark |
 | `remotion/public/episodes/<slug>/` | committed stills for an episode (scene-1.jpg, …) |
 | `remotion/src/Root.tsx` | `CinematicDoc` composition + dynamic duration/dimensions |
 | `remotion/data/scenes.json` | episode content (images + captions) |

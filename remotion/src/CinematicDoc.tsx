@@ -31,6 +31,51 @@ const SHADE = 'rgba(3, 4, 6, ';
 /** Cinematic 2.35:1-ish letterbox: ~9.5% of the frame height top and bottom. */
 const LETTERBOX_RATIO = 0.095;
 
+/** Some free image hosts bake a watermark into the bottom edge of their
+ *  output; drop that strip of the frame entirely. */
+const WATERMARK_CROP_PX = 20;
+
+/** Strength of the dust/fog layer. Subtle by design: it should read as air,
+ *  not as an effect. */
+const ATMOSPHERE_OPACITY = 0.12;
+
+/** How often the diagonal light ray crosses the frame. */
+const SWEEP_SECONDS = 5;
+
+/** Deterministic pseudo-random in [0, 1), so every render of a frame matches. */
+const rand = (index: number, salt: number) => {
+  const value = Math.sin(index * 127.1 + salt * 311.7) * 43758.5453;
+  return value - Math.floor(value);
+};
+
+type Mote = {
+  x: number;
+  y: number;
+  size: number;
+  speed: number;
+  sway: number;
+  phase: number;
+  alpha: number;
+};
+
+/** Dust specks drifting upward through the light. Generated once so their
+ *  paths are stable across scenes and re-renders. */
+const MOTES: Mote[] = Array.from({length: 24}, (_, i) => ({
+  x: rand(i, 1) * 100,
+  y: rand(i, 2) * 100,
+  size: 1.2 + rand(i, 3) * 3.4,
+  speed: 0.006 + rand(i, 4) * 0.012,
+  sway: 0.5 + rand(i, 5) * 2.4,
+  phase: rand(i, 6) * Math.PI * 2,
+  alpha: 0.25 + rand(i, 7) * 0.55,
+}));
+
+const FOG_BANKS = [
+  {tint: '214, 189, 140', x: 18, y: 30, rx: 46, ry: 30, speed: 0.0022, phase: 0},
+  {tint: '196, 214, 224', x: 78, y: 60, rx: 38, ry: 26, speed: 0.0016, phase: 2.1},
+  {tint: '150, 170, 190', x: 46, y: 82, rx: 52, ry: 24, speed: 0.0012, phase: 4.2},
+];
+
 type SceneProps = {
   scene: Scene;
   index: number;
@@ -40,25 +85,33 @@ type SceneProps = {
 };
 
 /**
- * One shot: full-bleed still with a very slow Ken Burns push, plus the caption
+ * One shot: full-bleed still with a 2.5D camera move — a slightly quicker
+ * Ken Burns push, a slow perspective tilt, and a blurred back plate that lags
+ * behind the foreground so the frame gains a little depth. Plus the caption
  * lower third. Incoming scenes fade in on top of the outgoing one (which stays
  * opaque underneath), so a crossfade never dips to black in the middle.
  */
 const CinematicScene: React.FC<SceneProps> = ({scene, index, sceneFrames, overlap, bar}) => {
   const frame = useCurrentFrame();
 
-  // Ken Burns: a slow, linear push (no easing curve, so it reads as a steady
-  // camera move) with a gentle lateral drift that alternates per shot.
-  const scale = interpolate(frame, [0, sceneFrames], [1.04, 1.17], {
+  // Ken Burns: a steady push (no easing curve, so it reads as a camera move)
+  // with a lateral drift that alternates per shot. Quicker than the original
+  // pass, but still slow enough to feel like a dolly rather than a zoom.
+  const scale = interpolate(frame, [0, sceneFrames], [1.06, 1.26], {
     extrapolateRight: 'clamp',
   });
   const drift = index % 2 === 0 ? 1 : -1;
-  const panX = interpolate(frame, [0, sceneFrames], [-1.3 * drift, 1.3 * drift], {
+  const panX = interpolate(frame, [0, sceneFrames], [-2.2 * drift, 2.2 * drift], {
     extrapolateRight: 'clamp',
   });
-  const panY = interpolate(frame, [0, sceneFrames], [0.7, -0.7], {
+  const panY = interpolate(frame, [0, sceneFrames], [1.1, -1.1], {
     extrapolateRight: 'clamp',
   });
+
+  // 2.5D: a gentle perspective orbit, flat at the cut so crossfades stay clean.
+  const tiltProgress = Math.min(1, Math.max(0, frame / sceneFrames));
+  const tiltY = Math.sin(tiltProgress * Math.PI) * 2.4 * drift;
+  const tiltX = Math.sin(tiltProgress * Math.PI + 0.6) * 1.1;
 
   // Crossfade in; the previous scene stays fully opaque behind this one.
   const reveal =
@@ -94,21 +147,58 @@ const CinematicScene: React.FC<SceneProps> = ({scene, index, sceneFrames, overla
   );
   const kickerOpacity = captionOpacity * 0.85;
 
+  const imageSrc = scene.image.startsWith('http') ? scene.image : staticFile(scene.image);
+
   return (
     <AbsoluteFill style={{opacity: reveal}}>
-      <AbsoluteFill style={{overflow: 'hidden'}}>
-        <Img
-          // Local stills (committed under remotion/public) go through
-          // staticFile(); remote URLs are used as-is.
-          src={scene.image.startsWith('http') ? scene.image : staticFile(scene.image)}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            transform: `scale(${scale}) translate(${panX}%, ${panY}%)`,
-          }}
-        />
-      </AbsoluteFill>
+      {/* The watermark crop shortens the frame by a few pixels: everything
+          inside is still cover-cropped, so the bottom edge is simply gone. */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: `calc(100% - ${WATERMARK_CROP_PX}px)`,
+          overflow: 'hidden',
+        }}
+      >
+        {/* Parallax back plate: same still, pushed further in, softened and
+            dimmed, drifting with less travel than the foreground. It fills the
+            edges the tilt exposes and reads as depth behind the subject. */}
+        <AbsoluteFill>
+          <Img
+            src={imageSrc}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              transform:
+                `scale(${scale + 0.18}) ` +
+                `translate(${panX * 0.3}%, ${panY * 0.3}%)`,
+              filter: 'blur(14px) brightness(0.62) saturate(0.9)',
+            }}
+          />
+        </AbsoluteFill>
+
+        <AbsoluteFill style={{perspective: 1600}}>
+          <Img
+            // Local stills (committed under remotion/public) go through
+            // staticFile(); remote URLs are used as-is.
+            src={imageSrc}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              transform:
+                `scale(${scale}) ` +
+                `translate(${panX}%, ${panY}%) ` +
+                `rotateY(${tiltY}deg) rotateX(${tiltX}deg)`,
+              backfaceVisibility: 'hidden',
+            }}
+          />
+        </AbsoluteFill>
+      </div>
 
       {/* Readability wash: light at the top for the wordmark, heavy at the
           bottom so the caption always sits on near-solid black. */}
@@ -239,6 +329,102 @@ const Curtain: React.FC = () => {
   return <AbsoluteFill style={{backgroundColor: '#000', opacity}} />;
 };
 
+/**
+ * Dust and fog over the whole film. Everything is driven by the current frame
+ * (never by wall-clock CSS animation) so Remotion renders it deterministically
+ * and the dust is identical in the preview and the MP4.
+ */
+const DustOverlay: React.FC = () => {
+  const frame = useCurrentFrame();
+
+  return (
+    <AbsoluteFill
+      style={{
+        opacity: ATMOSPHERE_OPACITY,
+        mixBlendMode: 'screen',
+        pointerEvents: 'none',
+      }}
+    >
+      {FOG_BANKS.map((fog, index) => (
+        <div
+          key={`fog-${index}`}
+          style={{
+            position: 'absolute',
+            left: `${fog.x + Math.sin(frame * fog.speed + fog.phase) * 9}%`,
+            top: `${fog.y + Math.cos(frame * fog.speed * 0.8 + fog.phase) * 6}%`,
+            width: `${fog.rx * 2}%`,
+            height: `${fog.ry * 2}%`,
+            transform: 'translate(-50%, -50%)',
+            background:
+              `radial-gradient(ellipse at center, rgba(${fog.tint}, 0.30) 0%, ` +
+              `rgba(${fog.tint}, 0.12) 45%, rgba(${fog.tint}, 0) 72%)`,
+            filter: 'blur(24px)',
+          }}
+        />
+      ))}
+
+      {MOTES.map((mote, index) => {
+        // Wrap upward: a mote that leaves the top re-enters at the bottom, so
+        // the field never thins out or pops during a long shot.
+        const top = (((mote.y - frame * mote.speed) % 100) + 100) % 100;
+        const left = mote.x + Math.sin(frame * 0.008 + mote.phase) * mote.sway;
+        return (
+          <div
+            key={`mote-${index}`}
+            style={{
+              position: 'absolute',
+              left: `${left}%`,
+              top: `${top}%`,
+              width: mote.size,
+              height: mote.size,
+              borderRadius: '50%',
+              background:
+                'radial-gradient(circle, rgba(255, 246, 224, 0.95) 0%, ' +
+                'rgba(255, 246, 224, 0) 70%)',
+              opacity: mote.alpha,
+            }}
+          />
+        );
+      })}
+    </AbsoluteFill>
+  );
+};
+
+/**
+ * A soft diagonal shaft of light crossing the frame every SWEEP_SECONDS, as if
+ * the sun were moving behind the subject. The gradient fades in and out over
+ * each pass so the loop never shows a hard edge.
+ */
+const LightSweep: React.FC = () => {
+  const frame = useCurrentFrame();
+  const {fps} = useVideoConfig();
+  const period = Math.max(1, Math.round(fps * SWEEP_SECONDS));
+  const progress = (frame % period) / period;
+  const left = interpolate(progress, [0, 1], [-65, 165]);
+  const intensity = Math.sin(Math.PI * progress);
+
+  return (
+    <AbsoluteFill style={{pointerEvents: 'none', mixBlendMode: 'screen'}}>
+      <div
+        style={{
+          position: 'absolute',
+          top: '-25%',
+          bottom: '-25%',
+          left: `${left}%`,
+          width: '34%',
+          transform: 'rotate(15deg)',
+          background:
+            'linear-gradient(90deg, rgba(255, 236, 200, 0) 0%, ' +
+            'rgba(255, 236, 200, 0.10) 35%, rgba(255, 247, 226, 0.16) 50%, ' +
+            'rgba(255, 236, 200, 0.10) 65%, rgba(255, 236, 200, 0) 100%)',
+          filter: 'blur(26px)',
+          opacity: intensity * 0.9,
+        }}
+      />
+    </AbsoluteFill>
+  );
+};
+
 export const CinematicDoc: React.FC<CinematicProps> = ({
   title,
   scenes,
@@ -282,6 +468,8 @@ export const CinematicDoc: React.FC<CinematicProps> = ({
           />
         </Sequence>
       ))}
+      <DustOverlay />
+      <LightSweep />
       <Vignette />
       <Wordmark title={title} bar={bar} />
       <Letterbox bar={bar} />

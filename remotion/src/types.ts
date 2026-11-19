@@ -1,8 +1,7 @@
 export type Scene = {
   /**
-   * Full-bleed background still (any size, it is cropped to cover).
-   * Placeholder picsum URLs for now: this is where the AI-generated history
-   * imagery (ruins, artifacts, landscapes) will be plugged in later.
+   * Full-bleed background still (any size, it is cropped to cover). Generated
+   * by Pollinations.ai and committed under remotion/public/episodes/.
    */
   image: string;
   /** Documentary narration line, burned into the lower third. */
