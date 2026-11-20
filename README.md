@@ -69,6 +69,7 @@ The generated file looks like this:
   "topic": "The History of Rome",
   "scenes": [
     {
+      "layout": "host_full",
       "image_url": "episodes/the-history-of-rome/scene-1.jpg",
       "text": "The History of Rome. It began like any other story — with ambition, and with time.",
       "durationInSeconds": 5,
@@ -78,9 +79,17 @@ The generated file looks like this:
 }
 ```
 
+- `layout` — how the shot is framed: `host_full` (presenter only, b-roll
+  hidden), `host_pip` (b-roll full screen, presenter in a rounded bottom-left
+  inset) or `broll_only` (b-roll full screen). Missing/unknown values fall back
+  to `broll_only`. The virtual presenter is not rendered yet, so both host
+  layouts draw a labelled placeholder panel in the presenter's slot; dropping in
+  the real host video later only touches `HostPlaceholder` in
+  `remotion/src/CinematicDoc.tsx`.
+
 - `image_url` — any URL or a file under `remotion/public/`, cropped to cover the
   frame. Pollinations.ai stills are downloaded there; the AI image API drops in
-  here too.
+  here too. Optional for a `host_full` scene, which never shows b-roll.
 - `text` — the narration line burned into the lower third.
 - `durationInSeconds` — how long that shot holds (the composition falls back to
   a global default when it is missing).
@@ -97,6 +106,12 @@ and crossfade length are `--scene-seconds` / `--overlap-seconds` flags (defaults
 
 `remotion/src/CinematicDoc.tsx`:
 
+- **Layouts** — each scene names its framing. `host_full` hides the b-roll and
+  puts the presenter panel centre-stage, sized to the space left above the
+  caption band. `host_pip` keeps the b-roll full-bleed and insets the presenter
+  bottom-left with a rounded brass border, sliding the caption right so the two
+  never collide. `broll_only` is the original film look. Swapping the coloured
+  panel for the rendered host video is a one-component change.
 - **Letterbox** — solid black bars (9.5% of frame height, top and bottom) drawn
   over everything, for the 2.35:1 film feel.
 - **Ken Burns** — every still pushes from 1.06× to 1.26× on a linear ramp with a
@@ -182,7 +197,7 @@ Any other provider (Stable Diffusion, a hosted endpoint): replace
 | `remotion/src/CinematicDoc.tsx` | the film: scenes, 2.5D camera, dust/light overlays, captions, wordmark |
 | `remotion/public/episodes/<slug>/` | committed stills for an episode (scene-1.jpg, …) |
 | `remotion/src/Root.tsx` | `CinematicDoc` composition + dynamic duration/dimensions |
-| `remotion/data/scenes.json` | episode content (images + captions) |
+| `remotion/data/scenes.json` | episode content (images, layouts, captions) |
 | `remotion/render.js` | bundles the composition and renders it with `@remotion/renderer` |
 | `remotion/remotion.config.ts` | codec/CRF/image-format defaults |
 | `.github/workflows/render.yml` | generates the scenes for a topic, renders, uploads the artifact |

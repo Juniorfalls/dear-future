@@ -1,25 +1,32 @@
 import React from 'react';
 import {CalculateMetadataFunction, Composition} from 'remotion';
 import {CinematicDoc} from './CinematicDoc';
-import type {CinematicProps, Scene} from './types';
+import type {CinematicProps, Scene, SceneLayout} from './types';
+import {SCENE_LAYOUTS} from './types';
 import scenesData from '../data/scenes.json';
 
 /**
- * scenes.json is written by generate_video.py in the {image_url, text} schema;
- * older hand-written files use {image, caption}. Normalise both here so the
- * Studio preview matches what render.js feeds the composition.
+ * scenes.json is written by generate_video.py in the {image_url, text, layout}
+ * schema; older hand-written files use {image, caption} and no layout. Normalise
+ * both here so the Studio preview matches what render.js feeds the composition.
  */
 const rawScenes = scenesData.scenes as Array<{
   image_url?: string;
   image?: string;
   text?: string;
   caption?: string;
+  layout?: string;
   kicker?: string;
   durationInSeconds?: number;
 }>;
 
 const scenes: Scene[] = rawScenes.map((scene) => ({
-  image: (scene.image_url ?? scene.image) as string,
+  image: scene.image_url ?? scene.image ?? '',
+  // Unknown or missing layouts fall back to plain b-roll rather than throwing,
+  // so an older episode file still previews.
+  layout: SCENE_LAYOUTS.includes(scene.layout as SceneLayout)
+    ? (scene.layout as SceneLayout)
+    : 'broll_only',
   caption: (scene.text ?? scene.caption) as string,
   kicker: scene.kicker,
   durationInSeconds: scene.durationInSeconds,

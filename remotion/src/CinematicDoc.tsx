@@ -11,7 +11,7 @@ import {
 } from 'remotion';
 import {loadFont as loadCinzel} from '@remotion/google-fonts/Cinzel';
 import {loadFont as loadMerriweather} from '@remotion/google-fonts/Merriweather';
-import type {CinematicProps, Scene} from './types';
+import type {CinematicProps, Scene, SceneLayout} from './types';
 
 /**
  * Epic titles in Cinzel (a Trajan-style capital serif, the documentary
@@ -76,6 +76,122 @@ const FOG_BANKS = [
   {tint: '150, 170, 190', x: 46, y: 82, rx: 52, ry: 24, speed: 0.0012, phase: 4.2},
 ];
 
+/** Brass edge and label ink shared by the presenter placeholder panels. */
+const HOST_EDGE = 'rgba(214, 189, 140, 0.55)';
+const HOST_LABEL = 'rgba(214, 189, 140, 0.92)';
+
+/** Stage wall behind a full-frame presenter shot: a cool studio falloff onto
+ *  black, so the placeholder panel reads as lit rather than pasted on. */
+const HOST_STAGE =
+  'radial-gradient(ellipse at 50% 42%, rgba(58, 72, 88, 0.55) 0%, ' +
+  'rgba(9, 13, 19, 0.98) 62%, #03040a 100%)';
+
+const HOST_PANEL =
+  'linear-gradient(150deg, #2b3743 0%, #1d2a36 48%, #131d27 100%)';
+
+/**
+ * Stand-in for the virtual presenter until the host video is rendered.
+ *
+ * `full` fills the centre of the frame the way a talking-head shot will;
+ * `pip` is the small rounded corner inset used over b-roll. Both are drawn at
+ * 1080p-relative sizes so a vertical composition keeps the same proportions.
+ * Replacing this component with a <Video> of the host is the whole swap.
+ */
+const HostPlaceholder: React.FC<{variant: 'full' | 'pip'; bar: number}> = ({
+  variant,
+  bar,
+}) => {
+  const {width, height} = useVideoConfig();
+  // Design units are 1920x1080; everything below scales with the frame width.
+  const s = width / 1920;
+  const pipW = 470 * s;
+  const pipH = (pipW * 9) / 16;
+
+  const label = (fontSize: number, letterSpacing: number) => ({
+    fontFamily: cinzel.fontFamily,
+    fontWeight: 700,
+    fontSize,
+    letterSpacing,
+    textTransform: 'uppercase' as const,
+    color: HOST_LABEL,
+  });
+
+  const note = {
+    fontFamily: merriweather.fontFamily,
+    fontWeight: 300,
+    fontSize: 20 * s,
+    letterSpacing: 2 * s,
+    color: 'rgba(244, 239, 228, 0.42)',
+  };
+
+  if (variant === 'full') {
+    // The presenter shot lives in the stage band above the caption, so the
+    // lower third never has to sit on top of the host's face. The panel is
+    // sized from the space that is actually left over, keeping 16:9.
+    const captionBand = 300 * s;
+    const stageHeight = Math.max(200 * s, height - bar * 2 - captionBand);
+    const panelW = Math.min(width * 0.56, 1060 * s, (stageHeight * 16) / 9);
+    const panelH = (panelW * 9) / 16;
+    return (
+      <AbsoluteFill
+        style={{
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingTop: bar,
+          paddingBottom: bar + captionBand,
+        }}
+      >
+        <div
+          style={{
+            width: panelW,
+            height: panelH,
+            borderRadius: 18 * s,
+            background: HOST_PANEL,
+            border: `${Math.max(1, 2 * s)}px solid ${HOST_EDGE}`,
+            boxShadow:
+              `0 ${40 * s}px ${120 * s}px rgba(0, 0, 0, 0.72), ` +
+              `inset 0 0 ${140 * s}px rgba(214, 189, 140, 0.07)`,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 20 * s,
+          }}
+        >
+          <div style={label(44 * s, 18 * s)}>Host</div>
+          <div style={note}>virtual presenter · placeholder</div>
+        </div>
+      </AbsoluteFill>
+    );
+  }
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: 100 * s,
+        // Clear the lower letterbox bar, then sit just above the caption block.
+        bottom: bar + 78 * s,
+        width: pipW,
+        height: pipH,
+        borderRadius: 22 * s,
+        overflow: 'hidden',
+        background: HOST_PANEL,
+        border: `${Math.max(1.5, 3 * s)}px solid ${HOST_EDGE}`,
+        boxShadow: `0 ${26 * s}px ${70 * s}px rgba(0, 0, 0, 0.78)`,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 8 * s,
+      }}
+    >
+      <div style={label(26 * s, 12 * s)}>Host</div>
+      <div style={{...note, fontSize: 13 * s, letterSpacing: 1.4 * s}}>placeholder</div>
+    </div>
+  );
+};
+
 type SceneProps = {
   scene: Scene;
   index: number;
@@ -85,11 +201,18 @@ type SceneProps = {
 };
 
 /**
- * One shot: full-bleed still with a 2.5D camera move — a slightly quicker
- * Ken Burns push, a slow perspective tilt, and a blurred back plate that lags
- * behind the foreground so the frame gains a little depth. Plus the caption
- * lower third. Incoming scenes fade in on top of the outgoing one (which stays
- * opaque underneath), so a crossfade never dips to black in the middle.
+ * One shot, framed by its `layout`:
+ *
+ *  - `host_full`  — no b-roll, presenter panel centred on the studio stage
+ *  - `host_pip`   — full-bleed b-roll with the presenter inset bottom-left
+ *  - `broll_only` — full-bleed b-roll
+ *
+ * B-roll shots get the 2.5D camera move — a quicker Ken Burns push, a slow
+ * perspective tilt, and a blurred back plate that lags behind the foreground so
+ * the frame gains a little depth. The caption lower third is shared by all three.
+ * Incoming scenes fade in on top of the outgoing one (which stays opaque
+ * underneath), so a crossfade never dips to black in the middle — including when
+ * the layout changes, because a `host_full` shot covers the frame with its stage.
  */
 const CinematicScene: React.FC<SceneProps> = ({scene, index, sceneFrames, overlap, bar}) => {
   const frame = useCurrentFrame();
@@ -147,58 +270,68 @@ const CinematicScene: React.FC<SceneProps> = ({scene, index, sceneFrames, overla
   );
   const kickerOpacity = captionOpacity * 0.85;
 
-  const imageSrc = scene.image.startsWith('http') ? scene.image : staticFile(scene.image);
+  const imageSrc = scene.image && (scene.image.startsWith('http') ? scene.image : staticFile(scene.image));
+  const layout: SceneLayout = scene.layout;
+  const showsBroll = layout !== 'host_full';
 
   return (
     <AbsoluteFill style={{opacity: reveal}}>
-      {/* The watermark crop shortens the frame by a few pixels: everything
-          inside is still cover-cropped, so the bottom edge is simply gone. */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: `calc(100% - ${WATERMARK_CROP_PX}px)`,
-          overflow: 'hidden',
-        }}
-      >
-        {/* Parallax back plate: same still, pushed further in, softened and
-            dimmed, drifting with less travel than the foreground. It fills the
-            edges the tilt exposes and reads as depth behind the subject. */}
-        <AbsoluteFill>
-          <Img
-            src={imageSrc}
+      {showsBroll && imageSrc ? (
+        <>
+          {/* The watermark crop shortens the frame by a few pixels: everything
+              inside is still cover-cropped, so the bottom edge is simply gone. */}
+          <div
             style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              transform:
-                `scale(${scale + 0.18}) ` +
-                `translate(${panX * 0.3}%, ${panY * 0.3}%)`,
-              filter: 'blur(14px) brightness(0.62) saturate(0.9)',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: `calc(100% - ${WATERMARK_CROP_PX}px)`,
+              overflow: 'hidden',
             }}
-          />
-        </AbsoluteFill>
+          >
+            {/* Parallax back plate: same still, pushed further in, softened and
+                dimmed, drifting with less travel than the foreground. It fills
+                the edges the tilt exposes and reads as depth behind the subject. */}
+            <AbsoluteFill>
+              <Img
+                src={imageSrc}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  transform:
+                    `scale(${scale + 0.18}) ` +
+                    `translate(${panX * 0.3}%, ${panY * 0.3}%)`,
+                  filter: 'blur(14px) brightness(0.62) saturate(0.9)',
+                }}
+              />
+            </AbsoluteFill>
 
-        <AbsoluteFill style={{perspective: 1600}}>
-          <Img
-            // Local stills (committed under remotion/public) go through
-            // staticFile(); remote URLs are used as-is.
-            src={imageSrc}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              transform:
-                `scale(${scale}) ` +
-                `translate(${panX}%, ${panY}%) ` +
-                `rotateY(${tiltY}deg) rotateX(${tiltX}deg)`,
-              backfaceVisibility: 'hidden',
-            }}
-          />
-        </AbsoluteFill>
-      </div>
+            <AbsoluteFill style={{perspective: 1600}}>
+              <Img
+                // Local stills (committed under remotion/public) go through
+                // staticFile(); remote URLs are used as-is.
+                src={imageSrc}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  transform:
+                    `scale(${scale}) ` +
+                    `translate(${panX}%, ${panY}%) ` +
+                    `rotateY(${tiltY}deg) rotateX(${tiltX}deg)`,
+                  backfaceVisibility: 'hidden',
+                }}
+              />
+            </AbsoluteFill>
+          </div>
+        </>
+      ) : (
+        // No b-roll behind the presenter: an opaque stage so the crossfade
+        // out of the previous shot never shows it through this one.
+        <AbsoluteFill style={{background: HOST_STAGE}} />
+      )}
 
       {/* Readability wash: light at the top for the wordmark, heavy at the
           bottom so the caption always sits on near-solid black. */}
@@ -211,11 +344,19 @@ const CinematicScene: React.FC<SceneProps> = ({scene, index, sceneFrames, overla
         }}
       />
 
+      {/* The presenter panel sits above the wash so it keeps its own lighting:
+          centred on stage for `host_full`, inset bottom-left for `host_pip`. */}
+      {layout !== 'broll_only' ? (
+        <HostPlaceholder variant={layout === 'host_full' ? 'full' : 'pip'} bar={bar} />
+      ) : null}
+
       <AbsoluteFill
         style={{
           justifyContent: 'flex-end',
           alignItems: 'center',
-          padding: `0 130px ${bar + 62}px`,
+          // With the presenter in the bottom-left corner the caption slides to
+          // the right, so the two lower thirds never sit on top of each other.
+          padding: `0 130px ${bar + 62}px ${layout === 'host_pip' ? 640 : 130}px`,
         }}
       >
         <div

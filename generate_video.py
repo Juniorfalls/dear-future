@@ -68,6 +68,16 @@ CHAPTERS = [
     "Chapter Five — What Remains",
 ]
 
+# Presenter framing per scene. The host opens the episode full-frame, then the
+# film alternates between a picture-in-picture host and b-roll-only shots. The
+# virtual presenter is not rendered yet: host layouts draw a placeholder panel,
+# so real host footage can be dropped in later without editing the scene list.
+LAYOUT_CYCLE = ["host_pip", "broll_only"]
+
+
+def layouts_for(count: int) -> list[str]:
+    return ["host_full"] + [LAYOUT_CYCLE[i % len(LAYOUT_CYCLE)] for i in range(count - 1)]
+
 # Dramatic narration beats. Only the first and last name the topic, so the middle
 # reads naturally for any subject; pass --beats to supply LLM-written lines.
 BEATS = [
@@ -281,12 +291,18 @@ def build(topic: str, count: int, scene_seconds: float, width: int, height: int,
     urls, source = resolve_images(topic, count, width, height, provider, model)
     lines = captions(topic, count, beats_file)
     chapters = [CHAPTERS[i % len(CHAPTERS)] for i in range(count)]
+    layouts = layouts_for(count)
 
     return {
         "_notes": {
             "generated_by": "generate_video.py",
             "topic": topic,
             "image_source": source,
+            "layouts": (
+                "layout is one of host_full (presenter only), host_pip (b-roll + "
+                "presenter PiP) or broll_only. Missing layout falls back to "
+                "broll_only. host_full scenes may omit image_url."
+            ),
             "swap_images": (
                 "Put stills in remotion/public/episodes/<topic-slug>/ as scene-1.jpg, "
                 "scene-2.jpg, ... and they are picked up automatically. Otherwise "
@@ -298,12 +314,13 @@ def build(topic: str, count: int, scene_seconds: float, width: int, height: int,
         "topic": topic,
         "scenes": [
             {
+                "layout": layout,
                 "image_url": url,
                 "text": line,
                 "durationInSeconds": scene_seconds,
                 "kicker": chapter,
             }
-            for url, line, chapter in zip(urls, lines, chapters)
+            for url, line, chapter, layout in zip(urls, lines, chapters, layouts)
         ],
     }
 
@@ -387,7 +404,7 @@ def main(argv: list[str] | None = None) -> int:
     total = len(data["scenes"]) * args.scene_seconds
     print(f"\nWrote {args.out} — {len(data['scenes'])} scenes / {total:.0f}s on \"{args.topic}\"")
     for index, scene in enumerate(data["scenes"], start=1):
-        print(f"  {index}. {scene['text']}")
+        print(f"  {index}. [{scene['layout']}] {scene['text']}")
     return 0
 
 

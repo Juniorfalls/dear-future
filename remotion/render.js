@@ -29,20 +29,34 @@ const parseArgs = (argv) => {
 
 /**
  * scenes.json is written by generate_video.py using the {image_url, text,
- * durationInSeconds} schema. Older hand-written files use {image, caption}, so
- * accept both and hand the composition one canonical shape.
+ * layout, durationInSeconds} schema. Older hand-written files use {image,
+ * caption} and no layout, so accept both and hand the composition one canonical
+ * shape. An unknown layout is a hard error: silently rendering the wrong framing
+ * is worse than failing the render.
  */
+const LAYOUTS = ['host_full', 'host_pip', 'broll_only'];
+
 const normalizeScenes = (raw) => {
   if (!Array.isArray(raw) || raw.length === 0) {
     throw new Error('data/scenes.json has no "scenes" array');
   }
   return raw.map((scene, index) => {
-    const image = scene.image_url || scene.image;
+    const layout = scene.layout || 'broll_only';
+    const image = scene.image_url || scene.image || '';
     const caption = scene.text || scene.caption;
-    if (!image) throw new Error(`scene ${index + 1} has no image_url/image`);
+    if (!LAYOUTS.includes(layout)) {
+      throw new Error(
+        `scene ${index + 1} has unknown layout "${layout}" (expected ${LAYOUTS.join(', ')})`,
+      );
+    }
+    // Only a full-frame presenter shot can do without a still.
+    if (!image && layout !== 'host_full') {
+      throw new Error(`scene ${index + 1} (${layout}) has no image_url/image`);
+    }
     if (!caption) throw new Error(`scene ${index + 1} has no text/caption`);
     return {
       image,
+      layout,
       caption,
       kicker: scene.kicker,
       durationInSeconds: scene.durationInSeconds,
