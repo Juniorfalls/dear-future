@@ -69,14 +69,53 @@ CHAPTERS = [
 ]
 
 # Presenter framing per scene. The host opens the episode full-frame, then the
-# film alternates between a picture-in-picture host and b-roll-only shots. The
-# virtual presenter is not rendered yet: host layouts draw a placeholder panel,
-# so real host footage can be dropped in later without editing the scene list.
+# film alternates between a picture-in-picture host and b-roll-only shots. Override
+# it per episode with --layouts.
 LAYOUT_CYCLE = ["host_pip", "broll_only"]
+
+# Every layout CinematicDoc.tsx understands. Unknown values are rejected here so
+# a typo fails the generator instead of the render.
+LAYOUTS = ("host_full", "host_pip", "broll_only")
 
 
 def layouts_for(count: int) -> list[str]:
     return ["host_full"] + [LAYOUT_CYCLE[i % len(LAYOUT_CYCLE)] for i in range(count - 1)]
+
+
+def parse_layouts(value: str | None, count: int) -> list[str]:
+    """Turn --layouts into one framing per scene.
+
+    Accepts a comma-separated list or a JSON list, e.g.
+    ``host_full,broll_only,host_pip,broll_only,host_full`` or the same in
+    ``["host_full", ...]`` form. Without it the default rotation is used.
+    """
+    if value is None:
+        return layouts_for(count)
+
+    text = value.strip()
+    if text.startswith("["):
+        try:
+            items = json.loads(text)
+        except json.JSONDecodeError as error:
+            raise SystemExit(f"--layouts: invalid JSON list ({error})")
+        if not isinstance(items, list):
+            raise SystemExit("--layouts: expected a list of layout names")
+    else:
+        items = text.split(",")
+
+    items = [str(item).strip() for item in items if str(item).strip()]
+    unknown = sorted({item for item in items if item not in LAYOUTS})
+    if unknown:
+        raise SystemExit(
+            f"--layouts: unknown layout(s) {', '.join(unknown)} "
+            f"(expected any of {', '.join(LAYOUTS)})"
+        )
+    if len(items) != count:
+        raise SystemExit(
+            f"--layouts: got {len(items)} layouts for --count {count}; "
+            "give exactly one layout per scene"
+        )
+    return items
 
 # Dramatic narration beats. Only the first and last name the topic, so the middle
 # reads naturally for any subject; pass --beats to supply LLM-written lines.
@@ -287,11 +326,12 @@ def captions(topic: str, count: int, beats_file: Path | None) -> list[str]:
 
 
 def build(topic: str, count: int, scene_seconds: float, width: int, height: int,
-          beats_file: Path | None, provider: str, model: str) -> dict:
+          beats_file: Path | None, provider: str, model: str,
+          layout_plan: list[str] | None = None) -> dict:
     urls, source = resolve_images(topic, count, width, height, provider, model)
     lines = captions(topic, count, beats_file)
     chapters = [CHAPTERS[i % len(CHAPTERS)] for i in range(count)]
-    layouts = layouts_for(count)
+    layouts = layout_plan or layouts_for(count)
 
     return {
         "_notes": {
@@ -373,6 +413,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("topic", help='e.g. "The Fall of Rome"')
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--count", type=int, default=5, help="number of scenes (default 5)")
+    parser.add_argument("--layouts", default=None,
+                        help="one framing per scene, comma-separated or JSON: "
+                             "host_full,host_pip,broll_only (default: host_full, then alternating "
+                             "host_pip/broll_only)")
     parser.add_argument("--scene-seconds", type=float, default=5.0)
     parser.add_argument("--width", type=int, default=1080, help="still width in px")
     parser.add_argument("--height", type=int, default=1920, help="still height in px")
@@ -389,8 +433,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.count < 1:
         parser.error("--count must be at least 1")
 
+    layouts = parse_layouts(args.layouts, args.count)
+
     data = build(args.topic, args.count, args.scene_seconds, args.width, args.height,
-                 args.beats, args.images, args.model)
+                 args.beats, args.images, args.model, layouts)
 
     if not args.no_verify:
         print(f"Checking {len(data['scenes'])} image(s) [{data['_notes']['image_source']}]...")

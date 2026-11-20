@@ -1,8 +1,8 @@
 {
   "_notes": {
-    "generated_by": "hand-written sample for the Virtual Presenter layouts",
+    "generated_by": "generate_video.py",
     "topic": "The Fall of Rome",
-    "image_source": "pollinations-ai",
+    "image_source": "local-assets:the-fall-of-rome",
     "layouts": "layout is one of host_full (presenter only), host_pip (b-roll + presenter PiP) or broll_only. Missing layout falls back to broll_only. host_full scenes may omit image_url.",
     "swap_images": "Put stills in remotion/public/episodes/<topic-slug>/ as scene-1.jpg, scene-2.jpg, ... and they are picked up automatically. Otherwise Pollinations.ai generates a still per scene from its prompt, or run with --images openai to use OpenAI's image API."
   },
@@ -17,18 +17,32 @@
       "kicker": "Chapter One — The Beginning"
     },
     {
-      "layout": "host_pip",
+      "layout": "broll_only",
       "image_url": "episodes/the-fall-of-rome/scene-2.jpg",
       "text": "At its height, its reach was measured not in miles, but in months of travel.",
       "durationInSeconds": 5.0,
       "kicker": "Chapter Two — The Height"
     },
     {
-      "layout": "broll_only",
+      "layout": "host_pip",
       "image_url": "episodes/the-fall-of-rome/scene-3.jpg",
       "text": "Then the borders thinned, and the cost of holding them rose year after year.",
       "durationInSeconds": 5.0,
       "kicker": "Chapter Three — The Turn"
+    },
+    {
+      "layout": "broll_only",
+      "image_url": "episodes/the-fall-of-rome/scene-4.jpg",
+      "text": "The end did not arrive in a single day. It arrived in a hundred small surrenders.",
+      "durationInSeconds": 5.0,
+      "kicker": "Chapter Four — The Unravelling"
+    },
+    {
+      "layout": "host_full",
+      "image_url": "episodes/the-fall-of-rome/scene-5.jpg",
+      "text": "What survives of The Fall of Rome is stone, dust, and a warning we are still learning to read.",
+      "durationInSeconds": 5.0,
+      "kicker": "Chapter Five — What Remains"
     }
   ]
 }

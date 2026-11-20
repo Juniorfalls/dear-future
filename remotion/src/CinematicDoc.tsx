@@ -3,6 +3,7 @@ import {
   AbsoluteFill,
   Easing,
   Img,
+  OffthreadVideo,
   Sequence,
   interpolate,
   staticFile,
@@ -76,118 +77,96 @@ const FOG_BANKS = [
   {tint: '150, 170, 190', x: 46, y: 82, rx: 52, ry: 24, speed: 0.0012, phase: 4.2},
 ];
 
-/** Brass edge and label ink shared by the presenter placeholder panels. */
+/** Brass edge for the presenter inset, matching the chapter kickers and the
+ *  rule under the wordmark. */
 const HOST_EDGE = 'rgba(214, 189, 140, 0.55)';
-const HOST_LABEL = 'rgba(214, 189, 140, 0.92)';
 
-/** Stage wall behind a full-frame presenter shot: a cool studio falloff onto
- *  black, so the placeholder panel reads as lit rather than pasted on. */
+/** Opaque base behind a full-frame presenter shot: a crossfade out of the
+ *  previous scene must never show through the video. */
 const HOST_STAGE =
   'radial-gradient(ellipse at 50% 42%, rgba(58, 72, 88, 0.55) 0%, ' +
   'rgba(9, 13, 19, 0.98) 62%, #03040a 100%)';
 
-const HOST_PANEL =
-  'linear-gradient(150deg, #2b3743 0%, #1d2a36 48%, #131d27 100%)';
+/** The virtual presenter. A free Pexels talking-head clip stands in until the
+ *  rendered host exists: drop a new file at public/host/presenter.mp4 and
+ *  nothing else changes. */
+const PRESENTER_SRC = staticFile('host/presenter.mp4');
 
 /**
- * Stand-in for the virtual presenter until the host video is rendered.
+ * The presenter, framed by the scene layout.
  *
- * `full` fills the centre of the frame the way a talking-head shot will;
- * `pip` is the small rounded corner inset used over b-roll. Both are drawn at
- * 1080p-relative sizes so a vertical composition keeps the same proportions.
- * Replacing this component with a <Video> of the host is the whole swap.
+ * `full` fills the frame: the clip is contained over a blurred, pushed-in copy
+ * of itself, so a source that does not match the composition ratio is framed
+ * in blur rather than in black. `pip` is the rounded bottom-left inset that
+ * sits over b-roll. Sizes are 1080p-relative so vertical shorts keep the same
+ * proportions.
+ *
+ * Both are muted: the film carries no audio track yet, and the sample clip's
+ * room tone has no business on it. Host narration gets a volume curve when the
+ * voice track lands.
  */
-const HostPlaceholder: React.FC<{variant: 'full' | 'pip'; bar: number}> = ({
-  variant,
-  bar,
-}) => {
-  const {width, height} = useVideoConfig();
+const Presenter: React.FC<{variant: 'full' | 'pip'; bar: number}> = ({variant, bar}) => {
+  const {width} = useVideoConfig();
   // Design units are 1920x1080; everything below scales with the frame width.
   const s = width / 1920;
-  const pipW = 470 * s;
-  const pipH = (pipW * 9) / 16;
-
-  const label = (fontSize: number, letterSpacing: number) => ({
-    fontFamily: cinzel.fontFamily,
-    fontWeight: 700,
-    fontSize,
-    letterSpacing,
-    textTransform: 'uppercase' as const,
-    color: HOST_LABEL,
-  });
-
-  const note = {
-    fontFamily: merriweather.fontFamily,
-    fontWeight: 300,
-    fontSize: 20 * s,
-    letterSpacing: 2 * s,
-    color: 'rgba(244, 239, 228, 0.42)',
-  };
 
   if (variant === 'full') {
-    // The presenter shot lives in the stage band above the caption, so the
-    // lower third never has to sit on top of the host's face. The panel is
-    // sized from the space that is actually left over, keeping 16:9.
-    const captionBand = 300 * s;
-    const stageHeight = Math.max(200 * s, height - bar * 2 - captionBand);
-    const panelW = Math.min(width * 0.56, 1060 * s, (stageHeight * 16) / 9);
-    const panelH = (panelW * 9) / 16;
     return (
-      <AbsoluteFill
-        style={{
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingTop: bar,
-          paddingBottom: bar + captionBand,
-        }}
-      >
-        <div
-          style={{
-            width: panelW,
-            height: panelH,
-            borderRadius: 18 * s,
-            background: HOST_PANEL,
-            border: `${Math.max(1, 2 * s)}px solid ${HOST_EDGE}`,
-            boxShadow:
-              `0 ${40 * s}px ${120 * s}px rgba(0, 0, 0, 0.72), ` +
-              `inset 0 0 ${140 * s}px rgba(214, 189, 140, 0.07)`,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: 20 * s,
-          }}
-        >
-          <div style={label(44 * s, 18 * s)}>Host</div>
-          <div style={note}>virtual presenter · placeholder</div>
-        </div>
-      </AbsoluteFill>
+      <>
+        <AbsoluteFill style={{background: HOST_STAGE}} />
+
+        {/* Blurred backplate: the same frame pushed in, softened and dimmed,
+            so a 4:3 or vertical presenter never leaves hard bars. */}
+        <AbsoluteFill>
+          <OffthreadVideo
+            src={PRESENTER_SRC}
+            muted
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              transform: 'scale(1.16)',
+              filter: 'blur(34px) brightness(0.52) saturate(0.85)',
+            }}
+          />
+        </AbsoluteFill>
+
+        {/* Foreground presenter: fills the frame, cropped by its own ratio. */}
+        <AbsoluteFill>
+          <OffthreadVideo
+            src={PRESENTER_SRC}
+            muted
+            style={{width: '100%', height: '100%', objectFit: 'contain'}}
+          />
+        </AbsoluteFill>
+      </>
     );
   }
+
+  const pipW = 470 * s;
+  const pipH = (pipW * 9) / 16;
 
   return (
     <div
       style={{
         position: 'absolute',
         left: 100 * s,
-        // Clear the lower letterbox bar, then sit just above the caption block.
+        // Clear the lower letterbox bar and sit beside, not under, the caption.
         bottom: bar + 78 * s,
         width: pipW,
         height: pipH,
         borderRadius: 22 * s,
         overflow: 'hidden',
-        background: HOST_PANEL,
+        background: '#101a24',
         border: `${Math.max(1.5, 3 * s)}px solid ${HOST_EDGE}`,
         boxShadow: `0 ${26 * s}px ${70 * s}px rgba(0, 0, 0, 0.78)`,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: 8 * s,
       }}
     >
-      <div style={label(26 * s, 12 * s)}>Host</div>
-      <div style={{...note, fontSize: 13 * s, letterSpacing: 1.4 * s}}>placeholder</div>
+      <OffthreadVideo
+        src={PRESENTER_SRC}
+        muted
+        style={{width: '100%', height: '100%', objectFit: 'cover'}}
+      />
     </div>
   );
 };
@@ -333,6 +312,10 @@ const CinematicScene: React.FC<SceneProps> = ({scene, index, sceneFrames, overla
         <AbsoluteFill style={{background: HOST_STAGE}} />
       )}
 
+      {/* Full-frame presenter goes in *before* the wash: the gradient that
+          keeps the caption readable has to sit on top of the video too. */}
+      {layout === 'host_full' ? <Presenter variant="full" bar={bar} /> : null}
+
       {/* Readability wash: light at the top for the wordmark, heavy at the
           bottom so the caption always sits on near-solid black. */}
       <AbsoluteFill
@@ -344,11 +327,10 @@ const CinematicScene: React.FC<SceneProps> = ({scene, index, sceneFrames, overla
         }}
       />
 
-      {/* The presenter panel sits above the wash so it keeps its own lighting:
-          centred on stage for `host_full`, inset bottom-left for `host_pip`. */}
-      {layout !== 'broll_only' ? (
-        <HostPlaceholder variant={layout === 'host_full' ? 'full' : 'pip'} bar={bar} />
-      ) : null}
+      {/* The corner inset sits above the wash instead: it is small enough that
+          the bottom gradient would only crush it, and the caption is already
+          slid clear of it. */}
+      {layout === 'host_pip' ? <Presenter variant="pip" bar={bar} /> : null}
 
       <AbsoluteFill
         style={{

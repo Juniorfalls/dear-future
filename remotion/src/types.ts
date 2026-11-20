@@ -1,6 +1,6 @@
 /**
- * How one shot is framed. The virtual presenter replaces the coloured
- * placeholder box in `host_full` and `host_pip` once the host video exists.
+ * How one shot is framed. The presenter clip in public/host/presenter.mp4 fills
+ * the frame in `host_full` and sits in a rounded corner inset in `host_pip`.
  *
  * - `host_full`  — presenter only, b-roll hidden (openings, chapter cards)
  * - `host_pip`   — b-roll full screen, presenter in a bottom-left PiP

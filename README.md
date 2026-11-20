@@ -32,7 +32,10 @@ It writes five chapters — beginning, height, turn, unravelling, what remains �
 with dramatic narration, per-scene durations and one still per scene, then checks
 that every image URL resolves. Pass `--beats lines.json` to supply your own
 captions (that is the hook for an LLM script writer later), and `--no-verify` to
-skip the HTTP check.
+skip the HTTP check. `--layouts` sets the framing per scene, as a comma list or
+a JSON list (`--layouts host_full,broll_only,host_pip,broll_only,host_full`,
+`--count 5`); without it the generator opens on `host_full` and alternates
+`host_pip` / `broll_only`.
 
 Images are resolved in this order (`--images auto`, the default):
 
@@ -82,10 +85,9 @@ The generated file looks like this:
 - `layout` — how the shot is framed: `host_full` (presenter only, b-roll
   hidden), `host_pip` (b-roll full screen, presenter in a rounded bottom-left
   inset) or `broll_only` (b-roll full screen). Missing/unknown values fall back
-  to `broll_only`. The virtual presenter is not rendered yet, so both host
-  layouts draw a labelled placeholder panel in the presenter's slot; dropping in
-  the real host video later only touches `HostPlaceholder` in
-  `remotion/src/CinematicDoc.tsx`.
+  to `broll_only`. Host layouts play `remotion/public/host/presenter.mp4`
+  through `<OffthreadVideo>`: full-frame over a blurred backplate for
+  `host_full`, rounded inset for `host_pip`. Swap that file to change the host.
 
 - `image_url` — any URL or a file under `remotion/public/`, cropped to cover the
   frame. Pollinations.ai stills are downloaded there; the AI image API drops in
@@ -107,11 +109,12 @@ and crossfade length are `--scene-seconds` / `--overlap-seconds` flags (defaults
 `remotion/src/CinematicDoc.tsx`:
 
 - **Layouts** — each scene names its framing. `host_full` hides the b-roll and
-  puts the presenter panel centre-stage, sized to the space left above the
-  caption band. `host_pip` keeps the b-roll full-bleed and insets the presenter
-  bottom-left with a rounded brass border, sliding the caption right so the two
-  never collide. `broll_only` is the original film look. Swapping the coloured
-  panel for the rendered host video is a one-component change.
+  fills the frame with the presenter video (contained over a blurred copy of
+  itself, so an off-ratio source is framed in blur, not black). `host_pip`
+  keeps the b-roll full-bleed and insets the presenter bottom-left in a rounded
+  brass-bordered frame, sliding the caption right so the two never collide.
+  `broll_only` is the original film look. The presenter is muted until the film
+  has an audio track.
 - **Letterbox** — solid black bars (9.5% of frame height, top and bottom) drawn
   over everything, for the 2.35:1 film feel.
 - **Ken Burns** — every still pushes from 1.06× to 1.26× on a linear ramp with a
@@ -196,6 +199,7 @@ Any other provider (Stable Diffusion, a hosted endpoint): replace
 | `requirements.txt` | Python dependency for the generator (`requests`) |
 | `remotion/src/CinematicDoc.tsx` | the film: scenes, 2.5D camera, dust/light overlays, captions, wordmark |
 | `remotion/public/episodes/<slug>/` | committed stills for an episode (scene-1.jpg, …) |
+| `remotion/public/host/presenter.mp4` | the virtual presenter clip played by the host layouts |
 | `remotion/src/Root.tsx` | `CinematicDoc` composition + dynamic duration/dimensions |
 | `remotion/data/scenes.json` | episode content (images, layouts, captions) |
 | `remotion/render.js` | bundles the composition and renders it with `@remotion/renderer` |
