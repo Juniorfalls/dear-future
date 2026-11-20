@@ -1,30 +1,37 @@
-name: Render Cinematic Video
+name: Render Before You Episode
 
 on:
   workflow_dispatch:
     inputs:
       topic:
-        description: "Episode topic, e.g. The Fall of Rome"
+        description: "Thing being reviewed, e.g. iPhone 15"
         required: false
-        default: "The History of Rome"
-      images:
-        description: "Image source: auto (committed stills, else Pollinations.ai) or openai"
+        default: "iPhone 15"
+      format:
+        description: "Episode angle"
         type: choice
-        options: [auto, pollinations, openai]
-        default: auto
+        options: [buy, play, watch]
+        default: buy
+      clips:
+        description: "Background clips (3-5)"
+        default: "4"
+      test:
+        description: "Use public Mixkit clips instead of the Pexels API"
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths:
       - "remotion/**"
-      - "generate_video.py"
-      - "generate_script.py"
-      - "generate_voice.py"
+      - "fetch_media.py"
       - "requirements.txt"
       - ".github/workflows/render.yml"
 
 env:
-  TOPIC: ${{ github.event.inputs.topic || 'The History of Rome' }}
-  IMAGES: ${{ github.event.inputs.images || 'auto' }}
+  TOPIC: ${{ github.event.inputs.topic || 'iPhone 15' }}
+  FORMAT: ${{ github.event.inputs.format || 'buy' }}
+  CLIPS: ${{ github.event.inputs.clips || '4' }}
+  TEST_MEDIA: ${{ github.event.inputs.test || 'false' }}
 
 jobs:
   render:
@@ -60,29 +67,31 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      # The committed scenes.json already carries the stills, narration and
-      # per-shot timings, so a normal render never regenerates it (that would
-      # drop the voice blocks). Generation is the bootstrap path, and it needs
-      # the voice environment anyway; see README "Voiceover".
-      - name: Generate scenes if the repo has none
-        if: ${{ !hashFiles('remotion/data/scenes.json') }}
+      - name: Fetch footage and build scenes
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: python generate_video.py "$TOPIC" --images "$IMAGES"
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+        run: |
+          if [ "$TEST_MEDIA" = "true" ] || [ -z "$PEXELS_API_KEY" ]; then
+            echo "No Pexels key (or test requested): using public Mixkit clips."
+            python fetch_media.py "$TOPIC" --format "$FORMAT" --clips "$CLIPS" --test
+          else
+            python fetch_media.py "$TOPIC" --format "$FORMAT" --clips "$CLIPS"
+          fi
 
       - name: Install Remotion dependencies
         working-directory: remotion
         run: npm ci --no-audit --no-fund
 
-      - name: Render cinematic video
+      - name: Render episode
         working-directory: remotion
         run: node render.js
 
       - name: Upload video
         uses: actions/upload-artifact@v7
         with:
-          name: cinematic-video
+          name: before-you-video
           path: |
             remotion/out/cinematic_video.mp4
             remotion/data/scenes.json
+            remotion/public/episodes/**/credits.json
           if-no-files-found: error

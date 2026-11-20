@@ -28,6 +28,7 @@ const DEFAULT_SCENE_SECONDS = 2.5;
 const VOICE_TAIL_SECONDS = 0.5;
 
 type RawScene = {
+  video_url?: string;
   image_url?: string;
   image?: string;
   text?: string;
@@ -51,10 +52,10 @@ const episode = scenesData as {
 };
 
 /**
- * scenes.json is written by generate_video.py in the {image_url, text, layout,
- * transition, grade, captions} schema; older hand-written files use {image,
- * caption} and none of the newer keys. Normalise here so the Studio preview
- * matches what render.js feeds the composition.
+ * scenes.json is written by fetch_media.py in the {video_url, image_url, text,
+ * layout, transition, grade, captions} schema; older hand-written files use
+ * {image, caption} and no video. Normalise here so the Studio preview matches
+ * what render.js feeds the composition.
  */
 const scenes: Scene[] = episode.scenes.map((scene) => {
   const layout = SCENE_LAYOUTS.includes(scene.layout as SceneLayout)
@@ -76,6 +77,7 @@ const scenes: Scene[] = episode.scenes.map((scene) => {
       : undefined;
 
   return {
+    video_url: scene.video_url,
     image: scene.image_url ?? scene.image ?? '',
     layout,
     caption: (scene.text ?? scene.caption ?? '') as string,
@@ -117,7 +119,7 @@ const audio: AudioTrack | undefined =
     : undefined;
 
 export const defaultProps: CinematicProps = {
-  title: episode.title ?? '12th Street',
+  title: episode.title ?? 'Before You',
   scenes,
   sceneDurationInSeconds: episode.sceneDurationInSeconds ?? DEFAULT_SCENE_SECONDS,
   overlapInSeconds: 0.8,

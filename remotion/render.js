@@ -28,12 +28,11 @@ const parseArgs = (argv) => {
 };
 
 /**
- * scenes.json is written by generate_video.py using the {image_url, text,
- * layout, transition, grade, captions, durationInSeconds} schema. Older
- * hand-written files use {image, caption} and none of the newer keys, so accept
- * both and hand the composition one canonical shape. An unknown layout or grade
- * is a hard error: silently rendering the wrong framing is worse than failing
- * the render.
+ * scenes.json is written by fetch_media.py using the {video_url, image_url,
+ * text, layout, transition, grade, captions, durationInSeconds} schema. Older
+ * hand-written files use {image, caption} and no video; both are accepted so
+ * hand-built episodes still render. An unknown layout or grade is a hard
+ * error: silently rendering the wrong framing is worse than failing the render.
  */
 const LAYOUTS = ['host_full', 'host_pip', 'broll_only'];
 const GRADES = ['cold', 'warm', 'neutral'];
@@ -44,6 +43,7 @@ const normalizeScenes = (raw) => {
   }
   return raw.map((scene, index) => {
     const layout = scene.layout || 'broll_only';
+    const video = scene.video_url || '';
     const image = scene.image_url || scene.image || '';
     const caption = scene.text || scene.caption || '';
     const grade = scene.grade;
@@ -57,14 +57,16 @@ const normalizeScenes = (raw) => {
         `scene ${index + 1} has unknown grade "${grade}" (expected ${GRADES.join(', ')})`,
       );
     }
-    // Only a full-frame presenter shot can do without a still.
-    if (!image && layout !== 'host_full') {
-      throw new Error(`scene ${index + 1} (${layout}) has no image_url/image`);
+    // A full-frame presenter shot is the only scene that can do without
+    // footage or a still.
+    if (!image && !video && layout !== 'host_full') {
+      throw new Error(`scene ${index + 1} (${layout}) has no video_url or image_url`);
     }
     if (!caption && !Array.isArray(scene.captions)) {
       throw new Error(`scene ${index + 1} has no text/caption and no captions`);
     }
     return {
+      video_url: video,
       image,
       layout,
       // Hard cuts are the default: a missing transition means "cut".
@@ -94,15 +96,17 @@ const main = async () => {
   const scenes = normalizeScenes(data.scenes);
   const topic = data.topic || data._notes?.topic;
 
-  // `data._notes.image_source` documents that the stills are placeholders; the
-  // eventual AI image API feeds the same scene URLs, nothing else changes.
-  if (data._notes?.image_source) {
-    console.log(`Image source: ${data._notes.image_source.split('.')[0]}.`);
+  // `data._notes.media_source` documents where the footage came from; a
+  // committed scenes.json can be rendered without re-downloading anything.
+  if (data._notes?.media_source || data._notes?.image_source) {
+    console.log(
+      `Media source: ${data._notes.media_source || data._notes.image_source}.`,
+    );
   }
   if (topic) console.log(`Episode: ${topic}`);
 
   const inputProps = {
-    title: data.title || '12th Street',
+    title: data.title || 'Before You',
     scenes,
     // 2.5s shots: the reference film cuts every ~2s, not every 5.
     sceneDurationInSeconds: args.sceneSeconds ?? data.sceneDurationInSeconds ?? 2.5,

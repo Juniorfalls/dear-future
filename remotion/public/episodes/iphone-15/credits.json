@@ -1,0 +1,26 @@
+{
+  "topic": "iPhone 15",
+  "videos": [
+    {
+      "file": "bg-1.mp4",
+      "credit": "Mixkit / Hands of a person typing on a cell phone (Mixkit Free License)",
+      "source": "https://assets.mixkit.co/videos/4915/4915-720.mp4"
+    },
+    {
+      "file": "bg-2.mp4",
+      "credit": "Mixkit / Hands shown texting on a smartphone (Mixkit Free License)",
+      "source": "https://assets.mixkit.co/videos/144/144-720.mp4"
+    },
+    {
+      "file": "bg-3.mp4",
+      "credit": "Mixkit / Hands texting on a mobile phone at night (Mixkit Free License)",
+      "source": "https://assets.mixkit.co/videos/14669/14669-720.mp4"
+    }
+  ],
+  "image": {
+    "file": "subject.jpg",
+    "credit": "ThePhotoGraphIc",
+    "source": "https://commons.wikimedia.org/wiki/File:Back_of_iPhone_15.jpg",
+    "license": "CC BY-SA 4.0"
+  }
+}

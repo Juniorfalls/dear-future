@@ -16,3 +16,6 @@ __pycache__/
 
 # local Python env for the TTS pipeline
 .venv/
+
+# interrupted media downloads
+*.part

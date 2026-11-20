@@ -51,9 +51,15 @@ export type Voice = {
 
 export type Scene = {
   /**
-   * Full-bleed background still (any size, it is cropped to cover). Generated
-   * by Pollinations.ai and committed under remotion/public/episodes/. Empty
-   * for a `host_full` scene, which never shows b-roll.
+   * Full-bleed background video (stock footage, gameplay, trailers). A path
+   * relative to remotion/public or a full URL. Rendered with OffthreadVideo.
+   * When set, `image` becomes the floating subject overlay instead of b-roll.
+   */
+  video_url?: string;
+  /**
+   * Background still for legacy episodes, or the subject overlay when
+   * `video_url` is present. Generated stills live under remotion/public.
+   * Empty for a `host_full` scene, which never shows b-roll.
    */
   image: string;
   /** Shot framing: presenter full-frame, presenter PiP, or b-roll alone. */

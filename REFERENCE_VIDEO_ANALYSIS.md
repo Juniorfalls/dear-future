@@ -237,7 +237,7 @@ With cuts, `reveal` becomes `1` and the `opacity` ramp is skipped entirely, so
 the outgoing scene is replaced in a single frame. Keep the existing crossfade
 code path behind the flag.
 
-Also shorten the defaults: `sceneDurationInSeconds` → 3, and let `generate_video.py`
+Also shorten the defaults: `sceneDurationInSeconds` → 3, and let `fetch_media.py`
 write 2–4 s scenes. Model the rhythm on the measured distribution (median 1.5 s,
 occasional 4–6 s hold).
 
@@ -287,7 +287,7 @@ it with no transition. Fallback for old scene files: split `caption` on
 punctuation into ~3 chunks spread across the scene with equal time, so episodes
 that predate the schema still get the new look.
 
-`generate_video.py` can emit chunk timings from a script/LLM writer later, or
+`fetch_media.py` can emit chunk timings from a script/LLM writer later, or
 derive them now by splitting on `—`, `,` and `.`.
 
 ### 11.4 Per-scene grade

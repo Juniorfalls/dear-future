@@ -1,3 +1,2 @@
-# Image stills (generate_video.py) — installed by CI.
+# fetch_media.py: Pexels API + media downloads
 requests>=2.32,<3
-pillow>=10

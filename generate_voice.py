@@ -99,7 +99,10 @@ def main() -> None:
 
     script_path = Path(args.script)
     if not script_path.exists():
-        sys.exit(f"generate_voice: {script_path} not found. Run generate_script.py first.")
+        sys.exit(
+            f"generate_voice: {script_path} not found. "
+            "Provide a script.json with one entry per scene."
+        )
     script = json.loads(script_path.read_text())
     voice = args.voice or script.get("voice") or "am_michael"
     scenes_path = Path(args.scenes)

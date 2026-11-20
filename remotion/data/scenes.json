@@ -1,114 +1,57 @@
 {
   "_notes": {
-    "generated_by": "hand-written sample for the reference-style film",
-    "topic": "The Fall of Rome",
-    "image_source": "pollinations-ai",
-    "layouts": "layout is host_full (presenter only), host_pip (b-roll + presenter PiP) or broll_only. Hybrid cut: host_full opens and closes the film, the body is b-roll.",
-    "transitions": "transition is 'cut' (default, and what the reference film uses) or 'crossfade'.",
-    "grades": "grade is 'cold' (night interiors, cool blue), 'warm' (daylight, muted amber) or 'neutral'.",
-    "captions": "captions is an optional list of {text, from, to} chunks timed relative to the scene. Without it the caption line is split automatically to fit the shot.",
-    "swap_images": "Put stills in remotion/public/episodes/<topic-slug>/ as scene-1.jpg, scene-2.jpg, ... and they are picked up automatically. Otherwise Pollinations.ai generates a still per scene from its prompt, or run with --images openai to use OpenAI's image API."
+    "generated_by": "fetch_media.py",
+    "topic": "iPhone 15",
+    "format": "buy",
+    "media_source": "test-public-mixkit",
+    "image_source": "https://commons.wikimedia.org/wiki/File:Back_of_iPhone_15.jpg",
+    "credits": "episodes/iphone-15/credits.json",
+    "schema": "video_url is the full-bleed background; image_url floats as the subject overlay"
   },
-  "title": "12th Street",
-  "topic": "The Fall of Rome",
-  "sceneDurationInSeconds": 2.5,
+  "title": "Before You",
+  "topic": "iPhone 15",
   "style": {
     "letterbox": false,
     "atmosphereOpacity": 0,
     "lightSweep": false,
     "vignette": false,
-    "wordmark": "none",
-    "scrim": 0.15
-  },
-  "outro": {
-    "title": "The Fall of Rome",
-    "durationInSeconds": 3.5
+    "wordmark": "intro",
+    "scrim": 0.2
   },
   "audio": {
     "src": "audio/bg_music.mp3",
-    "volume": 0.15,
+    "volume": 0.12,
     "loop": true
   },
   "scenes": [
     {
-      "layout": "host_full",
-      "transition": "cut",
-      "grade": "warm",
-      "image_url": "episodes/the-fall-of-rome/scene-1.jpg",
-      "text": "Rome did not fall in a day.",
-      "durationInSeconds": 3.662,
-      "kicker": "The Fall of Rome",
-      "voice": {
-        "src": "audio/scene_1.wav",
-        "durationInSeconds": 3.162
-      }
-    },
-    {
+      "video_url": "episodes/iphone-15/bg-1.mp4",
+      "text": "So you want the iPhone 15.",
       "layout": "broll_only",
-      "transition": "cut",
-      "grade": "cold",
-      "image_url": "episodes/the-fall-of-rome/scene-2.jpg",
-      "text": "At its height, Rome reached farther than any empire before it.",
-      "captions": [
-        {
-          "text": "At its height,",
-          "from": 0.0,
-          "to": 0.9
-        },
-        {
-          "text": "Rome reached farther",
-          "from": 0.9,
-          "to": 1.7
-        },
-        {
-          "text": "than any empire before it.",
-          "from": 1.7,
-          "to": 2.5
-        }
-      ],
-      "durationInSeconds": 3.711,
-      "voice": {
-        "src": "audio/scene_2.wav",
-        "durationInSeconds": 3.211
-      }
-    },
-    {
-      "layout": "host_pip",
-      "transition": "cut",
-      "grade": "warm",
-      "image_url": "episodes/the-fall-of-rome/scene-3.jpg",
-      "text": "Then the borders thinned, and the cost of holding them rose.",
-      "durationInSeconds": 5.089,
-      "kicker": "The Turn",
-      "voice": {
-        "src": "audio/scene_3.wav",
-        "durationInSeconds": 4.589
-      }
-    },
-    {
-      "layout": "broll_only",
-      "transition": "cut",
-      "grade": "cold",
-      "image_url": "episodes/the-fall-of-rome/scene-4.jpg",
-      "text": "The end arrived in a hundred small surrenders.",
-      "durationInSeconds": 5.812,
-      "voice": {
-        "src": "audio/scene_4.wav",
-        "durationInSeconds": 5.312
-      }
-    },
-    {
-      "layout": "host_full",
       "transition": "cut",
       "grade": "neutral",
-      "image_url": "episodes/the-fall-of-rome/scene-5.jpg",
-      "text": "What survives is stone, dust, and a warning.",
-      "durationInSeconds": 4.074,
-      "kicker": "What Remains",
-      "voice": {
-        "src": "audio/scene_5.wav",
-        "durationInSeconds": 3.574
-      }
+      "kicker": "BEFORE YOU BUY",
+      "durationInSeconds": 3.5,
+      "image_url": "episodes/iphone-15/subject.jpg"
+    },
+    {
+      "video_url": "episodes/iphone-15/bg-2.mp4",
+      "text": "Here is what the spec sheet leaves out.",
+      "layout": "broll_only",
+      "transition": "cut",
+      "grade": "neutral",
+      "kicker": "THE BREAKDOWN",
+      "durationInSeconds": 3.5
+    },
+    {
+      "video_url": "episodes/iphone-15/bg-3.mp4",
+      "text": "This is the flaw that shows up in week one.",
+      "layout": "broll_only",
+      "transition": "cut",
+      "grade": "neutral",
+      "kicker": "THE CATCH",
+      "durationInSeconds": 3.5,
+      "image_url": "episodes/iphone-15/subject.jpg"
     }
   ]
 }

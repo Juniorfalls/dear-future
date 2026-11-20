@@ -79,6 +79,10 @@ const GRADE: Record<Grade, {filter: string; tint: string}> = {
   },
 };
 
+/** Paths written by fetch_media.py are relative to remotion/public. */
+const resolveSrc = (source: string) =>
+  source.startsWith('http') ? source : staticFile(source);
+
 /** Deterministic pseudo-random in [0, 1), so every render of a frame matches. */
 const rand = (index: number, salt: number) => {
   const value = Math.sin(index * 127.1 + salt * 311.7) * 43758.5453;
@@ -307,12 +311,48 @@ const CinematicScene: React.FC<SceneProps> = ({
   const cueTime = frame / fps;
   const cue = cues.find((item) => cueTime >= item.from && cueTime < item.to);
 
-  const imageSrc =
-    scene.image && (scene.image.startsWith('http') ? scene.image : staticFile(scene.image));
+  const imageSrc = scene.image ? resolveSrc(scene.image) : '';
+  const videoSrc = scene.video_url ? resolveSrc(scene.video_url) : '';
+  // A video background plus a still means the still is the floating subject
+  // (product shot / game cover / poster), not b-roll.
+  const showsSubject = Boolean(videoSrc && imageSrc);
+
+  const subjectReveal = interpolate(frame, [0, Math.round(fps * 0.18)], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const subjectScale = interpolate(frame, [0, Math.round(fps * 0.3)], [0.86, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const subjectFloat = Math.sin(frame / (fps * 1.8)) * 7 * s;
 
   return (
     <AbsoluteFill style={{opacity: reveal}}>
-      {showsBroll && imageSrc ? (
+      {showsBroll && videoSrc ? (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: `calc(100% - ${WATERMARK_CROP_PX}px)`,
+            overflow: 'hidden',
+          }}
+        >
+          <OffthreadVideo
+            src={videoSrc}
+            muted
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              transform: `scale(${scale}) translate(${panX}%, ${panY}%)`,
+              filter: grade.filter,
+            }}
+          />
+        </div>
+      ) : showsBroll && imageSrc ? (
         <>
           {/* The watermark crop shortens the frame by a few pixels: everything
               inside is still cover-cropped, so the bottom edge is simply gone. */}
@@ -370,6 +410,34 @@ const CinematicScene: React.FC<SceneProps> = ({
         <AbsoluteFill style={{background: HOST_STAGE}} />
       )}
 
+      {/* Floating subject: the actual thing under review sits above the
+          footage with a deep drop shadow, while the captions stay clear below. */}
+      {showsSubject ? (
+        <AbsoluteFill
+          style={{
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingBottom: 150 * s,
+          }}
+        >
+          <Img
+            src={imageSrc}
+            style={{
+              maxWidth: '58%',
+              maxHeight: '52%',
+              objectFit: 'contain',
+              borderRadius: 20 * s,
+              border: `${Math.max(1.5, 2 * s)}px solid rgba(255, 255, 255, 0.2)`,
+              boxShadow: `0 ${44 * s}px ${110 * s}px rgba(0, 0, 0, 0.82), ` +
+                `0 ${12 * s}px ${34 * s}px rgba(0, 0, 0, 0.6)`,
+              opacity: subjectReveal,
+              transform: `translateY(${subjectFloat}px) scale(${subjectScale})`,
+              filter: grade.filter,
+            }}
+          />
+        </AbsoluteFill>
+      ) : null}
+
       {/* Full-frame presenter goes in before the scrim, so the gradient that
           keeps the subtitle readable sits on top of the video too. */}
       {layout === 'host_full' ? (
@@ -408,9 +476,9 @@ const CinematicScene: React.FC<SceneProps> = ({
         }}
       >
         <div style={{textAlign: 'center'}}>
-          {/* Channel identification line, host scenes only: the body of the film
-              stays as clean as the reference. */}
-          {layout === 'host_full' && scene.kicker ? (
+          {/* Channel identification line: the "BEFORE YOU BUY" label that
+              sits above the outlined subtitle. */}
+          {scene.kicker ? (
             <div
               style={{
                 fontFamily: cinzel.fontFamily,
