@@ -70,13 +70,31 @@ The generated file looks like this:
 {
   "title": "12th Street",
   "topic": "The History of Rome",
+  "sceneDurationInSeconds": 2.5,
+  "style": {"letterbox": false, "atmosphereOpacity": 0, "wordmark": "none", "scrim": 0.15},
+  "outro": {"title": "The History of Rome", "durationInSeconds": 3.5},
   "scenes": [
     {
       "layout": "host_full",
+      "transition": "cut",
+      "grade": "warm",
       "image_url": "episodes/the-history-of-rome/scene-1.jpg",
-      "text": "The History of Rome. It began like any other story — with ambition, and with time.",
-      "durationInSeconds": 5,
-      "kicker": "Chapter One — The Beginning"
+      "text": "Rome did not fall in a day.",
+      "durationInSeconds": 3,
+      "kicker": "The History of Rome"
+    },
+    {
+      "layout": "broll_only",
+      "transition": "cut",
+      "grade": "cold",
+      "image_url": "episodes/the-history-of-rome/scene-2.jpg",
+      "text": "At its height, Rome reached farther than any empire before it.",
+      "captions": [
+        {"text": "At its height,", "from": 0.0, "to": 0.9},
+        {"text": "Rome reached farther", "from": 0.9, "to": 1.7},
+        {"text": "than any empire before it.", "from": 1.7, "to": 2.5}
+      ],
+      "durationInSeconds": 2.5
     }
   ]
 }
@@ -88,21 +106,32 @@ The generated file looks like this:
   to `broll_only`. Host layouts play `remotion/public/host/presenter.mp4`
   through `<OffthreadVideo>`: full-frame over a blurred backplate for
   `host_full`, rounded inset for `host_pip`. Swap that file to change the host.
-
+- `transition` — `cut` (default, and what the reference film uses) replaces the
+  previous shot on a single frame; `crossfade` fades in over the tail of it,
+  using `overlapInSeconds` (default 0.8s).
+- `grade` — `cold` (cool blue, night interiors), `warm` (muted amber, daylight)
+  or `neutral`. The filter sits on the still, a soft tint wash goes over the
+  finished shot.
+- `captions` — optional subtitle chunks timed in seconds from the start of the
+  scene. Without them, `text` is split automatically to fit the shot.
 - `image_url` — any URL or a file under `remotion/public/`, cropped to cover the
   frame. Pollinations.ai stills are downloaded there; the AI image API drops in
   here too. Optional for a `host_full` scene, which never shows b-roll.
-- `text` — the narration line burned into the lower third.
+- `text` — the full narration line; it is chunked into subtitles.
 - `durationInSeconds` — how long that shot holds (the composition falls back to
   a global default when it is missing).
-- `kicker` — optional gold uppercase chapter line.
+- `kicker` — optional gold identification line, shown on `host_full` scenes only.
+- `style` — film-wide switches: `letterbox`, `atmosphereOpacity`, `lightSweep`,
+  `vignette`, `wordmark` (`all` / `intro` / `none`) and `scrim` (strength of the
+  gradient behind the subtitles; 0 gives the reference's outline-only look).
+- `outro` — title card after the last scene: `{title, durationInSeconds}`.
 
 `render.js` also accepts the older `image` / `caption` keys, so a hand-written
 scene file still renders.
 
-Change the file, push to `main`, and CI renders the new episode. Scene length
-and crossfade length are `--scene-seconds` / `--overlap-seconds` flags (defaults
-6s and 1s), so a 3-scene episode is 16s long.
+Change the file, push to `main`, and CI renders the new episode. Shot length and
+crossfade length are `--scene-seconds` / `--overlap-seconds` flags (defaults
+2.5s and 0.8s).
 
 ## What the composition does
 
@@ -115,30 +144,38 @@ and crossfade length are `--scene-seconds` / `--overlap-seconds` flags (defaults
   brass-bordered frame, sliding the caption right so the two never collide.
   `broll_only` is the original film look. The presenter is muted until the film
   has an audio track.
-- **Letterbox** — solid black bars (9.5% of frame height, top and bottom) drawn
-  over everything, for the 2.35:1 film feel.
-- **Ken Burns** — every still pushes from 1.06× to 1.26× on a linear ramp with a
-  slow lateral drift that alternates per shot, so nothing ever sits still.
+- **Transitions** — every shot cuts in on a single frame by default. A scene can
+  ask for `"transition": "crossfade"` to fade in over the previous shot instead.
+- **Subtitles** — one short chunk at a time, in Oswald bold italic caps, white
+  with a thick black outline (`-webkit-text-stroke` + `paint-order`), centred
+  above the bottom edge. Chunk timings come from `captions`, or from splitting
+  `text` to fit the shot; the text swaps hard, never fades. A `scrim` setting
+  controls how much dark gradient sits behind it — the reference uses almost
+  none and relies on the outline.
+- **Grade** — per-scene `cold` / `warm` / `neutral`: a CSS filter plus a
+  `soft-light` tint over the shot, so the night interiors go blue and the
+  daylight scenes go amber, like the reference's location-coded palette.
+- **End card** — an optional `outro` title, heavy rounded sans on near-black
+  with a faint warm cast, fading up before the closing fade to black.
+- **Extras are opt-in** — letterbox, dust/fog, light sweep, vignette and the
+  wordmark are all `style` switches, so one episode can be clean reference-style
+  and another keeps the legacy look.
+- **Ken Burns** — b-roll stills push from 1.05× to 1.17× with a slow lateral
+  drift that alternates per shot, sized for 2.5s cuts rather than 5s holds.
 - **2.5D camera** — the still sits on a perspective plane and orbits a couple of
   degrees over the shot, while a softened, dimmed copy of the same still drifts
   behind it at 30% of the travel. That differential motion reads as depth and
   fills the edges the tilt exposes. The bottom 20px of the frame are cropped to
   drop the watermark some free image hosts bake into their output.
-- **Atmosphere** — a 12% dust-and-fog layer (24 deterministic motes plus three
-  slow fog banks) and a soft diagonal shaft of light that crosses the frame
-  every 5s. Both are frame-driven, so previews and MP4s match exactly.
-- **Crossfades** — the incoming scene fades in on top of the outgoing one, which
-  stays fully opaque underneath, so transitions never dip to black.
-- **Captions** — Merriweather 56px off-white, center-aligned, fading in over
-  ~1.1s after each shot settles, holding, then fading out before the cut; they
-  sit above the bottom bar on a gradient that reaches solid black so the text is
-  always readable.
-- **Typography** — Cinzel (a Trajan-style capital serif, the documentary
-  standard) for the `12TH STREET` wordmark and gold chapter kickers;
-  Merriweather for narration. Both load from Google Fonts through
-  `@remotion/google-fonts`, so renders wait for the real font files.
-- **Finish** — a radial vignette over everything and a 0.8s fade to black at the
-  end.
+- **Atmosphere** — when `atmosphereOpacity` is above 0, a dust-and-fog layer
+  (24 deterministic motes plus three slow fog banks) and a soft diagonal shaft
+  of light crossing every 5s. Both are frame-driven, so previews and MP4s match.
+- **Captions layering** — the subtitle sits above the presenter, the scrim and
+  the grade, so it is always pure white with a clean outline.
+- **Typography** — Cinzel for the wordmark and the host-scene identification
+  line, Oswald for subtitles, Nunito 800 for the end card. All load from Google
+  Fonts through `@remotion/google-fonts`, so renders wait for the real files.
+- **Finish** — an optional radial vignette and a 0.8s fade to black at the end.
 
 Duration, resolution and fps are computed from the scene list in
 `calculateMetadata`, so long-form (1920×1080) and vertical shorts (1080×1920)
@@ -151,7 +188,7 @@ cd remotion
 npm install
 node render.js                     # → remotion/out/cinematic_video.mp4 (1920x1080)
 node render.js --vertical          # → 1080x1920 shorts
-node render.js --out out/ep1.mp4 --scene-seconds 7 --overlap-seconds 1.2
+node render.js --out out/ep1.mp4 --scene-seconds 2.5 --overlap-seconds 0.8
 npm run studio                     # Remotion Studio for live editing
 ```
 

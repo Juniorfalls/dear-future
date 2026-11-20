@@ -29,12 +29,14 @@ const parseArgs = (argv) => {
 
 /**
  * scenes.json is written by generate_video.py using the {image_url, text,
- * layout, durationInSeconds} schema. Older hand-written files use {image,
- * caption} and no layout, so accept both and hand the composition one canonical
- * shape. An unknown layout is a hard error: silently rendering the wrong framing
- * is worse than failing the render.
+ * layout, transition, grade, captions, durationInSeconds} schema. Older
+ * hand-written files use {image, caption} and none of the newer keys, so accept
+ * both and hand the composition one canonical shape. An unknown layout or grade
+ * is a hard error: silently rendering the wrong framing is worse than failing
+ * the render.
  */
 const LAYOUTS = ['host_full', 'host_pip', 'broll_only'];
+const GRADES = ['cold', 'warm', 'neutral'];
 
 const normalizeScenes = (raw) => {
   if (!Array.isArray(raw) || raw.length === 0) {
@@ -43,21 +45,33 @@ const normalizeScenes = (raw) => {
   return raw.map((scene, index) => {
     const layout = scene.layout || 'broll_only';
     const image = scene.image_url || scene.image || '';
-    const caption = scene.text || scene.caption;
+    const caption = scene.text || scene.caption || '';
+    const grade = scene.grade;
     if (!LAYOUTS.includes(layout)) {
       throw new Error(
         `scene ${index + 1} has unknown layout "${layout}" (expected ${LAYOUTS.join(', ')})`,
+      );
+    }
+    if (grade && !GRADES.includes(grade)) {
+      throw new Error(
+        `scene ${index + 1} has unknown grade "${grade}" (expected ${GRADES.join(', ')})`,
       );
     }
     // Only a full-frame presenter shot can do without a still.
     if (!image && layout !== 'host_full') {
       throw new Error(`scene ${index + 1} (${layout}) has no image_url/image`);
     }
-    if (!caption) throw new Error(`scene ${index + 1} has no text/caption`);
+    if (!caption && !Array.isArray(scene.captions)) {
+      throw new Error(`scene ${index + 1} has no text/caption and no captions`);
+    }
     return {
       image,
       layout,
+      // Hard cuts are the default: a missing transition means "cut".
+      transition: scene.transition === 'crossfade' ? 'crossfade' : 'cut',
+      grade,
       caption,
+      captions: Array.isArray(scene.captions) ? scene.captions : undefined,
       kicker: scene.kicker,
       durationInSeconds: scene.durationInSeconds,
     };
@@ -80,11 +94,14 @@ const main = async () => {
   const inputProps = {
     title: data.title || '12th Street',
     scenes,
-    sceneDurationInSeconds: args.sceneSeconds ?? data.sceneDurationInSeconds ?? 6,
-    overlapInSeconds: args.overlapSeconds ?? 1,
+    // 2.5s shots: the reference film cuts every ~2s, not every 5.
+    sceneDurationInSeconds: args.sceneSeconds ?? data.sceneDurationInSeconds ?? 2.5,
+    overlapInSeconds: args.overlapSeconds ?? 0.8,
     fps: args.fps ?? 30,
     width: args.vertical ? 1080 : 1920,
     height: args.vertical ? 1920 : 1080,
+    style: data.style || {},
+    outro: data.outro,
   };
 
   console.log(`Bundling Remotion project (${scenes.length} scenes)...`);

@@ -77,9 +77,36 @@ LAYOUT_CYCLE = ["host_pip", "broll_only"]
 # a typo fails the generator instead of the render.
 LAYOUTS = ("host_full", "host_pip", "broll_only")
 
+# Presentation for the reference look: full-frame, no letterbox, no dust, no
+# light sweep, no persistent wordmark, and subtitles carried by their outline
+# rather than by a heavy gradient.
+STYLE = {
+    "letterbox": False,
+    "atmosphereOpacity": 0,
+    "lightSweep": False,
+    "vignette": False,
+    "wordmark": "none",
+    "scrim": 0.15,
+}
 
 def layouts_for(count: int) -> list[str]:
-    return ["host_full"] + [LAYOUT_CYCLE[i % len(LAYOUT_CYCLE)] for i in range(count - 1)]
+    """Hybrid framing: the host opens and closes the film, the body alternates
+    picture-in-picture with straight b-roll, like the reference's clean cuts."""
+    if count == 1:
+        return ["host_full"]
+    body = [LAYOUT_CYCLE[i % len(LAYOUT_CYCLE)] for i in range(count - 2)]
+    return ["host_full"] + body + ["host_full"]
+
+
+def grades_for(layouts: list[str]) -> list[str]:
+    """Location-coded grade per scene: the host frames the film warm/neutral,
+    the b-roll body alternates the cold night palette with the warm one."""
+    last = len(layouts) - 1
+    return [
+        "warm" if index == 0 else "neutral" if index == last else
+        ("cold" if index % 2 == 1 else "warm")
+        for index in range(len(layouts))
+    ]
 
 
 def parse_layouts(value: str | None, count: int) -> list[str]:
@@ -332,6 +359,7 @@ def build(topic: str, count: int, scene_seconds: float, width: int, height: int,
     lines = captions(topic, count, beats_file)
     chapters = [CHAPTERS[i % len(CHAPTERS)] for i in range(count)]
     layouts = layout_plan or layouts_for(count)
+    grades = grades_for(layouts)
 
     return {
         "_notes": {
@@ -340,8 +368,9 @@ def build(topic: str, count: int, scene_seconds: float, width: int, height: int,
             "image_source": source,
             "layouts": (
                 "layout is one of host_full (presenter only), host_pip (b-roll + "
-                "presenter PiP) or broll_only. Missing layout falls back to "
-                "broll_only. host_full scenes may omit image_url."
+                "presenter PiP) or broll_only. Transition is 'cut' (default) or "
+                "'crossfade'; grade is 'cold', 'warm' or 'neutral'; captions may "
+                "be a list of {text, from, to} chunks timed per scene."
             ),
             "swap_images": (
                 "Put stills in remotion/public/episodes/<topic-slug>/ as scene-1.jpg, "
@@ -352,15 +381,20 @@ def build(topic: str, count: int, scene_seconds: float, width: int, height: int,
         },
         "title": "12th Street",
         "topic": topic,
+        "sceneDurationInSeconds": scene_seconds,
+        "style": STYLE,
+        "outro": {"title": topic, "durationInSeconds": 3.5},
         "scenes": [
             {
                 "layout": layout,
+                "transition": "cut",
+                "grade": grade,
                 "image_url": url,
                 "text": line,
                 "durationInSeconds": scene_seconds,
                 "kicker": chapter,
             }
-            for url, line, chapter, layout in zip(urls, lines, chapters, layouts)
+            for url, line, chapter, layout, grade in zip(urls, lines, chapters, layouts, grades)
         ],
     }
 
@@ -417,7 +451,7 @@ def main(argv: list[str] | None = None) -> int:
                         help="one framing per scene, comma-separated or JSON: "
                              "host_full,host_pip,broll_only (default: host_full, then alternating "
                              "host_pip/broll_only)")
-    parser.add_argument("--scene-seconds", type=float, default=5.0)
+    parser.add_argument("--scene-seconds", type=float, default=2.5)
     parser.add_argument("--width", type=int, default=1080, help="still width in px")
     parser.add_argument("--height", type=int, default=1920, help="still height in px")
     parser.add_argument("--beats", type=Path, default=None,
@@ -450,7 +484,7 @@ def main(argv: list[str] | None = None) -> int:
     total = len(data["scenes"]) * args.scene_seconds
     print(f"\nWrote {args.out} — {len(data['scenes'])} scenes / {total:.0f}s on \"{args.topic}\"")
     for index, scene in enumerate(data["scenes"], start=1):
-        print(f"  {index}. [{scene['layout']}] {scene['text']}")
+        print(f"  {index}. [{scene['layout']}/{scene['grade']}] {scene['text']}")
     return 0
 
 

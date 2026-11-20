@@ -1,48 +1,77 @@
 {
   "_notes": {
-    "generated_by": "generate_video.py",
+    "generated_by": "hand-written sample for the reference-style film",
     "topic": "The Fall of Rome",
-    "image_source": "local-assets:the-fall-of-rome",
-    "layouts": "layout is one of host_full (presenter only), host_pip (b-roll + presenter PiP) or broll_only. Missing layout falls back to broll_only. host_full scenes may omit image_url.",
+    "image_source": "pollinations-ai",
+    "layouts": "layout is host_full (presenter only), host_pip (b-roll + presenter PiP) or broll_only. Hybrid cut: host_full opens and closes the film, the body is b-roll.",
+    "transitions": "transition is 'cut' (default, and what the reference film uses) or 'crossfade'.",
+    "grades": "grade is 'cold' (night interiors, cool blue), 'warm' (daylight, muted amber) or 'neutral'.",
+    "captions": "captions is an optional list of {text, from, to} chunks timed relative to the scene. Without it the caption line is split automatically to fit the shot.",
     "swap_images": "Put stills in remotion/public/episodes/<topic-slug>/ as scene-1.jpg, scene-2.jpg, ... and they are picked up automatically. Otherwise Pollinations.ai generates a still per scene from its prompt, or run with --images openai to use OpenAI's image API."
   },
   "title": "12th Street",
   "topic": "The Fall of Rome",
+  "sceneDurationInSeconds": 2.5,
+  "style": {
+    "letterbox": false,
+    "atmosphereOpacity": 0,
+    "lightSweep": false,
+    "vignette": false,
+    "wordmark": "none",
+    "scrim": 0.15
+  },
+  "outro": {
+    "title": "The Fall of Rome",
+    "durationInSeconds": 3.5
+  },
   "scenes": [
     {
       "layout": "host_full",
+      "transition": "cut",
+      "grade": "warm",
       "image_url": "episodes/the-fall-of-rome/scene-1.jpg",
-      "text": "The Fall of Rome. It began like any other story — with ambition, and with time.",
-      "durationInSeconds": 5.0,
-      "kicker": "Chapter One — The Beginning"
+      "text": "Rome did not fall in a day.",
+      "durationInSeconds": 3.0,
+      "kicker": "The Fall of Rome"
     },
     {
       "layout": "broll_only",
+      "transition": "cut",
+      "grade": "cold",
       "image_url": "episodes/the-fall-of-rome/scene-2.jpg",
-      "text": "At its height, its reach was measured not in miles, but in months of travel.",
-      "durationInSeconds": 5.0,
-      "kicker": "Chapter Two — The Height"
+      "text": "At its height, Rome reached farther than any empire before it.",
+      "captions": [
+        {"text": "At its height,", "from": 0.0, "to": 0.9},
+        {"text": "Rome reached farther", "from": 0.9, "to": 1.7},
+        {"text": "than any empire before it.", "from": 1.7, "to": 2.5}
+      ],
+      "durationInSeconds": 2.5
     },
     {
       "layout": "host_pip",
+      "transition": "cut",
+      "grade": "warm",
       "image_url": "episodes/the-fall-of-rome/scene-3.jpg",
-      "text": "Then the borders thinned, and the cost of holding them rose year after year.",
-      "durationInSeconds": 5.0,
-      "kicker": "Chapter Three — The Turn"
+      "text": "Then the borders thinned, and the cost of holding them rose.",
+      "durationInSeconds": 2.5,
+      "kicker": "The Turn"
     },
     {
       "layout": "broll_only",
+      "transition": "cut",
+      "grade": "cold",
       "image_url": "episodes/the-fall-of-rome/scene-4.jpg",
-      "text": "The end did not arrive in a single day. It arrived in a hundred small surrenders.",
-      "durationInSeconds": 5.0,
-      "kicker": "Chapter Four — The Unravelling"
+      "text": "The end arrived in a hundred small surrenders.",
+      "durationInSeconds": 2.5
     },
     {
       "layout": "host_full",
+      "transition": "cut",
+      "grade": "neutral",
       "image_url": "episodes/the-fall-of-rome/scene-5.jpg",
-      "text": "What survives of The Fall of Rome is stone, dust, and a warning we are still learning to read.",
-      "durationInSeconds": 5.0,
-      "kicker": "Chapter Five — What Remains"
+      "text": "What survives is stone, dust, and a warning.",
+      "durationInSeconds": 3.0,
+      "kicker": "What Remains"
     }
   ]
 }
