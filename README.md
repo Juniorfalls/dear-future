@@ -73,6 +73,7 @@ The generated file looks like this:
   "sceneDurationInSeconds": 2.5,
   "style": {"letterbox": false, "atmosphereOpacity": 0, "wordmark": "none", "scrim": 0.15},
   "outro": {"title": "The History of Rome", "durationInSeconds": 3.5},
+  "audio": {"src": "audio/bg_music.mp3", "volume": 0.15, "loop": true},
   "scenes": [
     {
       "layout": "host_full",
@@ -125,6 +126,11 @@ The generated file looks like this:
   `vignette`, `wordmark` (`all` / `intro` / `none`) and `scrim` (strength of the
   gradient behind the subtitles; 0 gives the reference's outline-only look).
 - `outro` — title card after the last scene: `{title, durationInSeconds}`.
+- `audio` — the music bed: `{src, volume, loop, trimBeforeSeconds}`. `src` is a
+  file under `remotion/public/` or a full URL; it plays under the whole film,
+  from the first frame to the end card, and loops when it is shorter than the
+  episode. Omit the block to get the bundled track at 0.15. Only `src` is
+  required; `volume` is clamped to 0–1.
 
 `render.js` also accepts the older `image` / `caption` keys, so a hand-written
 scene file still renders.
@@ -155,6 +161,11 @@ crossfade length are `--scene-seconds` / `--overlap-seconds` flags (defaults
 - **Grade** — per-scene `cold` / `warm` / `neutral`: a CSS filter plus a
   `soft-light` tint over the shot, so the night interiors go blue and the
   daylight scenes go amber, like the reference's location-coded palette.
+- **Music bed** — one track under the whole composition (`<Audio>` at the top
+  level, not inside a scene), at 0.15 so a voice-over can sit on top. The
+  bundled `public/audio/bg_music.mp3` is a CC0 ambient piece (Wikimedia
+  Commons, `Ambient music test, Yamaha CK61`), transcoded to 48 kHz stereo MP3;
+  replace that file or point `audio.src` elsewhere per episode.
 - **End card** — an optional `outro` title, heavy rounded sans on near-black
   with a faint warm cast, fading up before the closing fade to black.
 - **Extras are opt-in** — letterbox, dust/fog, light sweep, vignette and the

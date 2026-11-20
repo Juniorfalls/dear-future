@@ -1,6 +1,7 @@
 import React, {useMemo} from 'react';
 import {
   AbsoluteFill,
+  Audio,
   Img,
   OffthreadVideo,
   Sequence,
@@ -12,7 +13,7 @@ import {
 import {loadFont as loadCinzel} from '@remotion/google-fonts/Cinzel';
 import {loadFont as loadNunito} from '@remotion/google-fonts/Nunito';
 import {loadFont as loadOswald} from '@remotion/google-fonts/Oswald';
-import type {CinematicProps, FilmStyle, Grade, Scene, SceneLayout} from './types';
+import type {AudioTrack, CinematicProps, FilmStyle, Grade, Scene, SceneLayout} from './types';
 import {buildTimeline} from './timeline';
 import {resolveCaptions} from './subtitles';
 
@@ -125,6 +126,17 @@ const HOST_STAGE =
  *  rendered host exists: drop a new file at public/host/presenter.mp4 and
  *  nothing else changes. */
 const PRESENTER_SRC = staticFile('host/presenter.mp4');
+
+/**
+ * Music bed used when the episode does not name one. Royalty-free (CC0) ambient
+ * track, committed at public/audio/bg_music.mp3, so a bare scenes.json still
+ * renders with sound.
+ */
+const DEFAULT_AUDIO: AudioTrack = {
+  src: 'audio/bg_music.mp3',
+  volume: 0.15,
+  loop: true,
+};
 
 /**
  * The presenter, framed by the scene layout.
@@ -661,6 +673,26 @@ const EndCard: React.FC<{title: string}> = ({title}) => {
   );
 };
 
+/**
+ * The music bed: one track under the whole composition, looping if it is
+ * shorter than the film. Muted by default only if the episode sets volume 0.
+ */
+const MusicBed: React.FC<{track: AudioTrack}> = ({track}) => {
+  const {fps} = useVideoConfig();
+  const src = track.src.startsWith('http') ? track.src : staticFile(track.src);
+  const trimBefore = track.trimBeforeSeconds
+    ? Math.round(track.trimBeforeSeconds * fps)
+    : 0;
+  return (
+    <Audio
+      src={src}
+      volume={track.volume ?? 0.15}
+      loop={track.loop ?? true}
+      trimBefore={trimBefore}
+    />
+  );
+};
+
 export const CinematicDoc: React.FC<CinematicProps> = ({
   title,
   scenes,
@@ -668,6 +700,7 @@ export const CinematicDoc: React.FC<CinematicProps> = ({
   overlapInSeconds,
   style: styleProp,
   outro,
+  audio,
 }) => {
   const {fps, height} = useVideoConfig();
   const style = {...DEFAULT_STYLE, ...styleProp};
@@ -686,6 +719,10 @@ export const CinematicDoc: React.FC<CinematicProps> = ({
 
   return (
     <AbsoluteFill style={{backgroundColor: '#03040a'}}>
+      {/* One track for the whole film, married to the composition timeline so
+          it runs through every cut and under the end card. */}
+      <MusicBed track={audio ?? DEFAULT_AUDIO} />
+
       {scenes.map((scene, index) => (
         <Sequence
           key={`${index}-${scene.image}-${scene.layout}`}

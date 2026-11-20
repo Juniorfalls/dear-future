@@ -89,6 +89,15 @@ STYLE = {
     "scrim": 0.15,
 }
 
+# Music bed: a CC0 ambient track committed at remotion/public/audio/bg_music.mp3.
+# Low volume so a voice-over can sit on top later; swap the file or override this
+# block per episode.
+AUDIO = {
+    "src": "audio/bg_music.mp3",
+    "volume": 0.15,
+    "loop": True,
+}
+
 def layouts_for(count: int) -> list[str]:
     """Hybrid framing: the host opens and closes the film, the body alternates
     picture-in-picture with straight b-roll, like the reference's clean cuts."""
@@ -384,6 +393,7 @@ def build(topic: str, count: int, scene_seconds: float, width: int, height: int,
         "sceneDurationInSeconds": scene_seconds,
         "style": STYLE,
         "outro": {"title": topic, "durationInSeconds": 3.5},
+        "audio": AUDIO,
         "scenes": [
             {
                 "layout": layout,

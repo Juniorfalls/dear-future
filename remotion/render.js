@@ -102,6 +102,9 @@ const main = async () => {
     height: args.vertical ? 1920 : 1080,
     style: data.style || {},
     outro: data.outro,
+    // The bed plays under the whole film; DEFAULTS in CinematicDoc cover an
+    // episode that omits this block.
+    audio: data.audio,
   };
 
   console.log(`Bundling Remotion project (${scenes.length} scenes)...`);

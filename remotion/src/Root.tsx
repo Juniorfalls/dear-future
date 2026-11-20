@@ -2,6 +2,7 @@ import React from 'react';
 import {CalculateMetadataFunction, Composition} from 'remotion';
 import {CinematicDoc} from './CinematicDoc';
 import type {
+  AudioTrack,
   CinematicProps,
   FilmStyle,
   Grade,
@@ -36,6 +37,7 @@ const episode = scenesData as {
   sceneDurationInSeconds?: number;
   style?: FilmStyle;
   outro?: {title?: string; durationInSeconds?: number};
+  audio?: AudioTrack;
   scenes: RawScene[];
 };
 
@@ -76,6 +78,23 @@ const outro: Outro | undefined =
       }
     : undefined;
 
+/** Only a real file name is accepted, so a typo cannot silence the film. */
+const audio: AudioTrack | undefined =
+  episode.audio && typeof episode.audio.src === 'string' && episode.audio.src
+    ? {
+        src: episode.audio.src,
+        volume:
+          typeof episode.audio.volume === 'number'
+            ? Math.min(1, Math.max(0, episode.audio.volume))
+            : undefined,
+        loop: typeof episode.audio.loop === 'boolean' ? episode.audio.loop : undefined,
+        trimBeforeSeconds:
+          typeof episode.audio.trimBeforeSeconds === 'number'
+            ? Math.max(0, episode.audio.trimBeforeSeconds)
+            : undefined,
+      }
+    : undefined;
+
 export const defaultProps: CinematicProps = {
   title: episode.title ?? '12th Street',
   scenes,
@@ -86,6 +105,7 @@ export const defaultProps: CinematicProps = {
   height: 1080,
   style: episode.style ?? {},
   outro,
+  audio,
 };
 
 export const calculateMetadata: CalculateMetadataFunction<CinematicProps> = ({props}) => {

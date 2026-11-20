@@ -24,6 +24,11 @@
     "title": "The Fall of Rome",
     "durationInSeconds": 3.5
   },
+  "audio": {
+    "src": "audio/bg_music.mp3",
+    "volume": 0.15,
+    "loop": true
+  },
   "scenes": [
     {
       "layout": "host_full",
@@ -41,9 +46,21 @@
       "image_url": "episodes/the-fall-of-rome/scene-2.jpg",
       "text": "At its height, Rome reached farther than any empire before it.",
       "captions": [
-        {"text": "At its height,", "from": 0.0, "to": 0.9},
-        {"text": "Rome reached farther", "from": 0.9, "to": 1.7},
-        {"text": "than any empire before it.", "from": 1.7, "to": 2.5}
+        {
+          "text": "At its height,",
+          "from": 0.0,
+          "to": 0.9
+        },
+        {
+          "text": "Rome reached farther",
+          "from": 0.9,
+          "to": 1.7
+        },
+        {
+          "text": "than any empire before it.",
+          "from": 1.7,
+          "to": 2.5
+        }
       ],
       "durationInSeconds": 2.5
     },

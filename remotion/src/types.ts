@@ -97,6 +97,22 @@ export type Outro = {
   durationInSeconds?: number;
 };
 
+/**
+ * The music bed. It plays under the whole film, from the first frame to the
+ * last, so the reference's “no silence” quality holds across cuts and the end
+ * card.
+ */
+export type AudioTrack = {
+  /** File under remotion/public/ (e.g. "audio/bg_music.mp3") or a full URL. */
+  src: string;
+  /** 0-1. Kept low so a future voice-over can sit on top. */
+  volume?: number;
+  /** Repeat the track when it is shorter than the film. */
+  loop?: boolean;
+  /** Seconds into the track to start, e.g. to skip an intro. */
+  trimBeforeSeconds?: number;
+};
+
 export type CinematicProps = {
   title: string;
   scenes: Scene[];
@@ -109,4 +125,6 @@ export type CinematicProps = {
   fps: number;
   style?: FilmStyle;
   outro?: Outro;
+  /** Music bed; falls back to the bundled track at 0.15 when omitted. */
+  audio?: AudioTrack;
 };
