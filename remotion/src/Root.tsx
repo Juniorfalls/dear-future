@@ -1,5 +1,6 @@
 import React from 'react';
-import {CalculateMetadataFunction, Composition} from 'remotion';
+import {CalculateMetadataFunction, Composition, staticFile} from 'remotion';
+import {getAudioDuration} from '@remotion/media-utils';
 import {CinematicDoc} from './CinematicDoc';
 import type {
   AudioTrack,
@@ -19,6 +20,13 @@ import scenesData from '../data/scenes.json';
 /** Shot length used when neither the scene nor the episode sets one. */
 const DEFAULT_SCENE_SECONDS = 2.5;
 
+/**
+ * Silence kept after the last word of a line, matched to TAIL_PADDING in
+ * generate_voice.py. The shot must outlast the voice; the cut should still feel
+ * quick.
+ */
+const VOICE_TAIL_SECONDS = 0.5;
+
 type RawScene = {
   image_url?: string;
   image?: string;
@@ -30,6 +38,7 @@ type RawScene = {
   captions?: unknown;
   kicker?: string;
   durationInSeconds?: number;
+  voice?: {src?: string; durationInSeconds?: number; volume?: number};
 };
 
 const episode = scenesData as {
@@ -54,6 +63,17 @@ const scenes: Scene[] = episode.scenes.map((scene) => {
   const grade = GRADES.includes(scene.grade as Grade) ? (scene.grade as Grade) : undefined;
   const transition: SceneTransition =
     scene.transition === 'crossfade' ? 'crossfade' : 'cut';
+  const voice =
+    scene.voice && typeof scene.voice.src === 'string' && scene.voice.src
+      ? {
+          src: scene.voice.src,
+          durationInSeconds: scene.voice.durationInSeconds,
+          volume:
+            typeof scene.voice.volume === 'number'
+              ? Math.min(1, Math.max(0, scene.voice.volume))
+              : undefined,
+        }
+      : undefined;
 
   return {
     image: scene.image_url ?? scene.image ?? '',
@@ -64,6 +84,7 @@ const scenes: Scene[] = episode.scenes.map((scene) => {
     grade,
     kicker: scene.kicker,
     durationInSeconds: scene.durationInSeconds,
+    voice,
   };
 });
 
@@ -108,11 +129,37 @@ export const defaultProps: CinematicProps = {
   audio,
 };
 
-export const calculateMetadata: CalculateMetadataFunction<CinematicProps> = ({props}) => {
+export const calculateMetadata: CalculateMetadataFunction<CinematicProps> = async ({
+  props,
+}) => {
   const fps = props.fps ?? defaultProps.fps;
   const crossfadeFrames = Math.max(0, Math.round((props.overlapInSeconds ?? 0.8) * fps));
+
+  // Narration drives the cut. The wav is measured here rather than trusted from
+  // JSON, so replacing a voice file re-times the film on the next render; a
+  // missing or unreadable file falls back to the duration the generator wrote.
+  const scenes = await Promise.all(
+    props.scenes.map(async (scene) => {
+      if (!scene.voice?.src) {
+        return scene;
+      }
+      try {
+        const src = scene.voice.src.startsWith('http')
+          ? scene.voice.src
+          : staticFile(scene.voice.src);
+        const seconds = await getAudioDuration(src);
+        return {
+          ...scene,
+          durationInSeconds: Number((seconds + VOICE_TAIL_SECONDS).toFixed(3)),
+        };
+      } catch {
+        return scene;
+      }
+    }),
+  );
+
   const timeline = buildTimeline(
-    props.scenes,
+    scenes,
     props.sceneDurationInSeconds ?? DEFAULT_SCENE_SECONDS,
     fps,
     crossfadeFrames,
@@ -126,6 +173,9 @@ export const calculateMetadata: CalculateMetadataFunction<CinematicProps> = ({pr
     fps,
     width: props.width ?? defaultProps.width,
     height: props.height ?? defaultProps.height,
+    // Hand the re-measured durations to the component so the sequences and the
+    // composition length always agree.
+    props: {...props, scenes},
   };
 };
 

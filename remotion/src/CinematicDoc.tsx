@@ -297,8 +297,13 @@ const CinematicScene: React.FC<SceneProps> = ({
         });
 
   // Subtitles: authored chunks when the episode has them, otherwise the caption
-  // split to fit the shot. One chunk on screen at a time, swapped hard.
-  const cues = useMemo(() => resolveCaptions(scene, sceneSeconds), [scene, sceneSeconds]);
+  // split to fit the spoken line (not the shot's tail padding), so the last
+  // chunk lands with the voice instead of hanging in the silence after it.
+  const captionSeconds = scene.voice?.durationInSeconds ?? sceneSeconds;
+  const cues = useMemo(
+    () => resolveCaptions(scene, captionSeconds),
+    [scene, captionSeconds],
+  );
   const cueTime = frame / fps;
   const cue = cues.find((item) => cueTime >= item.from && cueTime < item.to);
 
@@ -730,6 +735,16 @@ export const CinematicDoc: React.FC<CinematicProps> = ({
           durationInFrames={timeline.durations[index]}
           name={`Scene ${index + 1}`}
         >
+          {scene.voice ? (
+            <Audio
+              src={
+                scene.voice.src.startsWith('http')
+                  ? scene.voice.src
+                  : staticFile(scene.voice.src)
+              }
+              volume={scene.voice.volume ?? 1}
+            />
+          ) : null}
           <CinematicScene
             scene={scene}
             index={index}

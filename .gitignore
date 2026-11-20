@@ -8,7 +8,11 @@ _look/
 __pycache__/
 *.pyc
 
-# render leftovers from the retired Manim pipeline
-media/
-outputs/
-audio/
+# render leftovers from the retired Manim pipeline (root only: the film's own
+# audio lives in remotion/public/audio/ and must be committed)
+/media/
+/outputs/
+/audio/
+
+# local Python env for the TTS pipeline
+.venv/

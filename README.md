@@ -2,8 +2,9 @@
 
 Cinematic **history and ancient-civilization** documentaries for the **12th
 Street** channel, rendered entirely in [Remotion](https://remotion.dev). The
-whole film — stills, Ken Burns camera moves, crossfades, letterbox, lower-third
-captions and the wordmark — is React code driven by one JSON file per episode.
+whole film — stills, camera moves, hard cuts, outlined subtitles, per-scene colour
+grades, a music bed and a locally generated voiceover — is React code driven by
+one JSON file per episode.
 GitHub Actions renders it and publishes the MP4 as an artifact.
 
 ## Where the video is
@@ -139,6 +140,48 @@ Change the file, push to `main`, and CI renders the new episode. Shot length and
 crossfade length are `--scene-seconds` / `--overlap-seconds` flags (defaults
 2.5s and 0.8s).
 
+## Voiceover
+
+The narration is spoken locally by [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)
+(Apache-2.0, commercial use allowed): no API key, no per-word cost, and the
+voice files are committed with the episode so CI can render without a GPU.
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu
+.venv/bin/pip install -r requirements-voice.txt
+sudo apt install espeak-ng          # only if your distro needs it
+
+.venv/bin/python generate_script.py "The Fall of Rome"   # → remotion/data/script.json
+.venv/bin/python generate_voice.py                       # → public/audio/scene_N.wav
+```
+
+`generate_script.py` writes the shot list: `scene_id`, `text`, `duration_hint`,
+plus the framing and grade for that shot. Scripts live in the `SCRIPTS` table in
+that file; add a topic there and it appears in `--list`.
+
+`generate_voice.py` speaks each line with `am_michael` (deep, unhurried; `--voice
+am_adam` is the clipped alternative), trims the silence Kokoro pads around it,
+and writes 24 kHz mono wavs. It then rewrites `scenes.json` with two things per
+scene:
+
+```json
+"durationInSeconds": 3.662,
+"voice": {"src": "audio/scene_1.wav", "durationInSeconds": 3.162}
+```
+
+The shot is the spoken line plus 0.5 s of air. At render time
+`calculateMetadata` re-measures each wav with `getAudioDuration` and passes the
+per-scene durations back into the composition, so the sequences and the
+composition length are derived from the audio, not from the JSON — replacing a
+wav re-times the film on the next render. Subtitles are chunked over the speech
+only, so the last chunk lands with the voice rather than hanging in the tail.
+
+If torch will not install on your machine (Termux/Android), `edge-tts` is a
+drop-in fallback: it needs no key either, and its mp3s can be written to
+`public/audio/scene_N.wav`-equivalent paths. Kokoro is preferred for quality and
+for staying fully local.
+
 ## What the composition does
 
 `remotion/src/CinematicDoc.tsx`:
@@ -161,6 +204,8 @@ crossfade length are `--scene-seconds` / `--overlap-seconds` flags (defaults
 - **Grade** — per-scene `cold` / `warm` / `neutral`: a CSS filter plus a
   `soft-light` tint over the shot, so the night interiors go blue and the
   daylight scenes go amber, like the reference's location-coded palette.
+- **Narration** — each scene owns its wav, played by an `<Audio>` inside that
+  scene's sequence, so a line can never drift across a cut. Volume defaults to 1.
 - **Music bed** — one track under the whole composition (`<Audio>` at the top
   level, not inside a scene), at 0.15 so a voice-over can sit on top. The
   bundled `public/audio/bg_music.mp3` is a CC0 ambient piece (Wikimedia
@@ -244,8 +289,12 @@ Any other provider (Stable Diffusion, a hosted endpoint): replace
 | Path | Purpose |
 | --- | --- |
 | `generate_video.py` | topic → `remotion/data/scenes.json` (chapters, captions, image URLs) |
-| `requirements.txt` | Python dependency for the generator (`requests`) |
-| `remotion/src/CinematicDoc.tsx` | the film: scenes, 2.5D camera, dust/light overlays, captions, wordmark |
+| `generate_script.py` | topic → `remotion/data/script.json` (narration, scene ids, duration hints) |
+| `generate_voice.py` | script → `public/audio/scene_N.wav` + real durations in `scenes.json` |
+| `requirements.txt` | Python dependencies for image generation (installed by CI) |
+| `requirements-voice.txt` | Kokoro/soundfile for the voiceover, kept out of CI |
+| `remotion/src/CinematicDoc.tsx` | the film: scenes, 2.5D camera, subtitles, grades, end card |
+| `remotion/public/audio/` | music bed + per-scene narration wavs (committed) |
 | `remotion/public/episodes/<slug>/` | committed stills for an episode (scene-1.jpg, …) |
 | `remotion/public/host/presenter.mp4` | the virtual presenter clip played by the host layouts |
 | `remotion/src/Root.tsx` | `CinematicDoc` composition + dynamic duration/dimensions |
@@ -256,8 +305,9 @@ Any other provider (Stable Diffusion, a hosted endpoint): replace
 
 ## Requirements
 
-Python 3.10+ (`requests`) for the generator, Node 18+ for Remotion, and network
-access (images and Google Fonts are fetched at render time).
+Python 3.10+, Node 18+ for Remotion, and network access (images and Google Fonts
+are fetched at render time). Rendering the film needs no Python packages at all;
+the voiceover step additionally needs the `requirements-voice.txt` environment.
 
 ## The workflow
 

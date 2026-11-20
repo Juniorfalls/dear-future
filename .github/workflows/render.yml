@@ -17,6 +17,8 @@ on:
     paths:
       - "remotion/**"
       - "generate_video.py"
+      - "generate_script.py"
+      - "generate_voice.py"
       - "requirements.txt"
       - ".github/workflows/render.yml"
 
@@ -58,9 +60,13 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      - name: Generate scenes from the topic
+      # The committed scenes.json already carries the stills, narration and
+      # per-shot timings, so a normal render never regenerates it (that would
+      # drop the voice blocks). Generation is the bootstrap path, and it needs
+      # the voice environment anyway; see README "Voiceover".
+      - name: Generate scenes if the repo has none
+        if: ${{ !hashFiles('remotion/data/scenes.json') }}
         env:
-          # Only needed when the run is dispatched with images=openai.
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python generate_video.py "$TOPIC" --images "$IMAGES"
 

@@ -39,6 +39,16 @@ export type Subtitle = {
   to: number;
 };
 
+/** Narration for one scene, spoken by generate_voice.py. */
+export type Voice = {
+  /** File under remotion/public/ or a full URL. */
+  src: string;
+  /** Length of the spoken line only, without the shot's tail padding. */
+  durationInSeconds?: number;
+  /** 0-1; defaults to 1 so the line sits above the music bed. */
+  volume?: number;
+};
+
 export type Scene = {
   /**
    * Full-bleed background still (any size, it is cropped to cover). Generated
@@ -63,6 +73,12 @@ export type Scene = {
   kicker?: string;
   /** Optional per-scene hold in seconds; falls back to the composition default. */
   durationInSeconds?: number;
+  /**
+   * Narration for this shot. When present the shot is sized to the spoken line
+   * plus a short tail (calculateMetadata re-measures the wav), and the file is
+   * played at the start of the shot.
+   */
+  voice?: Voice;
 };
 
 /**

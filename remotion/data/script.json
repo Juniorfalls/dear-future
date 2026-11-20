@@ -1,0 +1,44 @@
+{
+  "_notes": "Narration source. generate_voice.py speaks each scene and writes the wavs plus the real durations back into scenes.json.",
+  "topic": "The Fall of Rome",
+  "voice": "am_michael",
+  "scenes": [
+    {
+      "scene_id": 1,
+      "layout": "host_full",
+      "grade": "warm",
+      "text": "Rome did not fall in a day. It took centuries.",
+      "kicker": "The Fall of Rome",
+      "duration_hint": 3.5
+    },
+    {
+      "scene_id": 2,
+      "layout": "broll_only",
+      "grade": "cold",
+      "text": "By the fourth century, the empire was split in two.",
+      "duration_hint": 4.0
+    },
+    {
+      "scene_id": 3,
+      "layout": "host_pip",
+      "grade": "warm",
+      "text": "In the west, the legions were recalled, and the frontier was left open.",
+      "duration_hint": 5.0
+    },
+    {
+      "scene_id": 4,
+      "layout": "broll_only",
+      "grade": "cold",
+      "text": "In four seventy-six, a boy emperor was deposed. No one called it an ending.",
+      "duration_hint": 5.5
+    },
+    {
+      "scene_id": 5,
+      "layout": "host_full",
+      "grade": "neutral",
+      "text": "The empire fell. But the idea of Rome never did.",
+      "kicker": "The Fall of Rome",
+      "duration_hint": 4.0
+    }
+  ]
+}

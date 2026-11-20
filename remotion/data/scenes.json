@@ -36,8 +36,12 @@
       "grade": "warm",
       "image_url": "episodes/the-fall-of-rome/scene-1.jpg",
       "text": "Rome did not fall in a day.",
-      "durationInSeconds": 3.0,
-      "kicker": "The Fall of Rome"
+      "durationInSeconds": 3.662,
+      "kicker": "The Fall of Rome",
+      "voice": {
+        "src": "audio/scene_1.wav",
+        "durationInSeconds": 3.162
+      }
     },
     {
       "layout": "broll_only",
@@ -62,7 +66,11 @@
           "to": 2.5
         }
       ],
-      "durationInSeconds": 2.5
+      "durationInSeconds": 3.711,
+      "voice": {
+        "src": "audio/scene_2.wav",
+        "durationInSeconds": 3.211
+      }
     },
     {
       "layout": "host_pip",
@@ -70,8 +78,12 @@
       "grade": "warm",
       "image_url": "episodes/the-fall-of-rome/scene-3.jpg",
       "text": "Then the borders thinned, and the cost of holding them rose.",
-      "durationInSeconds": 2.5,
-      "kicker": "The Turn"
+      "durationInSeconds": 5.089,
+      "kicker": "The Turn",
+      "voice": {
+        "src": "audio/scene_3.wav",
+        "durationInSeconds": 4.589
+      }
     },
     {
       "layout": "broll_only",
@@ -79,7 +91,11 @@
       "grade": "cold",
       "image_url": "episodes/the-fall-of-rome/scene-4.jpg",
       "text": "The end arrived in a hundred small surrenders.",
-      "durationInSeconds": 2.5
+      "durationInSeconds": 5.812,
+      "voice": {
+        "src": "audio/scene_4.wav",
+        "durationInSeconds": 5.312
+      }
     },
     {
       "layout": "host_full",
@@ -87,8 +103,12 @@
       "grade": "neutral",
       "image_url": "episodes/the-fall-of-rome/scene-5.jpg",
       "text": "What survives is stone, dust, and a warning.",
-      "durationInSeconds": 3.0,
-      "kicker": "What Remains"
+      "durationInSeconds": 4.074,
+      "kicker": "What Remains",
+      "voice": {
+        "src": "audio/scene_5.wav",
+        "durationInSeconds": 3.574
+      }
     }
   ]
 }

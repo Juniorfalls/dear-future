@@ -74,6 +74,16 @@ const normalizeScenes = (raw) => {
       captions: Array.isArray(scene.captions) ? scene.captions : undefined,
       kicker: scene.kicker,
       durationInSeconds: scene.durationInSeconds,
+      // The scene's narration; calculateMetadata re-measures the file, so a
+      // bad duration here cannot desync the film.
+      voice:
+        scene.voice && typeof scene.voice.src === 'string' && scene.voice.src
+          ? {
+              src: scene.voice.src,
+              durationInSeconds: scene.voice.durationInSeconds,
+              volume: scene.voice.volume,
+            }
+          : undefined,
     };
   });
 };
