@@ -121,9 +121,9 @@ afade=t=out:st=2.0:d=0.2,aformat=channel_layouts=stereo" \
 if [ "$CLICK" = 1 ]; then
   log "stage 2b: adding 2 kHz transient layer (--click)"
   ffmpeg -y -hide_banner -loglevel error \
-    -f lavfi -i "anoisesrc=color=white:sample_rate=48000:duration=0.07:amplitude=0.6" \
-    -af "bandpass=f=2000:width_type=h:w=1500,afade=t=out:st=0.004:d=0.06,\
-volume=0.75,aformat=channel_layouts=stereo" \
+    -f lavfi -i "anoisesrc=color=white:sample_rate=48000:duration=0.12:amplitude=0.6" \
+    -af "bandpass=f=2200:width_type=h:w=1800,afade=t=out:st=0.006:d=0.11,\
+volume=2.4,aformat=channel_layouts=stereo" \
     -ar 48000 "$WORK/click.wav"
 fi
 
