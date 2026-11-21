@@ -1,0 +1,103 @@
+{
+  "episode": "The End of the Corridor",
+  "slug": "end-of-the-corridor",
+  "format": "horror-teaser",
+  "logline": "A motel corridor that should end at a window does not end at all, and something at the far end is always facing away.",
+  "base": {
+    "model": "SG161222/Realistic_Vision_V5.1_noVAE",
+    "adapter": "guoyww/animatediff-motion-adapter-v1-5-2",
+    "width": 512,
+    "height": 512,
+    "frames": 24,
+    "fps": 8,
+    "steps": 25,
+    "guidance": 7.0
+  },
+  "negative_prompt": "face, facial features, close-up face, eyes, teeth, gore, blood, cartoon, anime, 3d render, lowres, jpeg artifacts, watermark, text, logo, extra fingers, deformed hands, duplicate figure, split screen, oversaturated, daylight, bright, cheerful, cgi",
+  "grade": {
+    "note": "AnimateDiff cannot hold a face across 24 frames, so the figure is deliberately faceless: always shot from behind, always crushed into silhouette. Post: lift contrast, crush blacks to #000, hold a cold teal shadow, no rim light on the figure."
+  },
+  "shots": [
+    {
+      "id": 1,
+      "slug": "corridor-establish",
+      "title": "The corridor, empty",
+      "prompt": "cinematic film still, horror, symmetrical one point perspective, endless motel corridor at night, patterned carpet, identical doors on both sides, single flickering ceiling lamp, cold tungsten light, deep black shadows, heavy vignette, 35mm film grain, anamorphic, empty hallway, unsettling stillness, night photography, high contrast",
+      "seed": 1101,
+      "duration_s": 3.0,
+      "note": "Establishing. No figure at all. Motion is the lamp flicker and dust in the air."
+    },
+    {
+      "id": 2,
+      "slug": "far-end-back-view",
+      "title": "Something at the far end, facing away",
+      "prompt": "cinematic film still, horror, symmetrical one point perspective, long motel corridor at night, a single human figure standing at the far end seen from behind, back turned to camera, completely backlit into a pure black silhouette with no visible face or detail, crushed blacks, silhouette, distant small figure, cold tungsten ceiling lamp, patterned carpet, dread, 35mm film grain, anamorphic, high contrast",
+      "seed": 2202,
+      "duration_s": 3.0,
+      "note": "First sighting. Back-view only, silhouette reads as a black cut-out. Never resolve the figure."
+    },
+    {
+      "id": 3,
+      "slug": "door-ajar",
+      "title": "Door ajar, light on the carpet",
+      "prompt": "cinematic film still, horror, extreme low angle on patterned motel carpet at night, one door slightly ajar, thin blade of warm light falling across the floor and the opposite wall, everything else crushed to black, dust motes in the beam, heavy vignette, 35mm film grain, anamorphic, high contrast, empty doorway, no people",
+      "seed": 3303,
+      "duration_s": 2.5,
+      "note": "No figure. The light blade is the motion."
+    },
+    {
+      "id": 4,
+      "slug": "elevator-black",
+      "title": "Lift doors open onto nothing",
+      "prompt": "cinematic film still, horror, elevator doors sliding open onto absolute blackness, no interior, no light inside, brushed metal doors, cold corridor light spilling in from the side, reflection in the metal, crushed blacks, 35mm film grain, anamorphic, high contrast, symmetrical, no people",
+      "seed": 4404,
+      "duration_s": 2.5,
+      "note": "The doors drift open and stop. Nothing is inside."
+    },
+    {
+      "id": 5,
+      "slug": "closer-still-away",
+      "title": "Closer, still turned away",
+      "prompt": "cinematic film still, horror, motel corridor at night, human figure standing in the middle distance seen from behind, back to camera, shoulders and head only, featureless black silhouette, crushed blacks, backlit by a single ceiling lamp, patterned carpet, doors either side, no face visible, dread, 35mm film grain, anamorphic, high contrast",
+      "seed": 5505,
+      "duration_s": 3.0,
+      "note": "Halfway closer than shot 2. Same silhouette, never turning."
+    },
+    {
+      "id": 6,
+      "slug": "sconces-dying",
+      "title": "The sconces go out one by one",
+      "prompt": "cinematic film still, horror, long motel corridor at night receding into darkness, wall sconces going dark one after another down the hall, only the nearest remains lit, darkness advancing, crushed blacks, patterned carpet, symmetrical one point perspective, heavy vignette, 35mm film grain, anamorphic, high contrast, no people",
+      "seed": 6606,
+      "duration_s": 3.0,
+      "note": "The dark itself moves toward camera."
+    },
+    {
+      "id": 7,
+      "slug": "window-no-reflection",
+      "title": "The window with no reflection",
+      "prompt": "cinematic film still, horror, dark motel window at night, black glass reflecting only the empty corridor behind the camera, the pattern of a human silhouette absent from the reflection, faint cold blue streetlight through glass, crushed blacks, dust on the glass, 35mm film grain, anamorphic, high contrast, no visible person",
+      "seed": 7707,
+      "duration_s": 2.5,
+      "note": "Silhouette exists in the corridor but not in the glass. Never show both at once."
+    },
+    {
+      "id": 8,
+      "slug": "arm-raised",
+      "title": "The silhouette raises an arm",
+      "prompt": "cinematic film still, horror, distant human figure at the far end of a long dark motel corridor seen from behind, black silhouette, one arm slowly raising, featureless, no face, crushed blacks, single cold ceiling lamp, patterned carpet, deep shadow, dread, 35mm film grain, anamorphic, high contrast",
+      "seed": 8808,
+      "duration_s": 3.0,
+      "note": "One small motion, no walk. The arm lift is the scare."
+    },
+    {
+      "id": 9,
+      "slug": "open-door-light",
+      "title": "Gone, and a door is open",
+      "prompt": "cinematic film still, horror, motel corridor at night, far end empty and dark, a single door at the very end standing open onto pure white light and nothing else, blown out doorway, crushed black corridor, symmetrical one point perspective, patterned carpet, 35mm film grain, anamorphic, high contrast, no people",
+      "seed": 9909,
+      "duration_s": 3.5,
+      "note": "Button. The figure is gone; the exit was never on the floor plan."
+    }
+  ]
+}

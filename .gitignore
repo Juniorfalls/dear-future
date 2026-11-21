@@ -19,3 +19,6 @@ __pycache__/
 
 # interrupted media downloads
 *.part
+
+# generated AnimateDiff clips (regenerate with generate_video_free.py)
+/out/
