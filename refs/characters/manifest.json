@@ -1,0 +1,40 @@
+{
+  "episode": "Silence on the Fog Ridge",
+  "schema": "episodes/silence-on-the-fog-ridge.json",
+  "size": [
+    768,
+    768
+  ],
+  "characters": [
+    {
+      "id": "capt",
+      "name": "Captain",
+      "role": "supporting",
+      "file": "refs/characters/capt.jpg",
+      "status": "ok",
+      "bytes": 50995,
+      "seed": 310,
+      "prompt": "character reference sheet of Captain, middle\u2011aged, salt\u2011and\u2011pepper hair, navy uniform, visor lowered, age: fifties, hair: salt\u2011and\u2011pepper, clothing: navy uniform, visor, build: medium build, neutral standing pose, full body, front view and back view side by side, flat even lighting, plain mid-grey backdrop, no props, no text, no logo, cinematic film still, 35mm film grain"
+    },
+    {
+      "id": "mara",
+      "name": "Mara",
+      "role": "protagonist",
+      "file": "refs/characters/mara.jpg",
+      "status": "ok",
+      "bytes": 41026,
+      "seed": 108,
+      "prompt": "character reference sheet of Mara, thirties, dark wet shoulder\u2011length hair, long grey wool coat, black boots, lean, average height, age: thirties, hair: dark wet shoulder-length, clothing: long grey wool coat, black boots, build: lean, average height, neutral standing pose, full body, front view and back view side by side, flat even lighting, plain mid-grey backdrop, no props, no text, no logo, cinematic film still, 35mm film grain"
+    },
+    {
+      "id": "shad",
+      "name": "Shad",
+      "role": "antagonist",
+      "file": "refs/characters/shad.jpg",
+      "status": "ok",
+      "bytes": 36394,
+      "seed": 209,
+      "prompt": "character reference sheet of Shad, tall, covered in dark coat, hood pulled low, shoulders broad, silhouette in fog, age: unknown, hair: hidden, clothing: dark coat, hood, build: tall, broad, neutral standing pose, full body, front view and back view side by side, flat even lighting, plain mid-grey backdrop, no props, no text, no logo, cinematic film still, 35mm film grain"
+    }
+  ]
+}

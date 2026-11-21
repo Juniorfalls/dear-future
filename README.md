@@ -242,6 +242,36 @@ Two hardware/plumbing notes it prints when relevant:
   for the hand-written teaser. Any other episode length needs those constants
   recomputed before the stinger lands on the right beat.
 
+## Character reference sheets
+
+`generate_characters.py` draws the cast without a GPU: it reads the
+`characters` array and sends each `reference_prompt` to Pollinations' free image
+API, one JPEG per character in `refs/characters/`, plus a `manifest.json`
+recording the prompt, seed and byte size.
+
+```bash
+python3 generate_characters.py --schema episodes/silence-on-the-fog-ridge.json
+python3 generate_characters.py --only mara --overwrite      # redraw one
+python3 generate_characters.py --dry-run                    # print the URLs only
+```
+
+Things that shape the output:
+
+- the free tier serves **one image at a time, 45 s apart per IP**, so three
+  sheets is ~2.5 minutes; `--delay` changes the spacing
+- `--size` is capped at 768x768 (the free area limit) and larger values are
+  refused rather than silently shrunk
+- 402/429 (the slot) and 5xx (`"Classic API is at its limit, retry after 10s"`)
+  are both retried, using `Retry-After` or the number in the body, up to
+  `--max-wait`
+- images are validated as JPEG before being saved, so a JSON error card cannot
+  masquerade as a sheet
+- the free tier bakes a small `pollinations.ai` watermark into the bottom right
+- sheets may show faces; the AnimateDiff shot prompts still may not
+
+The checked-in `episodes/silence-on-the-fog-ridge.json` and
+`refs/characters/*.jpg` are the first real run (Mara, Shad, Captain).
+
 ## HD delivery for the AnimateDiff clips
 
 AnimateDiff runs at 512x896 (or the schema's 512x512) to fit a 15 GB T4, so the

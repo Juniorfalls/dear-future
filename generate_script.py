@@ -146,10 +146,10 @@ Return ONLY a JSON object, no prose and no markdown fence:
     {{"id": "mara",
       "name": "Mara",
       "role": "protagonist",
-      "look": "prompt-safe identity in one clause: apparent age, hair, clothing, build. NO facial features.",
-      "reference": {{"age": "thirties", "hair": "dark wet shoulder-length",
+      "look": "thirties, dark wet shoulder-length hair, long grey wool coat, black boots, lean build",
+      "reference": {{"age": "thirties", "hair": "dark, wet, shoulder length",
                      "clothing": "long grey wool coat, black boots",
-                     "features": "face details for the reference sheet only",
+                     "features": "sharp nose, tired eyes, pale skin",
                      "build": "lean, average height"}}}}
   ],
   "shots": [
@@ -435,6 +435,16 @@ def sanitise_prompt(text: str) -> tuple[str, bool]:
     return body, changed
 
 
+PLACEHOLDER = re.compile(
+    r"reference sheet|prompt-safe|face details|no facial features|"
+    r"visual identity|one clause|^\.\.\.$", re.I)
+
+
+def is_placeholder(value: str) -> bool:
+    """True when the model echoed an instruction instead of writing content."""
+    return bool(value) and bool(PLACEHOLDER.search(value))
+
+
 def clean_look(text: str) -> str:
     """A prompt-safe identity clause: drop anything about a face.
 
@@ -495,6 +505,12 @@ def normalise_characters(data: dict, warnings: list[str]) -> list[dict]:
         ref_raw = item.get("reference") if isinstance(item.get("reference"), dict) else {}
         reference = {key: " ".join(str(ref_raw.get(key) or "").split())
                      for key in ("age", "hair", "clothing", "features", "build")}
+        echoed = [k for k, v in reference.items() if is_placeholder(v)]
+        for key in echoed:
+            warnings.append(
+                f"character {cid}: reference.{key} echoed the instruction "
+                f"({reference[key]!r}); dropped so it cannot leak into a prompt")
+            reference[key] = ""
         if not look:
             look = clean_look(", ".join(v for k, v in reference.items()
                                          if k != "features" and v))
