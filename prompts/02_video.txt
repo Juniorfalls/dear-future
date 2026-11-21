@@ -1,0 +1,52 @@
+[video generation | 16:9 | 30s | references: Image 1 Mara, Image 2 The Hollow Man, Image 3 Last Stop Petrol Station, Image 4 storyboard | first pass low resolution, then upscale]
+------------------------ copy everything below ------------------------
+
+Animate the storyboard Image 4 as one 30-second 2D horror short. Use it only for shot design, staging, timing and camera; do not paste or morph the storyboard image itself.
+
+Image 1 is Mara. The character must match this sheet exactly: a 19-year-old night-shift petrol station attendant, small and wiry, dark curly hair tied back, pale olive skin, a faded green hoodie under a red staff tabard, a torch clipped to her belt, dark circles under wary eyes. Signature behaviour: notices small wrong details: a footprint, a dead dial tone, a shadow with no owner.
+Image 2 is The Hollow Man. The character must match this sheet exactly: an impossibly tall man in a long wet charcoal coat, narrow shoulders, a smooth featureless face with no eyes or mouth, skin the colour of old paper, long arms that hang past his knees, bare feet, always slightly out of focus. Signature behaviour: moves only while the lights flicker; between flickers he holds the exact same pose and is closer.
+Setting: Last Stop Petrol Station at 3:07 AM: an isolated rural petrol station at 3 AM, two pumps under buzzing sodium lights, cracked concrete forecourt, fog between pine trees, a failing red sign, a small shop with fogged glass and one fluorescent tube, wet tyre marks, no other cars.
+
+Look: hand-painted 2D horror animation with visible ink texture, desaturated teal and sodium-orange palette, deep crushed blacks, volumetric fog, harsh practical light sources, slow deliberate camera moves, unsettling negative space, no photoreal people, no gore, no comedy
+No dialogue. Sound and silence carry the scene.
+
+Continuity: - Every shot stays in the same petrol station forecourt and the same shop interior; never cut to a new location - The Hollow Man only changes position while the fluorescent lights flicker; between flickers he holds the same pose and is closer - Mara never leaves the shop until shot 6, and never turns her back on the window - The red staff tabard is the only saturated colour in the film - Each shot starts on the action that ended the previous shot; hard cuts only
+
+Shots:
+Shot 1 | 0-3s: Wide establishing shot of the empty forecourt at 3 AM. Fog drifts between the pumps. Mara sits behind the counter reading, lit by one buzzing fluorescent tube; the red sign flickers above her.
+Sound: fluorescent buzz, distant wind, a slow low drone
+Subtitle to add later in Remotion (do not bake into the frame): 3:07 AM. No cars for an hour.
+
+Shot 2 | 3-6s: The door chime rings. Mara looks up. Through the fogged glass, an impossibly tall silhouette stands at the edge of the pump light, facing away from her.
+Sound: single door chime, drone swells, no footsteps
+Subtitle to add later in Remotion (do not bake into the frame): Then the door chimed.
+
+Shot 3 | 6-10s: Mara leans toward the window. The forecourt is empty. One wet bare footprint sits on the concrete just outside the door, pointing in.
+Sound: held breath, a faint wet step
+Subtitle to add later in Remotion (do not bake into the frame): But nobody came in.
+
+Shot 4 | 10-13s: The fluorescent tube stutters. In the half-second of dark the silhouette is suddenly at the window, face level with the glass, smooth and featureless. The light steadies; he does not move.
+Sound: electrical crackle, a hard music sting, then near silence
+Subtitle to add later in Remotion (do not bake into the frame): Don't look at it.
+
+Shot 5 | 13-16s: Mara drops below the counter and grabs the phone. The dial tone is dead. Above her, the window glass fogs from the outside, as if something is breathing on it.
+Sound: dead line click, low breathing, glass creak
+Subtitle to add later in Remotion (do not bake into the frame): The line was dead.
+
+Shot 6 | 16-20s: She crawls through the stockroom door and freezes. The Hollow Man is already inside, standing at the far end of the aisle in complete darkness, head tilted, arms too long.
+Sound: drone drops, a single shelf rattle, no breathing
+Subtitle to add later in Remotion (do not bake into the frame): It was already inside.
+
+Shot 7 | 20-23s: Mara backs into the walk-in fridge and pulls the heavy door shut. Through the small window, a long shadow passes under the door and stops.
+Sound: door seal hiss, compressor hum, a wet drag outside
+Subtitle to add later in Remotion (do not bake into the frame): Hold your breath.
+
+Shot 8 | 23-26s: Her phone lights up: 3:07 AM. The fridge light flickers. In the dark the Hollow Man is crouched inches from her face. The light catches his blank skin.
+Sound: phone buzz, light flicker, a dry inhale
+Subtitle to add later in Remotion (do not bake into the frame): It only moves in the dark.
+
+Shot 9 | 26-30s: The lights go out. Two seconds of black. They snap back on: the shop is empty, the till drawer open, the door swinging. On the counter sits a single wet handprint. The red sign flickers once and dies.
+Sound: total silence, one electrical pop, drone cuts out
+Subtitle to add later in Remotion (do not bake into the frame): Mara was never found.
+
+Hard cuts only. Keep the product of each shot stable: the same character silhouette, the same coat, the same station. No text, captions, subtitles, logos or watermarks anywhere in the frame. No stock footage, no photoreal actors, no gore, no jump-scare montage.

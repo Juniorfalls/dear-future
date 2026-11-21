@@ -1,0 +1,53 @@
+{
+  "title": "The Hollow Hour",
+  "ratio": "16:9",
+  "dialogue": false,
+  "style": "hand-painted 2D horror animation with visible ink texture, desaturated teal and sodium-orange palette, deep crushed blacks, volumetric fog, harsh practical light sources, slow deliberate camera moves, unsettling negative space, no photoreal people, no gore, no comedy",
+  "sheet_style": "hand-painted 2D horror animation character sheet, consistent line work, muted palette, neutral dark-grey background, soft rim light, 8k, no text",
+  "film_style": {
+    "letterbox": true,
+    "atmosphereOpacity": 0.1,
+    "lightSweep": false,
+    "vignette": true,
+    "wordmark": "intro",
+    "scrim": 0.32
+  },
+  "audio": {
+    "src": "audio/bg_music.mp3",
+    "volume": 0.14,
+    "loop": true
+  },
+  "characters": [
+    {
+      "id": "mara",
+      "name": "Mara",
+      "role": "protagonist",
+      "ref": "refs/mara.jpg",
+      "look": "a 19-year-old night-shift petrol station attendant, small and wiry, dark curly hair tied back, pale olive skin, a faded green hoodie under a red staff tabard, a torch clipped to her belt, dark circles under wary eyes",
+      "ability": "notices small wrong details: a footprint, a dead dial tone, a shadow with no owner",
+      "personality": "quiet, stubborn, keeps her fear behind her teeth",
+      "expressions": ["wary", "frozen", "breath held", "relieved too early", "terror", "defiant"],
+      "poses": ["behind the counter", "peering through glass", "crouched low", "backing away", "hand over her mouth", "holding a torch"]
+    },
+    {
+      "id": "hollow-man",
+      "name": "The Hollow Man",
+      "role": "scary character",
+      "ref": "refs/hollow-man.jpg",
+      "look": "an impossibly tall man in a long wet charcoal coat, narrow shoulders, a smooth featureless face with no eyes or mouth, skin the colour of old paper, long arms that hang past his knees, bare feet, always slightly out of focus",
+      "ability": "moves only while the lights flicker; between flickers he holds the exact same pose and is closer",
+      "personality": "patient, silent, never hurries",
+      "expressions": ["blank", "head tilted", "too close", "crouched", "standing in a doorway", "gone"],
+      "poses": ["standing at the edge of the light", "facing away", "at the window", "inside the aisle", "crouched low", "only a shadow"]
+    }
+  ],
+  "groups": [],
+  "scenes": [
+    {
+      "id": "last-stop",
+      "name": "Last Stop Petrol Station",
+      "ref": "refs/last-stop.jpg",
+      "look": "an isolated rural petrol station at 3 AM, two pumps under buzzing sodium lights, cracked concrete forecourt, fog between pine trees, a failing red sign, a small shop with fogged glass and one fluorescent tube, wet tyre marks, no other cars"
+    }
+  ]
+}

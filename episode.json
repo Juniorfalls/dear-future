@@ -1,0 +1,99 @@
+{
+  "title": "The Last Customer",
+  "duration": 30,
+  "cast": ["mara", "hollow-man"],
+  "groups": [],
+  "scene": "last-stop",
+  "time": "3:07 AM",
+  "continuity": [
+    "Every shot stays in the same petrol station forecourt and the same shop interior; never cut to a new location",
+    "The Hollow Man only changes position while the fluorescent lights flicker; between flickers he holds the same pose and is closer",
+    "Mara never leaves the shop until shot 6, and never turns her back on the window",
+    "The red staff tabard is the only saturated colour in the film",
+    "Each shot starts on the action that ended the previous shot; hard cuts only"
+  ],
+  "parts": [
+    {
+      "shots": [
+        {
+          "dur": 3,
+          "panel": 1,
+          "desc": "Wide establishing shot of the empty forecourt at 3 AM. Fog drifts between the pumps. Mara sits behind the counter reading, lit by one buzzing fluorescent tube; the red sign flickers above her.",
+          "sketch": "Wide shot of the isolated petrol station, two pumps, fog, one small figure behind the shop counter, red sign above",
+          "caption": "3:07 AM. No cars for an hour.",
+          "vo": "No cars for an hour.",
+          "sfx": "fluorescent buzz, distant wind, a slow low drone"
+        },
+        {
+          "dur": 3,
+          "panel": 2,
+          "desc": "The door chime rings. Mara looks up. Through the fogged glass, an impossibly tall silhouette stands at the edge of the pump light, facing away from her.",
+          "sketch": "Mara looking up from the counter, the tall silhouette outside at the edge of the light, facing away, fogged glass between them",
+          "caption": "Then the door chimed.",
+          "sfx": "single door chime, drone swells, no footsteps"
+        },
+        {
+          "dur": 4,
+          "panel": 3,
+          "desc": "Mara leans toward the window. The forecourt is empty. One wet bare footprint sits on the concrete just outside the door, pointing in.",
+          "sketch": "Close-up of Mara peering through the glass, empty forecourt beyond, one wet footprint on the concrete pointing toward the door",
+          "caption": "But nobody came in.",
+          "sfx": "held breath, a faint wet step"
+        },
+        {
+          "dur": 3,
+          "panel": 4,
+          "desc": "The fluorescent tube stutters. In the half-second of dark the silhouette is suddenly at the window, face level with the glass, smooth and featureless. The light steadies; he does not move.",
+          "sketch": "The featureless tall figure pressed close to the shop window, Mara small behind the counter, one light flickering",
+          "caption": "Don't look at it.",
+          "sfx": "electrical crackle, a hard music sting, then near silence"
+        },
+        {
+          "dur": 3,
+          "panel": 5,
+          "desc": "Mara drops below the counter and grabs the phone. The dial tone is dead. Above her, the window glass fogs from the outside, as if something is breathing on it.",
+          "sketch": "Mara crouched below the counter with the phone, the window above fogging from outside, no reflection",
+          "caption": "The line was dead.",
+          "sfx": "dead line click, low breathing, glass creak"
+        },
+        {
+          "dur": 4,
+          "panel": 6,
+          "desc": "She crawls through the stockroom door and freezes. The Hollow Man is already inside, standing at the far end of the aisle in complete darkness, head tilted, arms too long.",
+          "sketch": "Mara on the floor of the stockroom, the tall figure standing at the end of the dark aisle, shelving between them",
+          "caption": "It was already inside.",
+          "sfx": "drone drops, a single shelf rattle, no breathing"
+        },
+        {
+          "dur": 3,
+          "panel": 7,
+          "desc": "Mara backs into the walk-in fridge and pulls the heavy door shut. Through the small window, a long shadow passes under the door and stops.",
+          "sketch": "Mara inside the walk-in fridge, hands on the door, a long shadow under the door outside, cold blue light",
+          "caption": "Hold your breath.",
+          "sfx": "door seal hiss, compressor hum, a wet drag outside"
+        },
+        {
+          "dur": 3,
+          "panel": 8,
+          "desc": "Her phone lights up: 3:07 AM. The fridge light flickers. In the dark the Hollow Man is crouched inches from her face. The light catches his blank skin.",
+          "sketch": "Extreme close-up of the featureless face crouched inches from Mara, phone light between them, fridge shelves behind",
+          "caption": "It only moves in the dark.",
+          "sfx": "phone buzz, light flicker, a dry inhale"
+        },
+        {
+          "dur": 4,
+          "panel": 9,
+          "desc": "The lights go out. Two seconds of black. They snap back on: the shop is empty, the till drawer open, the door swinging. On the counter sits a single wet handprint. The red sign flickers once and dies.",
+          "sketch": "Empty shop after the attack, open till, swinging door, one wet handprint on the counter, red sign dead",
+          "caption": "Mara was never found.",
+          "sfx": "total silence, one electrical pop, drone cuts out"
+        }
+      ]
+    }
+  ],
+  "log": {
+    "goal": "survive a night shift when a customer who is not a customer arrives",
+    "scare": "the figure only moves during the light flickers, and is always closer",
+    "ending": "the station is empty except for a wet handprint; Mara is gone"
+  }
+}

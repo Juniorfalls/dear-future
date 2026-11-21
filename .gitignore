@@ -22,3 +22,17 @@ __pycache__/
 
 # generated AnimateDiff clips (regenerate with generate_video_free.py)
 /out/
+
+# project-local ffmpeg/ffprobe shims (153 MB of binaries)
+tools/bin/
+
+# kajisho5/ffmpeg-skill is a 200 MB clone with its own .git, and .pi/ is local
+# agent state (the same skill copied in): installed from upstream, not tracked
+/skills/
+.pi/
+
+# OpenFilm cache symlinks
+.film
+
+# raw 512x896 clips from the older clips-dir layout
+/clips/

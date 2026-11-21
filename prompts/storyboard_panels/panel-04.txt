@@ -1,0 +1,6 @@
+[single storyboard panel | 16:9]
+------------------------ copy everything below ------------------------
+
+Generate one panel of a black-and-white pencil horror storyboard, same aspect as one cell of a 3x3 grid. Clean line work, no text except the number 4 in the top-left.
+
+Panel 4: The featureless tall figure pressed close to the shop window, Mara small behind the counter, one light flickering.

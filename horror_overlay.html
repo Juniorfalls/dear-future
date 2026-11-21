@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; background: transparent; overflow: hidden; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+(() => {
+  'use strict';
+  const CUES = [
+  {
+    "start": 0.24,
+    "end": 2.371,
+    "text": "3:07 AM. No cars for an hour."
+  },
+  {
+    "start": 3.24,
+    "end": 5.237,
+    "text": "Then the door chimed."
+  },
+  {
+    "start": 6.3,
+    "end": 8.403,
+    "text": "But nobody came in."
+  },
+  {
+    "start": 10.24,
+    "end": 11.942,
+    "text": "Don't look at it."
+  },
+  {
+    "start": 13.24,
+    "end": 15.14,
+    "text": "The line was dead."
+  },
+  {
+    "start": 16.3,
+    "end": 18.443,
+    "text": "It was already inside."
+  },
+  {
+    "start": 20.24,
+    "end": 22.013,
+    "text": "Hold your breath."
+  },
+  {
+    "start": 23.24,
+    "end": 25.672,
+    "text": "It only moves in the dark."
+  },
+  {
+    "start": 26.3,
+    "end": 28.672,
+    "text": "Mara was never found."
+  }
+];
+  const DURATION = 30.0;
+  const REF_W = 1920;
+  const REF_H = 1080;
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d', { alpha: true });
+  let w = REF_W, h = REF_H;
+
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const smoothstep = (a, b, x) => {
+    const t = clamp((x - a) / (b - a), 0, 1);
+    return t * t * (3 - 2 * t);
+  };
+
+  function resize() {
+    w = Math.max(1, window.innerWidth);
+    h = Math.max(1, window.innerHeight);
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function wrap(text, maxWidth, font) {
+    ctx.font = font;
+    const words = text.split(/\s+/);
+    const lines = [];
+    let line = '';
+    for (const word of words) {
+      const next = line ? line + ' ' + word : word;
+      if (line && ctx.measureText(next).width > maxWidth) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = next;
+      }
+    }
+    if (line) lines.push(line);
+    return lines;
+  }
+
+  function drawVignette() {
+    const v = ctx.createRadialGradient(w / 2, h / 2, h * 0.24, w / 2, h / 2, Math.max(w, h) * 0.76);
+    v.addColorStop(0, 'rgba(0,0,0,0)');
+    v.addColorStop(0.62, 'rgba(0,0,0,0.14)');
+    v.addColorStop(1, 'rgba(0,0,0,0.62)');
+    ctx.fillStyle = v;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  function drawCue(t) {
+    const cue = CUES.find((c) => t >= c.start && t < c.end);
+    if (!cue) return;
+    const fade = Math.min(0.18, (cue.end - cue.start) * 0.25);
+    const opacity = smoothstep(cue.start, cue.start + fade, t)
+      * (1 - smoothstep(cue.end - fade, cue.end, t));
+    if (opacity <= 0) return;
+
+    const fs = Math.round(h * 0.064);
+    const font = `900 ${fs}px Impact, Haettenschweiler, "Arial Narrow Bold", "Arial Black", sans-serif`;
+    const maxWidth = w * 0.84;
+    const lines = wrap(cue.text, maxWidth, font);
+    const lineHeight = fs * 1.04;
+    const baseY = h * 0.855 - (lines.length - 1) * lineHeight;
+
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.font = font;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.lineJoin = 'round';
+    ctx.miterLimit = 2;
+    ctx.strokeStyle = '#000';
+    ctx.fillStyle = '#fff';
+    ctx.lineWidth = Math.max(6, fs * 0.19);
+    ctx.shadowColor = 'rgba(0,0,0,0.9)';
+    ctx.shadowBlur = fs * 0.26;
+    lines.forEach((line, i) => {
+      const y = baseY + i * lineHeight;
+      ctx.strokeText(line, w / 2, y);
+      ctx.fillText(line, w / 2, y);
+    });
+    ctx.restore();
+  }
+
+  function frame(t) {
+    ctx.clearRect(0, 0, w, h);
+    drawVignette();
+    if (t >= 0 && t < DURATION) drawCue(t);
+  }
+
+  resize();
+  window.film = {
+    duration: DURATION,
+    width: REF_W,
+    height: REF_H,
+    ready: document.fonts.ready,
+    frame,
+  };
+})();
+</script>
+</body>
+</html>

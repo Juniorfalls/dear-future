@@ -17,12 +17,32 @@ Usage
   python3 generate_video_free.py --dry-run --only 1
   python3 generate_video_free.py --only 1 --frames 24 --fps 8
   python3 generate_video_free.py --all
+
+Delivery
+  A 512x896 clip is a VRAM compromise, not a master. Unless --no-upscale is
+given, every clip is written raw to out/video/raw/ and then passed through
+
+      scale=1080:1920:flags=lanczos:force_original_aspect_ratio=increase,crop=1080:1920
+      unsharp=5:5:0.8:5:5:0.0,format=yuv420p
+
+  lanczos holds the edge response better than bicubic on a 2x upscale; the
+unsharp pass is luma-only (chroma amount 0.0) so it restores contrast in the
+figure and corridor without blooming colour noise. --fit picks how a source
+that is not 9:16 meets the delivery frame: cover (default) centre-crops,
+pad letterboxes, stretch distorts. out/video/NN-slug.mp4 ends up H.264
+crf 16, yuv420p, faststart at the delivery size.
+
+  python3 generate_video_free.py --only 1                 # 1080x1920 delivery
+  python3 generate_video_free.py --upscale-to 720x1280    # quick preview
+  python3 generate_video_free.py --no-upscale             # raw model frames
+  python3 generate_video_free.py --sharpen-amount 1.2     # harder edges
 """
 import argparse
 import gc
 import json
 import os
 import pathlib
+import shutil
 import subprocess
 import sys
 import time
@@ -36,6 +56,10 @@ SCHEMA_PATH = ROOT / "episode_schema.json"
 OUTDIR = ROOT / "out" / "video"
 
 ADAPTER_ID = "guoyww/animatediff-motion-adapter-v1-5-2"
+
+# Delivery target: 9:16 vertical at full HD, the size the series ships in.
+DELIVERY_W, DELIVERY_H = 1080, 1920
+DELIVERY_CRF = 16
 
 # Coarse VRAM ladder. Each rung is tried only if the one before it OOMs,
 # so a 384x384/16-frame fallback is one crash away, not a manual edit.
@@ -146,6 +170,97 @@ def write_mp4(frames, path, fps):
     if proc.wait() != 0:
         die(f"ffmpeg failed: {err[:500]}")
     return path
+
+def parse_size(text):
+    """'1080x1920' -> (1080, 1920)."""
+    try:
+        width, height = (int(part) for part in str(text).lower().split("x", 1))
+    except ValueError:
+        die(f"bad --upscale-to value {text!r}; expected e.g. 1080x1920")
+    if width <= 0 or height <= 0:
+        die(f"bad --upscale-to value {text!r}; sizes must be positive")
+    if width % 2 or height % 2:
+        die(f"{width}x{height} is odd; yuv420p needs even dimensions")
+    return width, height
+
+
+def delivery_filter(size, amount, matrix, fit="cover"):
+    """Upscale, then sharpen luma only: chroma sharpening on a 2x upscale bleeds.
+
+    fit=cover (default) keeps the source aspect and centre-crops to the target,
+    so a 512x896 clip reaches 1080x1920 undistorted and loses under 2% of width.
+    fit=pad letterboxes instead (nothing cropped), fit=stretch forces the exact
+    size and is only for a source that already has the target aspect.
+    """
+    width, height = size
+    if fit == "stretch":
+        base = f"scale={width}:{height}:flags=lanczos"
+    elif fit == "pad":
+        base = (f"scale={width}:{height}:force_original_aspect_ratio=decrease:"
+                f"flags=lanczos,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:color=black")
+    else:
+        base = (f"scale={width}:{height}:force_original_aspect_ratio=increase:"
+                f"flags=lanczos,crop={width}:{height}")
+    return (
+        f"{base},"
+        f"unsharp={matrix}:{matrix}:{amount}:{matrix}:{matrix}:0.0,"
+        "format=yuv420p"
+    )
+
+
+def aspect_warning(source, size, fit):
+    """Return a warning when the upscale would crop or stretch more than ~5%."""
+    src = source[0] / source[1] if source[1] else 1.0
+    dst = size[0] / size[1] if size[1] else 1.0
+    drift = abs(src - dst) / dst
+    if drift < 0.05:
+        return None
+    pct = drift * 100
+    if fit == "stretch":
+        return (f"source {source[0]}x{source[1]} -> {size[0]}x{size[1]} would distort "
+                f"{pct:.0f}% with --fit stretch; use --fit cover or --upscale-to "
+                f"matching the generated aspect")
+    if fit == "cover":
+        return (f"source {source[0]}x{source[1]} -> {size[0]}x{size[1]} crops {pct:.0f}% "
+                f"of the frame with --fit cover; pass --fit pad to keep all of it")
+    return None
+
+
+def ffmpeg_exe():
+    """Prefer the ffmpeg imageio ships (Colab); fall back to a local build (Termux)."""
+    try:
+        import imageio_ffmpeg
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except ImportError:
+        pass
+    local = ROOT / "tools" / "bin" / "ffmpeg"
+    if local.exists() and os.access(local, os.X_OK):
+        return str(local)
+    found = shutil.which("ffmpeg")
+    if not found:
+        die("no ffmpeg for the delivery step: pip install imageio-ffmpeg, "
+            "or put ffmpeg on PATH, or pass --no-upscale")
+    return found
+
+
+def postprocess(raw, out, size, amount, matrix, crf, fit="cover", preset="slow"):
+    """Upscale + sharpen a raw model clip into the delivery file."""
+    exe = ffmpeg_exe()
+    vf = delivery_filter(size, amount, matrix, fit)
+    cmd = [
+        exe, "-y", "-loglevel", "error",
+        "-i", str(raw),
+        "-vf", vf,
+        "-an", "-c:v", "libx264", "-preset", preset, "-crf", str(crf),
+        "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+        str(out),
+    ]
+    out.parent.mkdir(parents=True, exist_ok=True)
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    if proc.returncode != 0:
+        die(f"upscale failed on {raw.name}: {proc.stderr.strip()[-500:]}")
+    return vf
+
 
 def build_pipe(model_id, offload=True):
     """Load adapter + base. offload=True keeps the UNet on CPU between steps."""
@@ -275,14 +390,36 @@ class Runner:
                 log(f"denoised {n} frames in {elapsed:.1f}s ({elapsed / n:.2f}s/frame); {vram_report()}")
 
                 out = OUTDIR / f"{shot['id']:02d}-{shot['slug']}.mp4"
+                raw = (OUTDIR / "raw" / out.name) if a.upscale else out
                 t2 = time.perf_counter()
-                write_mp4(frames, out, fps)
+                write_mp4(frames, raw, fps)
                 log(f"encoded {len(frames)} frames @ {fps}fps in {time.perf_counter() - t2:.1f}s")
+
+                delivery = None
+                if a.upscale:
+                    target = parse_size(a.upscale_to)
+                    warn = aspect_warning((w, h), target, a.fit)
+                    if warn:
+                        log(f"WARNING: {warn}")
+                    t3 = time.perf_counter()
+                    delivery = {
+                        "width": target[0], "height": target[1],
+                        "fit": a.fit, "crf": a.crf,
+                        "filter": postprocess(raw, out, target, a.sharpen_amount,
+                                              a.sharpen_matrix, a.crf, a.fit),
+                    }
+                    log(f"delivery {w}x{h} -> {target[0]}x{target[1]} ({a.fit}) "
+                        f"lanczos+unsharp in {time.perf_counter() - t3:.1f}s")
+                    if not a.keep_raw:
+                        raw.unlink(missing_ok=True)
+
                 return out, {
                     "rung": rung_name, "width": w, "height": h,
                     "frames": len(frames), "fps": fps, "steps": steps,
                     "guidance": guidance, "seconds": round(elapsed, 1),
                     "vram": vram_report(),
+                    "raw": str(raw.relative_to(ROOT)) if raw.exists() else None,
+                    "delivery": delivery,
                 }
             except torch.cuda.OutOfMemoryError as exc:
                 last_error = exc
@@ -303,6 +440,13 @@ def dry_run(shots, data, args):
         h = args.height or base.get("height", 512)
         log(f"  shot {shot['id']:>2} {shot['slug']:<24} {w}x{h} {n}f seed {shot.get('seed')}")
         log(f"        {shot['prompt'][:90]}...")
+    if args.upscale:
+        size = parse_size(args.upscale_to)
+        log(f"delivery: {size[0]}x{size[1]} ({args.fit}) — "
+            f"{delivery_filter(size, args.sharpen_amount, args.sharpen_matrix, args.fit)}")
+        log(f"          raw -> {OUTDIR / 'raw'}, crf {args.crf}, keep_raw={args.keep_raw}")
+    else:
+        log("delivery: raw model frames (--no-upscale)")
     log(f"output dir: {OUTDIR}")
     log("DRY RUN OK")
 
@@ -323,9 +467,30 @@ def main(argv=None):
     p.add_argument("--no-offload", action="store_true", help="GPU-resident only")
     p.add_argument("--skip-existing", action="store_true",
                    help="skip shots whose mp4 already exists (resume a batch)")
+    p.add_argument("--upscale", action=argparse.BooleanOptionalAction, default=True,
+                   help="upscale + sharpen the raw clips with ffmpeg")
+    p.add_argument("--upscale-to", default=f"{DELIVERY_W}x{DELIVERY_H}",
+                   help="delivery size, WxH (default 1080x1920)")
+    p.add_argument("--fit", choices=["cover", "pad", "stretch"], default="cover",
+                   help="how to reconcile a non-9:16 model frame with the delivery size")
+    p.add_argument("--sharpen-amount", type=float, default=0.8,
+                   help="unsharp luma amount; 0 disables the sharpen pass")
+    p.add_argument("--sharpen-matrix", type=int, default=5,
+                   help="unsharp matrix size (odd, 3-13)")
+    p.add_argument("--crf", type=int, default=DELIVERY_CRF,
+                   help="x264 CRF for the delivery encode (lower = better)")
+    p.add_argument("--keep-raw", action=argparse.BooleanOptionalAction, default=True,
+                   help="keep the raw model clips under out/video/raw/")
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--list", action="store_true")
     args = p.parse_args(argv)
+
+    if args.sharpen_matrix % 2 == 0 or not 3 <= args.sharpen_matrix <= 13:
+        die("--sharpen-matrix must be an odd number between 3 and 13")
+    if args.sharpen_amount < 0:
+        die("--sharpen-amount must be >= 0")
+    if args.upscale:
+        parse_size(args.upscale_to)
 
     data = load_schema()
 

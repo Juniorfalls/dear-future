@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>The Last Customer</title>
+<style>
+  .shot {
+    object-fit: cover;
+    filter: contrast(1.2) hue-rotate(-10deg) saturate(0.86) brightness(0.94);
+  }
+</style>
+</head>
+<body>
+
+<!-- Captions and vignette: a transparent page drawn by frame(t). -->
+<section>
+  <iframe id="captions" src="horror_overlay.html" at="0" style="left:0;top:0;width:1920px;height:1080px"></iframe>
+</section>
+<!-- The shots, trimmed to the episode timings. -->
+<section>
+  <video id="shot-01" src="public/media/shot-01.mp4#t=0,3.000" at="0.000" volume="0" class="shot" style="left:0;top:0;width:1920px;height:1080px"></video>
+  <video id="shot-02" src="public/media/shot-02.mp4#t=0,3.000" at="3.000" volume="0" class="shot" style="left:0;top:0;width:1920px;height:1080px"></video>
+  <video id="shot-03" src="public/media/shot-03.mp4#t=0,4.000" at="6.000" volume="0" class="shot" style="left:0;top:0;width:1920px;height:1080px"></video>
+  <video id="shot-04" src="public/media/shot-04.mp4#t=0,3.000" at="10.000" volume="0" class="shot" style="left:0;top:0;width:1920px;height:1080px"></video>
+  <video id="shot-05" src="public/media/shot-05.mp4#t=0,3.000" at="13.000" volume="0" class="shot" style="left:0;top:0;width:1920px;height:1080px"></video>
+  <video id="shot-06" src="public/media/shot-06.mp4#t=0,4.000" at="16.000" volume="0" class="shot" style="left:0;top:0;width:1920px;height:1080px"></video>
+  <video id="shot-07" src="public/media/shot-07.mp4#t=0,3.000" at="20.000" volume="0" class="shot" style="left:0;top:0;width:1920px;height:1080px"></video>
+  <video id="shot-08" src="public/media/shot-08.mp4#t=0,3.000" at="23.000" volume="0" class="shot" style="left:0;top:0;width:1920px;height:1080px"></video>
+  <video id="shot-09" src="public/media/shot-09.mp4#t=0,4.000" at="26.000" volume="0" class="shot" style="left:0;top:0;width:1920px;height:1080px"></video>
+</section>
+<!-- One voice line per shot. -->
+<section>
+  <audio id="vo-01" src="public/audio/shot-01.wav#t=0,1.581" at="0.000" volume="1"></audio>
+  <audio id="vo-02" src="public/audio/shot-02.wav#t=0,1.447" at="3.000" volume="1"></audio>
+  <audio id="vo-03" src="public/audio/shot-03.wav#t=0,1.553" at="6.000" volume="1"></audio>
+  <audio id="vo-04" src="public/audio/shot-04.wav#t=0,1.152" at="10.000" volume="1"></audio>
+  <audio id="vo-05" src="public/audio/shot-05.wav#t=0,1.350" at="13.000" volume="1"></audio>
+  <audio id="vo-06" src="public/audio/shot-06.wav#t=0,1.593" at="16.000" volume="1"></audio>
+  <audio id="vo-07" src="public/audio/shot-07.wav#t=0,1.223" at="20.000" volume="1"></audio>
+  <audio id="vo-08" src="public/audio/shot-08.wav#t=0,1.882" at="23.000" volume="1"></audio>
+  <audio id="vo-09" src="public/audio/shot-09.wav#t=0,1.822" at="26.000" volume="1"></audio>
+</section>
+<!-- Music bed under the voice. -->
+<section>
+  <audio id="music" src="public/audio/music.wav#t=0,30.000" at="0" volume="0.24"></audio>
+</section>
+
+</body>
+</html>

@@ -143,3 +143,64 @@ without it the workflow automatically falls back to `--test` clips.
 - `REFERENCE_VIDEO_ANALYSIS.md`: measurements behind the subtitle, grade and
   cut style.
 - `remotion/public/host/presenter.mp4` and the `host_*` layouts.
+- `generate_video_free.py`: local AnimateDiff for "The End of the Corridor",
+  with the ffmpeg 1080x1920 delivery step described below.
+- `sound_design.sh`: the canonical teaser build — grades the nine clips and
+  synthesises the drone/riser/stinger bed from committed inputs.
+- `sound_design_mix.sh`: an alternative audio stage for an already-graded
+  picture (bed duck + two-pass R128 + delivery check).
+
+## HD delivery for the AnimateDiff clips
+
+AnimateDiff runs at 512x896 (or the schema's 512x512) to fit a 15 GB T4, so the
+model output is a proxy, not a master. `generate_video_free.py` now writes the
+raw clip to `out/video/raw/` and post-processes it with ffmpeg:
+
+```
+scale=1080:1920:flags=lanczos:force_original_aspect_ratio=increase,crop=1080:1920,
+unsharp=5:5:0.8:5:5:0.0,format=yuv420p
+```
+
+`lanczos` upscales with a smoother edge response than bicubic's stair-stepping,
+and `unsharp` runs on luma only (chroma amount `0.0`) so it puts contrast back
+into the figure and corridor without blooming colour noise. The delivery encode
+is H.264 CRF 16, `slow` preset, `yuv420p`, `+faststart`.
+
+`--fit` decides how a source that is not 9:16 meets the 1080x1920 frame:
+`cover` (default) centre-crops, `pad` letterboxes, `stretch` distorts but is
+warned about. A 512x896 clip is already within 2% of 9:16, so `cover` costs
+nothing; a square 512x512 run logs a loud warning instead of silently cropping
+78% of the frame.
+
+```bash
+python3 generate_video_free.py --all                    # 1080x1920 delivery
+python3 generate_video_free.py --only 1 --fit pad        # keep the whole frame
+python3 generate_video_free.py --upscale-to 720x1280     # quick preview
+python3 generate_video_free.py --no-upscale              # raw model frames
+python3 generate_video_free.py --sharpen-amount 1.2      # harder edges
+python3 generate_video_free.py --dry-run                 # print the filter
+```
+
+`manifest.json` records the raw path, both sizes, the `fit`, the filter string
+and the CRF, so a re-render at different sharpen settings is reproducible from
+the manifest alone. `--keep-raw/--no-keep-raw` controls the raw clips.
+
+## Sound design mix (optional)
+
+`sound_design_mix.sh` takes a graded picture and gives it a delivery mix. It
+needs the ffmpeg skill installed (`.pi/skills/ffmpeg-skill/`) and never touches
+the video stream.
+
+```bash
+./sound_design_mix.sh 12th-street-ep01.mp4 --music bed.wav --music-volume 0.18
+./sound_design_mix.sh out/video/teaser.mp4 --no-music --lufs -16 -o out/final.mp4
+./sound_design_mix.sh out/video/teaser.mp4 --platform youtube-shorts -o /tmp/x.mp4
+```
+
+1. **mix** — folds the bed under the narration with a sidechain duck (6 dB by
+   default), loops and fades it to the film length.
+2. **normalise** — two-pass EBU R128 (`--lufs -14 --tp -1 --lra 11` by default).
+3. **verify** — the delivery check table; a FAIL exits 3.
+
+`--no-duck`, `--denoise`, `--dry-run` and `--no-check` cover the usual cases.
+The canonical `sound_design.sh` stays the one that builds the teaser end to end.

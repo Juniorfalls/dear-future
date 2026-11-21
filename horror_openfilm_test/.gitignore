@@ -1,0 +1,3 @@
+# Rendered test output (34 MB); regenerate with `openfilm render`.
+*.mp4
+.film/

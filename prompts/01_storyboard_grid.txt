@@ -1,0 +1,20 @@
+[storyboard grid | image generation | attach: Mara sheet, The Hollow Man sheet, Last Stop Petrol Station sheet | 16:9 | save as storyboards/the-last-customer/storyboard_grid.png]
+------------------------ copy everything below ------------------------
+
+Generate one 16:9 storyboard grid with 3 rows and 3 columns (9 panels) for a 30-second 2D horror animation.
+Style: black-and-white pencil sketch, clean confident line work, white paper, no shading clutter, no extra objects, no lettering or captions inside the panels. Number each panel 1 to 9 in its top-left corner.
+Composition: keep the negative space frightening. Put the threat at the edge of the frame or behind glass, never dead centre, except in the final scare.
+Character reference: Image 1 is Mara, Image 2 is The Hollow Man.
+All 9 panels take place in the same Last Stop Petrol Station at the same 3:07 AM: an isolated rural petrol station at 3 AM, two pumps under buzzing sodium lights, cracked concrete forecourt, fog between pine trees, a failing red sign, a small shop with fogged glass and one fluorescent tube, wet tyre marks, no other cars.
+
+Panel 1: Wide shot of the isolated petrol station, two pumps, fog, one small figure behind the shop counter, red sign above.
+Panel 2: Mara looking up from the counter, the tall silhouette outside at the edge of the light, facing away, fogged glass between them.
+Panel 3: Close-up of Mara peering through the glass, empty forecourt beyond, one wet footprint on the concrete pointing toward the door.
+Panel 4: The featureless tall figure pressed close to the shop window, Mara small behind the counter, one light flickering.
+Panel 5: Mara crouched below the counter with the phone, the window above fogging from outside, no reflection.
+Panel 6: Mara on the floor of the stockroom, the tall figure standing at the end of the dark aisle, shelving between them.
+Panel 7: Mara inside the walk-in fridge, hands on the door, a long shadow under the door outside, cold blue light.
+Panel 8: Extreme close-up of the featureless face crouched inches from Mara, phone light between them, fridge shelves behind.
+Panel 9: Empty shop after the attack, open till, swinging door, one wet handprint on the counter, red sign dead.
+
+The camera language is slow push-ins, held wide shots and hard cuts; no whip pans, no comic angles. Do not draw any text.

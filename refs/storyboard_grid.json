@@ -1,0 +1,63 @@
+{
+  "episode": "ep01",
+  "title": "The End of the Corridor",
+  "subject": "A shadowy figure at the end of a hospital corridor",
+  "model": "flux",
+  "seed": 1307,
+  "panels": [
+    {
+      "shot": "shot-01",
+      "file": "refs/panels/shot-01.png",
+      "seed": 1408,
+      "prompt": "cinematic vertical silhouette horror, found-footage realism, 35mm grain, deep underexposure, one practical fluorescent source, volumetric haze, cold teal shadows, sickly green highlights, crushed blacks, the subject is a black shape not a person, no gore, no text, no watermark, wide symmetrical hospital corridor at 3 AM, empty wheelchair against green tiled wall, one flickering fluorescent tube, far door slightly open, wet floor reflections, no people, oppressive negative space at the end of the corridor"
+    },
+    {
+      "shot": "shot-02",
+      "file": "refs/panels/shot-02.png",
+      "seed": 1509,
+      "prompt": "cinematic vertical silhouette horror, found-footage realism, 35mm grain, deep underexposure, one practical fluorescent source, volumetric haze, cold teal shadows, sickly green highlights, crushed blacks, the subject is a black shape not a person, no gore, no text, no watermark, one tall living shadow made of solid darkness, completely featureless void head, no face, no hair, no eyes, no mouth, no visible skin, narrow shoulders, long thin arms hanging past its knees, long dark coat, bare feet, always backlit so only its silhouette reads, wide establishing shot, long empty hospital corridor at night, a tall figure in a long black coat standing at the far end with its back to the camera, small in frame, dark silhouette, one failing fluorescent tube, wet reflective floor, cold teal and sickly green, 35mm grain, cinematic horror still, vertical 9:16 composition"
+    },
+    {
+      "shot": "shot-03",
+      "file": "refs/panels/shot-03.png",
+      "seed": 1610,
+      "prompt": "cinematic vertical silhouette horror, found-footage realism, 35mm grain, deep underexposure, one practical fluorescent source, volumetric haze, cold teal shadows, sickly green highlights, crushed blacks, the subject is a black shape not a person, no gore, no text, no watermark, extreme close-up of a failing fluorescent tube spitting sparks, an empty hospital corridor behind it out of focus, no people, cold teal darkness, 35mm grain, cinematic horror still, vertical 9:16 composition"
+    },
+    {
+      "shot": "shot-04",
+      "file": "refs/panels/shot-04.png",
+      "seed": 1711,
+      "prompt": "cinematic vertical silhouette horror, found-footage realism, 35mm grain, deep underexposure, one practical fluorescent source, volumetric haze, cold teal shadows, sickly green highlights, crushed blacks, the subject is a black shape not a person, no gore, no text, no watermark, one tall living shadow made of solid darkness, completely featureless void head, no face, no hair, no eyes, no mouth, no visible skin, narrow shoulders, long thin arms hanging past its knees, long dark coat, bare feet, always backlit so only its silhouette reads, wide establishing shot, long empty hospital corridor at night, a tall figure in a long black coat standing at the far end with its back to the camera, small in frame, dark silhouette, one failing fluorescent tube, wet reflective floor, cold teal and sickly green, 35mm grain, cinematic horror still, vertical 9:16 composition"
+    },
+    {
+      "shot": "shot-05",
+      "file": "refs/panels/shot-05.png",
+      "seed": 1812,
+      "prompt": "cinematic vertical silhouette horror, found-footage realism, 35mm grain, deep underexposure, one practical fluorescent source, volumetric haze, cold teal shadows, sickly green highlights, crushed blacks, the subject is a black shape not a person, no gore, no text, no watermark, POV through a wired safety-glass hospital door, an empty green corridor beyond, a long black shadow stretching under the door toward the camera, no people, condensation and scratches, claustrophobic, cold teal, vertical 9:16 composition"
+    },
+    {
+      "shot": "shot-06",
+      "file": "refs/panels/shot-06.png",
+      "seed": 1913,
+      "prompt": "cinematic vertical silhouette horror, found-footage realism, 35mm grain, deep underexposure, one practical fluorescent source, volumetric haze, cold teal shadows, sickly green highlights, crushed blacks, the subject is a black shape not a person, no gore, no text, no watermark, one tall living shadow made of solid darkness, completely featureless void head, no face, no hair, no eyes, no mouth, no visible skin, narrow shoulders, long thin arms hanging past its knees, long dark coat, bare feet, always backlit so only its silhouette reads, wide hospital corridor under a violent strobe, a tall figure in a long black coat rushing away down the corridor with its back to the camera, small in frame, motion smear, no face, green tiles and darkness alternating, cinematic horror still, vertical 9:16 composition"
+    },
+    {
+      "shot": "shot-07",
+      "file": "refs/panels/shot-07.png",
+      "seed": 2014,
+      "prompt": "cinematic vertical silhouette horror, found-footage realism, 35mm grain, deep underexposure, one practical fluorescent source, volumetric haze, cold teal shadows, sickly green highlights, crushed blacks, the subject is a black shape not a person, no gore, no text, no watermark, extreme macro close-up of fogged wired hospital door glass, a long black shadow dragging across the condensation, no people, green fluorescent glow, shallow depth of field, cinematic horror still, vertical 9:16 composition"
+    },
+    {
+      "shot": "shot-08",
+      "file": "refs/panels/shot-08.png",
+      "seed": 2115,
+      "prompt": "cinematic vertical silhouette horror, found-footage realism, 35mm grain, deep underexposure, one practical fluorescent source, volumetric haze, cold teal shadows, sickly green highlights, crushed blacks, the subject is a black shape not a person, no gore, no text, no watermark, one tall living shadow made of solid darkness, completely featureless void head, no face, no hair, no eyes, no mouth, no visible skin, narrow shoulders, long thin arms hanging past its knees, long dark coat, bare feet, always backlit so only its silhouette reads, wide hospital corridor from floor level, a tall figure in a long black coat standing at the far end with its back to the camera, its long shadow stretching toward the lens, no face, one dying fluorescent tube, cold teal, cinematic horror still, vertical 9:16 composition"
+    },
+    {
+      "shot": "shot-09",
+      "file": "refs/panels/shot-09.png",
+      "seed": 2216,
+      "prompt": "cinematic vertical silhouette horror, found-footage realism, 35mm grain, deep underexposure, one practical fluorescent source, volumetric haze, cold teal shadows, sickly green highlights, crushed blacks, the subject is a black shape not a person, no gore, no text, no watermark, empty hospital corridor after an attack, overturned wheelchair, long dark drag mark on the wet floor leading to an open door, a thin shadow visible beneath the door, one dying fluorescent tube, no people, cold teal and green, dreadful stillness"
+    }
+  ]
+}
