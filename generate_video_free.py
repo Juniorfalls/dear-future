@@ -201,63 +201,94 @@ def generate(pipe, prompt, negative, seed, width, height, frames, steps, guidanc
     return result.frames[0]
 
 
-def run_shot(shot, data, args):
-    """Generate one shot, walking LADDER on CUDA OOM. Returns (path, info)."""
-    import torch
+class Runner:
+    """One loaded pipeline, reused across shots.
 
-    base = data.get("base", {})
-    model_id = args.model or base.get("model")
-    if not model_id:
-        die("no model id: set 'base.model' in the schema or pass --model")
+    Model load is now paid once per run instead of once per clip; the rung
+    only ever moves down, so a clip that OOMed at 512x512 makes every later
+    clip start from the reduced setting instead of retrying a known-bad one.
+    """
 
-    default_frames = args.frames or base.get("frames", 24)
-    fps = args.fps or base.get("fps", 8)
-    steps = args.steps or base.get("steps", 25)
-    guidance = args.guidance if args.guidance is not None else base.get("guidance", 7.0)
-    width = args.width or base.get("width", 512)
-    height = args.height or base.get("height", 512)
-    negative = args.negative or shot.get("negative_prompt") or data.get("negative_prompt", "")
+    def __init__(self, data, args):
+        base = data.get("base", {})
+        self.model_id = args.model or base.get("model")
+        if not self.model_id:
+            die("no model id: set 'base.model' in the schema or pass --model")
+        self.args = args
+        self.base = base
+        self.negative_default = data.get("negative_prompt", "")
+        self.rung_idx = 0
+        self.pipe = None
+        self.loaded_offload = None
+        self.load_seconds = 0.0
 
-    last_error = None
-    for rung_name, rung in LADDER:
-        w = min(width, rung["width"])
-        h = min(height, rung["height"])
-        n = rung["frames"] if rung["frames"] else default_frames
-        if args.no_offload and rung["offload"]:
-            continue
-        log(f"rung '{rung_name}': {w}x{h}, {n} frames, {steps} steps, {guidance} cfg")
-
-        free_vram()
-        pipe = None
+    def _ensure_pipe(self, rung):
+        if self.pipe is not None and self.loaded_offload == rung["offload"]:
+            return self.pipe
+        self._dispose()
         t0 = time.perf_counter()
-        try:
-            pipe = build_pipe(model_id, offload=rung["offload"])
-            log(f"pipeline ready in {time.perf_counter() - t0:.1f}s; {vram_report()}")
+        self.pipe = build_pipe(self.model_id, offload=rung["offload"])
+        self.loaded_offload = rung["offload"]
+        took = time.perf_counter() - t0
+        self.load_seconds += took
+        log(f"pipeline ready in {took:.1f}s; {vram_report()}")
+        return self.pipe
 
-            t1 = time.perf_counter()
-            frames = generate(pipe, shot["prompt"], negative, shot.get("seed", 0),
-                              w, h, n, steps, guidance)
-            elapsed = time.perf_counter() - t1
-            log(f"denoised {n} frames in {elapsed:.1f}s ({elapsed / n:.2f}s/frame); {vram_report()}")
+    def _dispose(self):
+        self.pipe = None
+        self.loaded_offload = None
+        free_vram()
 
-            out = OUTDIR / f"{shot['id']:02d}-{shot['slug']}.mp4"
-            t2 = time.perf_counter()
-            write_mp4(frames, out, fps)
-            log(f"encoded {len(frames)} frames @ {fps}fps in {time.perf_counter() - t2:.1f}s")
-            return out, {
-                "rung": rung_name, "width": w, "height": h,
-                "frames": len(frames), "fps": fps, "steps": steps,
-                "guidance": guidance, "seconds": round(elapsed, 1),
-                "vram": vram_report(),
-            }
-        except torch.cuda.OutOfMemoryError as exc:
-            last_error = exc
-            log(f"CUDA OOM on '{rung_name}' — stepping down the ladder")
-        finally:
-            del pipe
+    def run(self, shot):
+        """Generate one shot, stepping down LADDER on CUDA OOM."""
+        import torch
+
+        a, base = self.args, self.base
+        default_frames = a.frames or base.get("frames", 24)
+        fps = a.fps or base.get("fps", 8)
+        steps = a.steps or base.get("steps", 25)
+        guidance = a.guidance if a.guidance is not None else base.get("guidance", 7.0)
+        width = a.width or base.get("width", 512)
+        height = a.height or base.get("height", 512)
+        negative = a.negative or shot.get("negative_prompt") or self.negative_default
+        last_error = None
+
+        while True:
+            if self.rung_idx >= len(LADDER):
+                die(f"every rung OOMed; last error: {last_error}")
+            rung_name, cfg = LADDER[self.rung_idx]
+            if a.no_offload and cfg["offload"]:
+                self.rung_idx += 1
+                continue
+
+            w = min(width, cfg["width"])
+            h = min(height, cfg["height"])
+            n = cfg["frames"] if cfg["frames"] else default_frames
+            log(f"rung '{rung_name}': {w}x{h}, {n} frames, {steps} steps, {guidance} cfg")
             free_vram()
+            try:
+                pipe = self._ensure_pipe(cfg)
+                t1 = time.perf_counter()
+                frames = generate(pipe, shot["prompt"], negative, shot.get("seed", 0),
+                                  w, h, n, steps, guidance)
+                elapsed = time.perf_counter() - t1
+                log(f"denoised {n} frames in {elapsed:.1f}s ({elapsed / n:.2f}s/frame); {vram_report()}")
 
-    die(f"every rung OOMed; last error: {last_error}")
+                out = OUTDIR / f"{shot['id']:02d}-{shot['slug']}.mp4"
+                t2 = time.perf_counter()
+                write_mp4(frames, out, fps)
+                log(f"encoded {len(frames)} frames @ {fps}fps in {time.perf_counter() - t2:.1f}s")
+                return out, {
+                    "rung": rung_name, "width": w, "height": h,
+                    "frames": len(frames), "fps": fps, "steps": steps,
+                    "guidance": guidance, "seconds": round(elapsed, 1),
+                    "vram": vram_report(),
+                }
+            except torch.cuda.OutOfMemoryError as exc:
+                last_error = exc
+                log(f"CUDA OOM on '{rung_name}' — dropping to the next rung")
+                self.rung_idx += 1
+                self._dispose()
 
 
 def dry_run(shots, data, args):
@@ -290,6 +321,8 @@ def main(argv=None):
     p.add_argument("--model", help="override base.model")
     p.add_argument("--negative", help="override the shared negative prompt")
     p.add_argument("--no-offload", action="store_true", help="GPU-resident only")
+    p.add_argument("--skip-existing", action="store_true",
+                   help="skip shots whose mp4 already exists (resume a batch)")
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--list", action="store_true")
     args = p.parse_args(argv)
@@ -306,6 +339,19 @@ def main(argv=None):
         for shot in shots:
             shot["seed"] = args.seed
 
+    if args.skip_existing:
+        kept = []
+        for shot in shots:
+            existing = OUTDIR / f"{shot['id']:02d}-{shot['slug']}.mp4"
+            if existing.exists():
+                log(f"skip shot {shot['id']}: {existing.name} already exists")
+            else:
+                kept.append(shot)
+        shots = kept
+        if not shots:
+            log("nothing to do — every requested clip already exists")
+            return 0
+
     if args.dry_run:
         dry_run(shots, data, args)
         return 0
@@ -314,18 +360,40 @@ def main(argv=None):
         log("no --only/--all given; defaulting to shot 1")
 
     started = time.perf_counter()
+    runner = Runner(data, args)
     results = []
     for i, shot in enumerate(shots, 1):
         log(f"=== shot {shot['id']}/{len(data['shots'])}: {shot['title']} ({i}/{len(shots)}) ===")
-        out, info = run_shot(shot, data, args)
+        out, info = runner.run(shot)
         size_mb = out.stat().st_size / 1024**2
         log(f"saved {out.relative_to(ROOT)} ({size_mb:.2f} MB) on rung '{info['rung']}'")
         results.append({"shot": shot["id"], "file": str(out.relative_to(ROOT)), **info})
 
     total = time.perf_counter() - started
-    log(f"DONE — {len(results)} clip(s) in {total:.1f}s ({total / len(results):.1f}s each)")
+    each = total / len(results) if results else 0.0
+    log(f"DONE — {len(results)} clip(s) in {total:.1f}s ({each:.1f}s each)")
+    if runner.load_seconds:
+        log(f"model load {runner.load_seconds:.1f}s total across the whole batch "
+            f"({runner.rung_idx} rung step(s) down, {len(LADDER)} available)")
+
+    # keep earlier clips in the manifest so a later --skip-existing run
+    # does not erase the shots it did not touch
     manifest = OUTDIR / "manifest.json"
-    manifest.write_text(json.dumps({"episode": data.get("episode"), "clips": results}, indent=2))
+    previous = []
+    if manifest.exists():
+        try:
+            previous = json.loads(manifest.read_text()).get("clips", [])
+        except json.JSONDecodeError:
+            previous = []
+    by_shot = {c.get("shot"): c for c in previous}
+    for result in results:
+        by_shot[result["shot"]] = result
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    manifest.write_text(json.dumps({
+        "episode": data.get("episode"),
+        "model": runner.model_id,
+        "clips": [by_shot[k] for k in sorted(by_shot) if k is not None],
+    }, indent=2))
     log(f"manifest: {manifest.relative_to(ROOT)}")
     return 0
 
