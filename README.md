@@ -174,6 +174,28 @@ anonymous call into a 402) unless `POLLINATIONS_TOKEN` holds a real
 Every field is validated, because a bad duration or a missing line breaks the
 render silently later:
 
+- a **cast of 2–3 characters**, each with `id`, `name`, `role`
+  (`protagonist` / `antagonist` / `victim` / `supporting`), a prompt-safe
+  `look` (clothing, hair, build — never a face), a full `reference` block
+  (`age`, `hair`, `clothing`, `features`, `build`) and a generated
+  `reference_prompt` for drawing a character sheet. Sheets may show faces;
+  AnimateDiff shots may not.
+- **exactly one focus character per shot.** A two-hander is written as
+  coverage — `shot_type` is one of `wide`, `medium`, `close_up`,
+  `over_shoulder`, `insert`, `pov` — instead of two bodies in one frame. A
+  model that returns a list of focuses is trimmed to the first, with a warning.
+  The only legal second body is `foreground` on an `over_shoulder` shot, and
+  the prompt then renders it as a dark out-of-focus shoulder and back.
+- `insert`/`pov` shots take `focus: "none"`; a character on one is dropped so
+  the frame stays empty (an insert of a person is a different shot).
+- the shot prompt names the character's `look`, not just a name, so the model
+  can actually render them, and it is re-attached if the model forgets.
+- `speaker` is `narrator` or a character id for a spoken line (the character
+  may be off-screen), so dialogue lands on the right shot.
+- **on camera beats must be the protagonist.** A `host_full` shot focused on
+  anyone else renders the wrong person full frame, so that is warned about.
+- a character who never appears as a focus is flagged: their reference sheet
+  would be wasted and the cast is effectively smaller.
 - exactly 12 shots, ids 1..12, unique slugs — otherwise nothing is written
 - `duration_s` clamped to 3.0–5.0 and scaled to `--total` (60) only when the
   model misses by more than 10%, so its pacing survives
@@ -187,6 +209,29 @@ render silently later:
   negative; a figure is reworded to "seen from behind as a featureless black
   silhouette"
 - a voice line longer than ~2.6 words per second is flagged as rushed
+
+When the model gets the cast or the shot count wrong, the script re-asks once
+(`--retries 1`) with the broken rules quoted back at it. A truncated or
+malformed JSON reply is treated the same way rather than being fatal; each
+retry costs another 45 s slot. `--max-tokens` (4000) leaves room for a
+12-shot, 3-character reply.
+
+```json
+{
+  "characters": [
+    {"id": "mara", "name": "Mara", "role": "protagonist",
+     "look": "thirties, dark wet shoulder-length hair, long grey wool coat, black boots",
+     "reference": {"age": "thirties", "hair": "dark, wet", "clothing": "grey wool coat",
+                   "features": "sharp nose, tired eyes", "build": "lean"},
+     "reference_prompt": "character reference sheet of Mara, ..."}
+  ],
+  "shots": [
+    {"id": 3, "shot_type": "over_shoulder", "focus": "mara", "foreground": "shad",
+     "vo": "On the cliff, a silhouette watches.", "speaker": "narrator",
+     "layout": "broll_only", "duration_s": 5.0, "frames": 40}
+  ]
+}
+```
 
 Two hardware/plumbing notes it prints when relevant:
 
