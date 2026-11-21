@@ -12,6 +12,9 @@
 # Usage
 #   ./sound_design.sh                 # grade + sound + mux -> out/video/end-of-the-corridor-teaser.mp4
 #   ./sound_design.sh --click         # add a 2 kHz transient layer to the stinger
+#   ./sound_design.sh --click --web   # same, but crf 20 + light grain -> ~6 MB web cut
+#   ./sound_design.sh --web           # -> out/video/end-of-the-corridor-teaser-web.mp4
+#   ./sound_design.sh --crf 22 --grain 1                    # manual quality control
 #   ./sound_design.sh --out /tmp/t.mp4
 #   ./sound_design.sh --reuse-graded out/video/graded.mp4   # skip the 1m concat/grade stage
 #   ./sound_design.sh --keep-work     # leave the intermediate wavs for inspection
@@ -21,14 +24,20 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLIP_DIR="${CLIP_DIR:-$ROOT/out/video}"
 BED="${BED:-$ROOT/remotion/public/audio/bg_music.mp3}"
-OUT="$CLIP_DIR/end-of-the-corridor-teaser.mp4"
+OUT=""
 REUSE_GRADED=""
 CLICK=0
 KEEP_WORK=0
+WEB=0
+CRF=17
+GRAIN=5          # noise=alls=N, the film-grain strength baked into the grade
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --click)        CLICK=1 ;;
+    --web)          WEB=1; CRF=20; GRAIN=2 ;;
+    --crf)          CRF="$2"; shift ;;
+    --grain)        GRAIN="$2"; shift ;;
     --keep-work)    KEEP_WORK=1 ;;
     --out)          OUT="$2"; shift ;;
     --reuse-graded) REUSE_GRADED="$2"; shift ;;
@@ -37,6 +46,20 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
+
+# Default target names the variant, so the 16 MB master is never overwritten
+# by a web render (or vice versa).
+if [ -z "$OUT" ]; then
+  OUT="$CLIP_DIR/end-of-the-corridor-teaser"
+  [ "$WEB" = 1 ] && OUT+="-web"
+  OUT+=".mp4"
+fi
+
+# Lighter grain has to be re-baked, so reusing a graded master would defeat --web.
+if [ "$WEB" = 1 ] && [ -n "$REUSE_GRADED" ]; then
+  echo '[sound] --web ignores --reuse-graded (grain is baked into the grade)' >&2
+  REUSE_GRADED=""
+fi
 
 # --- shot boundaries (each generated clip is exactly 3.000 s = 24f @ 8fps) ---
 DUR=27
@@ -79,9 +102,9 @@ else
     -filter_complex "[0:v]curves=all='0/0 0.09/0.02 0.30/0.34 0.65/0.80 1/1',\
 colorbalance=rs=-0.04:bs=0.12:rm=-0.02:bm=0.03:rh=0.01:bh=-0.02,\
 eq=contrast=1.12:saturation=0.82:brightness=-0.01,\
-vignette=angle=PI/4.2,noise=alls=5:allf=t+u,\
+vignette=angle=PI/4.2,noise=alls=$GRAIN:allf=t+u,\
 fade=t=in:st=0:d=0.7,fade=t=out:st=26.3:d=0.7,format=yuv420p[v]" \
-    -map "[v]" -an -c:v libx264 -preset slow -crf 17 "$GRADED"
+    -map "[v]" -an -c:v libx264 -preset slow -crf $CRF "$GRADED"
 fi
 
 # ------------------------------------------------------- stage 2: synthesise fx
