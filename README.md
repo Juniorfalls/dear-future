@@ -145,10 +145,57 @@ without it the workflow automatically falls back to `--test` clips.
 - `remotion/public/host/presenter.mp4` and the `host_*` layouts.
 - `generate_video_free.py`: local AnimateDiff for "The End of the Corridor",
   with the ffmpeg 1080x1920 delivery step described below.
+- `generate_script.py`: topic in, 12-shot `episode_schema.json` out (below).
 - `sound_design.sh`: the canonical teaser build — grades the nine clips and
   synthesises the drone/riser/stinger bed from committed inputs.
 - `sound_design_mix.sh`: an alternative audio stage for an already-graded
   picture (bed duck + two-pass R128 + delivery check).
+
+## Writing an episode script
+
+`episode_schema.json` used to be hand-written. `generate_script.py` writes it
+from a topic, so a new 60 s episode is data entry plus one API call:
+
+```bash
+python3 generate_script.py "A haunted asylum"
+python3 generate_script.py "A flooded car park" --seed 4 --out /tmp/ep.json --overwrite
+python3 generate_script.py --offline "shapes test" --out /tmp/ep.json --overwrite
+python3 generate_video_free.py --schema /tmp/ep.json --dry-run --all
+```
+
+The LLM is Pollinations' classic text API — free, keyless, **one anonymous
+request per IP every 45 s**. So the script makes exactly one call and gets the
+story and all twelve beats back together; a second call would mean waiting out
+the slot. It sends **no** `Authorization` header (a dummy key turns a working
+anonymous call into a 402) unless `POLLINATIONS_TOKEN` holds a real
+`enter.pollinations.ai` key. On 402/429 it honours `Retry-After` up to
+`--max-wait` (120 s).
+
+Every field is validated, because a bad duration or a missing line breaks the
+render silently later:
+
+- exactly 12 shots, ids 1..12, unique slugs — otherwise nothing is written
+- `duration_s` clamped to 3.0–5.0 and scaled to `--total` (60) only when the
+  model misses by more than 10%, so its pacing survives
+- `frames = duration_s × fps`, which `generate_video_free.py` now honours per
+  shot via `--schema` (a 5 s beat asks for 40 frames, not 24)
+- `layout` is derived from the model's `on_camera` flag: `host_full` for at
+  most two non-consecutive beats, and only the first or last shot; the rest are
+  `broll_only`. `host_pip` is never auto-assigned.
+- face / eye / teeth / gore clauses are stripped from prompts, because the
+  shared negative prompt lists them and "her eyes wide" fights its own
+  negative; a figure is reworded to "seen from behind as a featureless black
+  silhouette"
+- a voice line longer than ~2.6 words per second is flagged as rushed
+
+Two hardware/plumbing notes it prints when relevant:
+
+- **40-frame shots** (5 s at 8 fps) are above the comfortable 15 GB T4 point;
+  `--max-frames 32` caps them and shortens `duration_s` to match (12 shots ×
+  4 s = 48 s), rather than leaving the OOM ladder to drop the clip later.
+- **`sound_design.sh` hardcodes 9 × 3 s** boundaries (`DUR=27`, `HIT_AT=21.6`)
+  for the hand-written teaser. Any other episode length needs those constants
+  recomputed before the stinger lands on the right beat.
 
 ## HD delivery for the AnimateDiff clips
 

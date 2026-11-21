@@ -46,6 +46,7 @@ import shutil
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 # Keep multi-GB weights on the fast, roomy overlay FS, never the Drive mount.
 os.environ.setdefault("HF_HOME", "/root/.cache/huggingface")
@@ -359,7 +360,9 @@ class Runner:
         import torch
 
         a, base = self.args, self.base
-        default_frames = a.frames or base.get("frames", 24)
+        # A generated script gives each shot its own frame count (duration_s *
+        # fps), so a 12-shot 60 s episode does not silently render as 12 x 3 s.
+        default_frames = a.frames or shot.get("frames") or base.get("frames", 24)
         fps = a.fps or base.get("fps", 8)
         steps = a.steps or base.get("steps", 25)
         guidance = a.guidance if a.guidance is not None else base.get("guidance", 7.0)
@@ -435,7 +438,7 @@ def dry_run(shots, data, args):
     log(f"model:   {args.model or base.get('model')}")
     log(f"adapter: {ADAPTER_ID}")
     for shot in shots:
-        n = args.frames or base.get("frames", 24)
+        n = args.frames or shot.get("frames") or base.get("frames", 24)
         w = args.width or base.get("width", 512)
         h = args.height or base.get("height", 512)
         log(f"  shot {shot['id']:>2} {shot['slug']:<24} {w}x{h} {n}f seed {shot.get('seed')}")
@@ -454,6 +457,8 @@ def dry_run(shots, data, args):
 def main(argv=None):
     p = argparse.ArgumentParser(description="Free local AnimateDiff clip generator")
     p.add_argument("--only", type=int, help="generate a single shot by id")
+    p.add_argument("--schema", default=str(SCHEMA_PATH),
+                   help="shot list to read (default episode_schema.json)")
     p.add_argument("--all", action="store_true", help="generate every shot in the schema")
     p.add_argument("--frames", type=int, help="frame count (overrides schema base)")
     p.add_argument("--fps", type=int, help="output fps (overrides schema base)")
@@ -492,7 +497,7 @@ def main(argv=None):
     if args.upscale:
         parse_size(args.upscale_to)
 
-    data = load_schema()
+    data = load_schema(Path(args.schema))
 
     if args.list:
         for shot in data["shots"]:
