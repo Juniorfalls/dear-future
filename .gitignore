@@ -17,6 +17,19 @@ __pycache__/
 # local Python env for the TTS pipeline
 .venv/
 
+# third-party stickman skill (auto-cloned by make_horror_stickman.py)
+/vendor/
+
+# Kokoro voice model cache and sound-effect cache
+.voice-models/
+.sfxcache/
+
+# stickman render logs
+stickman-render.log
+playwright-install.log
+stickman-render.pid
+playwright-install.pid
+
 # interrupted media downloads
 *.part
 

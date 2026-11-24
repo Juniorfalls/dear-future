@@ -58,6 +58,34 @@ cd remotion && node render.js
 
 The committed iPhone 15 test episode was produced this way.
 
+## Stickman horror pipeline (active, CPU-only)
+
+The GPU/AnimateDiff renderer is retired and archived in `archive_animatdiff/`.
+The active horror engine is `make_horror_stickman.py`: it reads the same episode
+schema, draws the scenes with the [stickman skill](https://github.com/krishnagoswami52/stickman-skill)
+(Canvas + Playwright), speaks the voiceover with Kokoro-82M, mixes sound and
+encodes an MP4. No GPU, no paid API.
+
+```bash
+# one-time setup
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-stickman.txt
+.venv/bin/python -m playwright install chromium
+
+# 15-second Fog Ridge test (first run also downloads the ~350 MB voice model)
+.venv/bin/python make_horror_stickman.py --shots 1-5 --max-seconds 15
+
+# full episode, dark narrator
+.venv/bin/python make_horror_stickman.py --voice am_onyx
+```
+
+Output: `out/stickman/silence-on-the-fog-ridge-test.mp4`. The working film
+folder is `out/stickman/film/` (`film.js`, `vo.wav`, `audio.wav`, shots). The
+wrapper auto-clones the skill into `vendor/stickman-skill/` if it is missing;
+set `STICKMAN_SKILL_DIR` to use another install. The wrapper currently renders
+the 2D route; the skill's 3D route is available upstream when a scene needs a
+real camera orbit.
+
 ## Episode options
 
 | Flag | Default | Meaning |
@@ -143,8 +171,8 @@ without it the workflow automatically falls back to `--test` clips.
 - `REFERENCE_VIDEO_ANALYSIS.md`: measurements behind the subtitle, grade and
   cut style.
 - `remotion/public/host/presenter.mp4` and the `host_*` layouts.
-- `generate_video_free.py`: local AnimateDiff for "The End of the Corridor",
-  with the ffmpeg 1080x1920 delivery step described below.
+- `generate_video_free.py` and the AnimateDiff helpers now live in
+  `archive_animatdiff/` and are reference-only.
 - `generate_script.py`: topic in, 12-shot `episode_schema.json` out (below).
 - `sound_design.sh`: the canonical teaser build — grades the nine clips and
   synthesises the drone/riser/stinger bed from committed inputs.
@@ -160,7 +188,7 @@ from a topic, so a new 60 s episode is data entry plus one API call:
 python3 generate_script.py "A haunted asylum"
 python3 generate_script.py "A flooded car park" --seed 4 --out /tmp/ep.json --overwrite
 python3 generate_script.py --offline "shapes test" --out /tmp/ep.json --overwrite
-python3 generate_video_free.py --schema /tmp/ep.json --dry-run --all
+.venv/bin/python make_horror_stickman.py --episode /tmp/ep.json --max-seconds 30
 ```
 
 The LLM is Pollinations' classic text API — free, keyless, **one anonymous
@@ -272,11 +300,12 @@ Things that shape the output:
 The checked-in `episodes/silence-on-the-fog-ridge.json` and
 `refs/characters/*.jpg` are the first real run (Mara, Shad, Captain).
 
-## HD delivery for the AnimateDiff clips
+## HD delivery for the archived AnimateDiff clips
 
-AnimateDiff runs at 512x896 (or the schema's 512x512) to fit a 15 GB T4, so the
-model output is a proxy, not a master. `generate_video_free.py` now writes the
-raw clip to `out/video/raw/` and post-processes it with ffmpeg:
+This section describes the retired GPU path; see `archive_animatdiff/`.
+AnimateDiff ran at 512x896 (or the schema's 512x512) to fit a 15 GB T4, so the
+model output was a proxy, not a master. `generate_video_free.py` wrote the raw
+clip to `out/video/raw/` and post-processed it with ffmpeg:
 
 ```
 scale=1080:1920:flags=lanczos:force_original_aspect_ratio=increase,crop=1080:1920,
