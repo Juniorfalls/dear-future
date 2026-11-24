@@ -289,8 +289,14 @@ def timeline(groups: list[list[dict]], at: float, max_seconds: float | None) -> 
         hold = .30 if i < len(groups) - 1 else .95
         ends.append(at + float(group[-1]["end"]) + hold)
     natural = ends[-1]
-    if max_seconds and natural < max_seconds:
-        ends[-1] += max_seconds - natural
+    if max_seconds:
+        if natural < max_seconds:
+            ends[-1] += max_seconds - natural
+        else:
+            # Keep the whole last line and shorten its tail to hit the target.
+            voice_end = at + float(groups[-1][-1]["end"])
+            if max_seconds >= voice_end + .06:
+                ends[-1] = max_seconds
     cuts = [0]
     for seconds in ends:
         frame = int(round(seconds * FPS))
