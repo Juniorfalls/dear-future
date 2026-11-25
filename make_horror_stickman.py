@@ -154,6 +154,21 @@ def choose_shots(shots: list[dict], max_seconds: float | None, speed: float) -> 
 def classify(shot: dict) -> str:
     text = f"{shot.get('slug','')} {shot.get('prompt','')}".lower()
     slug = str(shot.get("slug", "")).lower()
+    # Director Mode locations (rearview mirror, sign, cabin, road). Checked
+    # before the Fog Ridge keywords so "hand on the wheel" is not the radio hand.
+    if shot.get("shot_type") == "wide" and ("highway" in text or "road" in text):
+        return "highway"
+    if "rearview" in text or "rear-view" in text or "mirror" in text:
+        return "rearview_mirror"
+    if "do not stop" in text or "roadside sign" in text or (
+            "rusted" in text and "sign" in text):
+        return "roadside_sign"
+    if any(k in text for k in ("steering", "dashboard", "windshield", "cabin",
+                               "rear window", "glass shard", "shards", "shard",
+                               "passenger seat", "door lock")):
+        return "car_interior"
+    if "highway" in text or "road" in text:
+        return "highway"
     if "radio-screen" in slug or "hand-trembl" in slug:
         return "hand" if "hand" in slug or "trembl" in slug else "radio_insert"
     if "console" in slug:

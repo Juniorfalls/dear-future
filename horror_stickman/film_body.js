@@ -342,6 +342,191 @@ function exterior(t,cam,s,u,kind){
   comp([['sky',cam.b[0]],['far',cam.b[1]],['set',0],['act',0],['ots',6,.96],['rain',0,.5],['fg',cam.b[2]]]);
 }
 
+
+// ---------------- road / hitchhiker scenes ----------------
+function asphalt(x,hzY=520,bottom=1080){
+  const g=x.createLinearGradient(0,hzY,0,bottom);
+  g.addColorStop(0,'#0a0d13');g.addColorStop(.55,'#0d1119');g.addColorStop(1,'#141a24');
+  x.fillStyle=g;
+  x.beginPath();x.moveTo(960-32,hzY);x.lineTo(960+32,hzY);
+  x.lineTo(960+1500,bottom);x.lineTo(960-1500,bottom);x.closePath();x.fill();
+}
+function roadMarks(x,hzY=520,bottom=1080){
+  x.fillStyle='rgba(188,196,186,.42)';
+  for(let i=0;i<9;i++){
+    const p0=i/9,p1=p0+.055;
+    const y0=hzY+(bottom-hzY)*p0*p0, y1=hzY+(bottom-hzY)*p1*p1;
+    const w0=2+10*p0*p0, w1=2+10*p1*p1;
+    x.fillRect(960-w0/2,y0,w0,Math.max(2,y1-y0));
+  }
+  // edge lines
+  for(const side of [-1,1]){
+    x.strokeStyle='rgba(150,158,150,.28)';x.lineWidth=3;
+    x.beginPath();x.moveTo(960+side*34,hzY);x.lineTo(960+side*620,bottom);x.stroke();
+  }
+}
+function tailLights(x,t,hzY=520){
+  for(let i=0;i<5;i++){
+    const px=760+i*88+Math.sin(t*.7+i)*6, py=hzY-4+Math.abs(i-2)*9;
+    const a=.18+.12*Math.sin(t*1.3+i);
+    const g=x.createRadialGradient(px,py,1,px,py,16);
+    g.addColorStop(0,`rgba(196,74,54,${a+.25})`);g.addColorStop(1,'rgba(196,74,54,0)');
+    x.fillStyle=g;x.fillRect(px-18,py-18,36,36);
+    x.fillStyle=`rgba(220,110,80,${a+.3})`;x.fillRect(px-3,py-2,6,4);
+  }
+}
+function drawRoad(x,t,st,en,kind){
+  asphalt(x);roadMarks(x);
+  // headlight wash from the viewer's car
+  let g=x.createRadialGradient(960,1040,40,960,1040,760);
+  g.addColorStop(0,'rgba(214,198,160,.16)');g.addColorStop(1,'rgba(214,198,160,0)');
+  x.fillStyle=g;x.fillRect(180,540,1560,540);
+  // shoulder posts rushing by
+  for(let i=0;i<7;i++){
+    const p=((i*140+t*260)%980)/980;
+    const y=540+p*p*540, scale=.4+p*1.5, side=i%2?-1:1;
+    x.fillStyle='#0a0d12';x.fillRect(960+side*(140+scale*520),y-70*scale,7*scale,70*scale);
+  }
+  if(kind==='roadside_sign')drawSign(x,t,st,en);
+  else tailLights(x,t);
+}
+function drawSign(x,t,st,en){
+  x.fillStyle='#0b0e14';x.fillRect(1370,470,26,510);
+  x.fillStyle='#0a0c11';x.fillRect(1300,860,180,24);
+  // rusted board
+  const g=x.createLinearGradient(1080,300,1600,560);
+  g.addColorStop(0,'#2a2a26');g.addColorStop(.45,'#3a382f');g.addColorStop(1,'#22221d');
+  x.fillStyle=g;x.fillRect(1080,300,520,250);
+  x.strokeStyle='rgba(214,204,180,.55)';x.lineWidth=8;x.strokeRect(1100,320,480,210);
+  // rust streaks
+  x.fillStyle='rgba(96,58,34,.45)';
+  for(let i=0;i<7;i++){const rx=1120+i*70;x.fillRect(rx,320,5,70+(i*37)%120);}
+  // text
+  x.save();x.translate(1340,392);x.rotate(-.02);
+  x.font='bold 74px sans-serif';x.textAlign='center';x.fillStyle='#ddd4c0';
+  x.fillText('DO NOT',0,0);
+  x.font='bold 92px sans-serif';x.fillText('STOP',0,96);
+  x.restore();
+  // weak lamp catching the board
+  const lg=x.createRadialGradient(1340,430,10,1340,430,360);
+  lg.addColorStop(0,'rgba(200,190,160,.10)');lg.addColorStop(1,'rgba(200,190,160,0)');
+  x.fillStyle=lg;x.fillRect(980,220,720,460);
+}
+function drawCabin(x,t,st,en,cam){
+  // glass and what is beyond it
+  const g=x.createLinearGradient(0,120,0,760);
+  g.addColorStop(0,'#0a1220');g.addColorStop(.6,'#0d1726');g.addColorStop(1,'#121a24');
+  x.fillStyle=g;x.fillRect(300,110,1320,620);
+  // distant headlights smeared by rain
+  for(let i=0;i<4;i++){
+    const px=700+i*150+Math.sin(t*.5+i)*8, py=560+Math.abs(i-1.5)*26;
+    const rg=x.createRadialGradient(px,py,2,px,py,60);
+    rg.addColorStop(0,'rgba(214,214,196,.30)');rg.addColorStop(1,'rgba(214,214,196,0)');
+    x.fillStyle=rg;x.fillRect(px-70,py-70,140,140);
+  }
+  // rain on the windshield
+  x.strokeStyle='rgba(168,190,214,.22)';x.lineWidth=2;
+  for(let i=0;i<46;i++){
+    const rx=310+((i*211+t*40)%1300), ry=120+((i*97+t*120)%600);
+    x.beginPath();x.moveTo(rx,ry);x.lineTo(rx-6,ry+30);x.stroke();
+  }
+  // A-pillars and roof
+  x.fillStyle='#05070b';
+  x.beginPath();x.moveTo(150,80);x.lineTo(340,110);x.lineTo(320,760);x.lineTo(120,900);x.closePath();x.fill();
+  x.beginPath();x.moveTo(1770,80);x.lineTo(1580,110);x.lineTo(1600,760);x.lineTo(1800,900);x.closePath();x.fill();
+  x.fillRect(280,60,1360,80);
+  // passenger presence
+  const sp={x:1450,y:standY(1010,.74),s:.74,face:-1,breath:t*1.1,coat:true,flut:.5,time:t,hat:false,
+    look:kf(t,[[st,-.5],[en,-.9]]),brow:-.5,sad:-.7,mouth:-.45,blink:0};
+  actor(x,'shad',SHAD,sp,cam,'rgba(90,110,128,.25)',-1);
+
+  // dashboard (drawn over the passenger: seated, not standing at the glass)
+  const dg=x.createLinearGradient(0,700,0,1080);
+  dg.addColorStop(0,'#0b0f16');dg.addColorStop(1,'#05070b');
+  x.fillStyle=dg;
+  x.beginPath();x.moveTo(160,760);x.lineTo(1760,760);x.lineTo(1920,1080);x.lineTo(0,1080);x.closePath();x.fill();
+  x.fillStyle='#070a10';x.fillRect(160,742,1600,26);
+  // instrument glow
+  const ig=x.createRadialGradient(960,880,20,960,880,300);
+  ig.addColorStop(0,'rgba(120,190,176,.16)');ig.addColorStop(1,'rgba(120,190,176,0)');
+  x.fillStyle=ig;x.fillRect(620,620,680,420);
+  // steering wheel
+  x.save();x.translate(960,900);x.rotate(Math.sin(t*.6)*.03);
+  x.strokeStyle='#0a0d14';x.lineWidth=34;x.beginPath();x.arc(0,0,190,0,Math.PI*2);x.stroke();
+  x.strokeStyle='rgba(70,80,92,.55)';x.lineWidth=4;x.beginPath();x.arc(0,0,176,0,Math.PI*2);x.stroke();
+  x.strokeStyle='#0a0d14';x.lineWidth=26;
+  x.beginPath();x.moveTo(-176,0);x.lineTo(-40,0);x.stroke();
+  x.beginPath();x.moveTo(176,0);x.lineTo(40,0);x.stroke();
+  x.beginPath();x.moveTo(0,40);x.lineTo(0,176);x.stroke();
+  x.fillStyle='#0c1017';x.beginPath();x.arc(0,0,44,0,Math.PI*2);x.fill();
+  x.restore();
+  // rear-view mirror
+  x.fillStyle='#05070b';x.beginPath();x.roundRect(820,66,300,110,18);x.fill();
+  x.fillStyle='#101722';x.beginPath();x.roundRect(836,80,268,82,12);x.fill();
+  x.fillStyle='rgba(120,140,160,.18)';x.fillRect(850,96,240,10);
+}
+function drawMirror(x,t,st,en,cam){
+  // dim cabin around the mirror
+  let g=x.createLinearGradient(0,0,0,1080);
+  g.addColorStop(0,'#05070c');g.addColorStop(1,'#0a0e15');
+  x.fillStyle=g;x.fillRect(-400,-300,2800,1700);
+  // housing
+  x.fillStyle='#04060a';x.beginPath();x.roundRect(430,190,1060,540,34);x.fill();
+  x.strokeStyle='rgba(90,100,110,.35)';x.lineWidth=6;x.beginPath();x.roundRect(444,204,1032,512,28);x.stroke();
+  // reflection: road receding, cold and wrong
+  const rg=x.createLinearGradient(0,230,0,690);
+  rg.addColorStop(0,'#0c1420');rg.addColorStop(.6,'#0e1826');rg.addColorStop(1,'#081018');
+  x.fillStyle=rg;x.fillRect(466,226,988,468);
+  x.fillStyle='rgba(150,160,150,.30)';
+  for(let i=0;i<6;i++){const p=i/6,y=300+p*p*380,w=2+8*p*p;x.fillRect(960-w/2,y,w,26);}
+  // reflecting figure on the back seat: silhouette only
+  const sp={x:1240,y:standY(610,.92),s:.92,face:-1,breath:t*.9,coat:true,flut:.35,time:t,hat:true,
+    look:kf(t,[[st,-.6],[en,-.95]]),brow:-.55,sad:-.8,mouth:-.5,blink:0};
+  actor(x,'shad',SHAD,sp,cam,'rgba(120,140,160,.30)',-1);
+  // glass cracks
+  x.strokeStyle='rgba(210,220,230,.35)';x.lineWidth=2;
+  for(let i=0;i<3;i++){
+    const cx=700+i*260, cy=300+((i*97)%240);
+    x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+70,cy+90);x.lineTo(cx+30,cy+180);x.stroke();
+  }
+  // glass glare sweep
+  const gg=x.createLinearGradient(520,240,1400,660);
+  gg.addColorStop(0,'rgba(180,200,220,0)');gg.addColorStop(.45,'rgba(180,200,220,.08)');gg.addColorStop(1,'rgba(180,200,220,0)');
+  x.fillStyle=gg;x.fillRect(466,226,988,468);
+}
+function roadScene(t,cam,s,u,kind){
+  const st=stOf(s),en=enOf(s);
+  let x=layer('sky',cam,.30);
+  let g=x.createLinearGradient(0,-100,0,1080);
+  g.addColorStop(0,'#04060b');g.addColorStop(.5,'#08101b');g.addColorStop(1,'#121a26');
+  x.fillStyle=g;x.fillRect(-500,-400,2900,1800);
+  g=x.createRadialGradient(1450,250,20,1450,250,460);
+  g.addColorStop(0,'rgba(150,176,206,.14)');g.addColorStop(1,'rgba(150,176,206,0)');
+  x.fillStyle=g;x.fillRect(900,-250,1200,950);
+
+  x=layer('far',cam,.55);
+  x.fillStyle='#060910';
+  for(let i=0;i<28;i++){
+    const bx=-260+i*104, h=30+((i*53)%70);
+    x.beginPath();x.moveTo(bx,540);x.lineTo(bx+22,540-h);x.lineTo(bx+46,540);x.closePath();x.fill();
+  }
+  x=layer('set',cam,1);
+  if(kind==='rearview_mirror')drawMirror(x,t,st,en,cam);
+  else if(kind==='car_interior')drawCabin(x,t,st,en,cam);
+  else drawRoad(x,t,st,en,kind);
+
+  x=layer('act',cam);
+  if(kind==='highway'){
+    // the road has no visible traveller: only the storm
+  }
+  x=layer('rain',cam,1.12);rainSheet(x,t,.58);
+  x=layer('fg',cam,1.2);
+  let v=x.createLinearGradient(0,900,0,1080);
+  v.addColorStop(0,'rgba(3,5,9,0)');v.addColorStop(1,'rgba(3,5,9,.85)');
+  x.fillStyle=v;x.fillRect(-500,880,3000,300);
+  comp([['sky',cam.b[0]],['far',cam.b[1]],['set',0],['act',0],['rain',0,.55],['fg',cam.b[2]]]);
+}
+
 const CAMS={
   opening:{x:1250,y:520,z:1.03,push:.06,dx:26,dy:-4,b:[4,1.4,0]},
   console:{x:1400,y:420,z:1.62,push:.08,dx:10,dy:-3,b:[9,4,0]},
@@ -354,10 +539,15 @@ const CAMS={
   hand:{x:1332,y:400,z:3.10,push:.05,dx:10,dy:-3,b:[16,0,0]},
   captain:{x:1390,y:624,z:1.14,push:.06,dx:18,dy:-2,b:[5,1.6,0]},
   final:{x:1428,y:418,z:1.78,push:.11,dx:6,dy:-2,b:[10,5,0]},
-  end:{x:1220,y:548,z:.78,push:.04,dx:50,dy:-3,b:[3,.8,0]}
+  end:{x:1220,y:548,z:.78,push:.04,dx:50,dy:-3,b:[3,.8,0]},
+  highway:{x:960,y:548,z:.86,push:.07,dx:0,dy:-2,b:[3,1.0,0]},
+  car_interior:{x:960,y:560,z:1.04,push:.05,dx:0,dy:0,b:[4,0,0]},
+  rearview_mirror:{x:960,y:520,z:1.30,push:.10,dx:0,dy:0,b:[4,0,0]},
+  roadside_sign:{x:1200,y:540,z:.94,push:.06,dx:26,dy:-2,b:[3,1.0,0]}
 };
 
 const INT_KINDS=new Set(['opening','console','radio_insert','speaks','hand','final']);
+const ROAD_KINDS=new Set(['highway','car_interior','rearview_mirror','roadside_sign']);
 
 FILM={dur:SCENES.dur,cuts:SCENES.cuts,fadeIn:.7,fadeOut:.9,
   cam(s,u,t){
@@ -368,7 +558,8 @@ FILM={dur:SCENES.dur,cuts:SCENES.cuts,fadeIn:.7,fadeOut:.9,
   },
   draw(t,cam,s,u){
     const k=SCENES.shots[s].kind;
-    if(INT_KINDS.has(k))interior(t,cam,s,u,k);else exterior(t,cam,s,u,k);
+    if(ROAD_KINDS.has(k))roadScene(t,cam,s,u,k);
+    else if(INT_KINDS.has(k))interior(t,cam,s,u,k);else exterior(t,cam,s,u,k);
   },
   warm(t){return .04},
   plants(){return {}}
