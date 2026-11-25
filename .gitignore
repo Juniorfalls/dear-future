@@ -33,7 +33,8 @@ playwright-install.pid
 # interrupted media downloads
 *.part
 
-# generated AnimateDiff clips (regenerate with generate_video_free.py)
+# rendered output: stickman test film (and legacy clips). The active test MP4
+# is regenerated with make_horror_stickman.py --max-seconds 15 --force
 /out/
 
 # project-local ffmpeg/ffprobe shims (153 MB of binaries)

@@ -174,10 +174,10 @@ without it the workflow automatically falls back to `--test` clips.
 - `generate_video_free.py` and the AnimateDiff helpers now live in
   `archive_animatdiff/` and are reference-only.
 - `generate_script.py`: topic in, 12-shot `episode_schema.json` out (below).
-- `sound_design.sh`: the canonical teaser build — grades the nine clips and
-  synthesises the drone/riser/stinger bed from committed inputs.
-- `sound_design_mix.sh`: an alternative audio stage for an already-graded
-  picture (bed duck + two-pass R128 + delivery check).
+- `archive_animatdiff/sound_design.sh`: the retired AnimateDiff teaser build —
+  grades the nine clips and synthesises the drone/riser/stinger bed.
+- `archive_animatdiff/sound_design_mix.sh`: an alternative audio stage for an
+  already-graded picture (bed duck + two-pass R128 + delivery check).
 
 ## Writing an episode script
 
@@ -227,8 +227,8 @@ render silently later:
 - exactly 12 shots, ids 1..12, unique slugs — otherwise nothing is written
 - `duration_s` clamped to 3.0–5.0 and scaled to `--total` (60) only when the
   model misses by more than 10%, so its pacing survives
-- `frames = duration_s × fps`, which `generate_video_free.py` now honours per
-  shot via `--schema` (a 5 s beat asks for 40 frames, not 24)
+- `frames = duration_s × fps`, which the archived `generate_video_free.py`
+  honours per shot via `--schema` (a 5 s beat asks for 40 frames, not 24)
 - `layout` is derived from the model's `on_camera` flag: `host_full` for at
   most two non-consecutive beats, and only the first or last shot; the rest are
   `broll_only`. `host_pip` is never auto-assigned.
@@ -323,7 +323,10 @@ warned about. A 512x896 clip is already within 2% of 9:16, so `cover` costs
 nothing; a square 512x512 run logs a loud warning instead of silently cropping
 78% of the frame.
 
+The renderer now lives in the archive; run these from that folder:
+
 ```bash
+cd archive_animatdiff
 python3 generate_video_free.py --all                    # 1080x1920 delivery
 python3 generate_video_free.py --only 1 --fit pad        # keep the whole frame
 python3 generate_video_free.py --upscale-to 720x1280     # quick preview

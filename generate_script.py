@@ -4,7 +4,7 @@ generate_script.py — write a 60 s horror short as episode_schema.json.
 
 "The End of the Corridor" was hand-written. This is the head of the pipeline:
 topic in, shot list out, shaped exactly like the schema that
-generate_video_free.py and sound_design.sh already read.
+make_horror_stickman.py (the active CPU engine) reads.
 
     python3 generate_script.py "A haunted asylum"
     python3 generate_script.py "A flooded car park" --out /tmp/ep.json --overwrite
@@ -896,7 +896,7 @@ def main(argv=None) -> int:
     out.write_text(text)
     log(f"wrote {out}"
         + ("" if out.is_absolute() else f" ({out.resolve()})"))
-    log("next: python3 generate_video_free.py --dry-run   # check the shot list")
+    log("next: python3 make_horror_stickman.py --episode %s --max-seconds 15" % out)
     return 0
 
 
