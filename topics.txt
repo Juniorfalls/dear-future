@@ -1,0 +1,6 @@
+# One horror seed per line. Blank lines and # comments are ignored.
+# python3 run_queue.py --once
+#
+# a night bus that stops where no bus stop exists
+# the motel key that opens the wrong room
+# a voicemail from a number that was disconnected years ago

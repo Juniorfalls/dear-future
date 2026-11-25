@@ -76,6 +76,48 @@ cd remotion && node render.js
 Output: `remotion/out/cinematic_video.mp4` (1920×1080). Add `--vertical` to
 `render.js` for 1080×1920 shorts.
 
+### Queue and scheduling
+
+`run_queue.py` drains `topics.txt` (one seed per line, `#` comments ignored)
+through `make_episode.py`. State lives in `out/queue_state.json`; done topics
+are skipped, failures retry up to `--max-attempts`, and the worker stops early
+when free disk drops below `--min-free-gb`.
+
+```bash
+python3 run_queue.py --once            # drain pending topics
+python3 run_queue.py --limit 1         # one per invocation
+python3 run_queue.py --retry-failed    # give failed seeds another go
+```
+
+Cron, one episode every 30 minutes:
+
+```cron
+*/30 * * * * cd /home/targetfutbol/dear-future && .venv/bin/python run_queue.py --once --limit 1 >> out/queue.log 2>&1
+```
+
+Or a systemd timer on this box (`/etc/systemd/system/stickman-queue.service`):
+
+```ini
+[Service]
+Type=oneshot
+WorkingDirectory=/home/targetfutbol/dear-future
+ExecStart=/home/targetfutbol/dear-future/.venv/bin/python run_queue.py --once --limit 1
+```
+
+```ini
+# stickman-queue.timer
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=30min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+Enable with `systemctl enable --now stickman-queue.timer`. Both routes take the
+same `out/.queue.lock`, so cron and systemd cannot double-render.
+
 ### Test render without an API key
 
 `--test` uses a stable pool of public Mixkit phone clips and fetches the subject
