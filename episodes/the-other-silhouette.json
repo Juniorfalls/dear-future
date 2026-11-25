@@ -1,0 +1,125 @@
+{
+  "episode": "The Other Silhouette",
+  "slug": "the-other-silhouette",
+  "logline": "A man tests his shadow in an abandoned hallway and discovers it has been testing him back.",
+  "fixed_timing": true,
+  "style": "classic_minimalist_dark",
+  "mix_gain": 2.6,
+  "story": "Five beats: a whisper in a moonlit hallway, a shadow that lags, a flashlight that dies, a merge, and a twist in the dark.",
+  "characters": [
+    {
+      "id": "leo",
+      "name": "Leo",
+      "role": "protagonist",
+      "look": "thin 2D stickman, bone-white line art, hollow head, white pinprick eyes in the dark, dying flashlight"
+    },
+    {
+      "id": "shadow",
+      "name": "The Shadow",
+      "role": "antagonist",
+      "look": "solid pitch-black 2D silhouette, no eyes, peels off the floor, mimics Leo"
+    }
+  ],
+  "base": {
+    "style": "kaomei A1 Classic Minimalist (Dark), textured charcoal, bone-white line art",
+    "fps": 30,
+    "resolution": [
+      1920,
+      1080
+    ],
+    "voice": "am_onyx",
+    "speed": 0.82
+  },
+  "shots": [
+    {
+      "id": 1,
+      "slug": "scene-1",
+      "title": "The Hallway",
+      "act": "Hook",
+      "shot_type": "wide",
+      "focus": "leo",
+      "kind": "hallway_moonlight",
+      "prompt": "kaomei Classic Minimalist Dark, high-contrast 2D: A shaft of moonlight cuts across a decaying hallway floor. Leo steps cautiously into the beam, dying flashlight in hand, and whispers.",
+      "vo": "Hello?",
+      "speaker": "leo",
+      "duration_s": 8,
+      "vo_start": 5.0,
+      "audio": [
+        "wind",
+        "drip"
+      ]
+    },
+    {
+      "id": 2,
+      "slug": "scene-2",
+      "title": "The Discrepancy",
+      "act": "Escalation",
+      "shot_type": "medium",
+      "focus": "leo",
+      "kind": "shadow_detach",
+      "prompt": "kaomei Classic Minimalist Dark, high-contrast 2D: Leo turns toward a dark doorway. On the wallpaper his shadow turns too - except its head stays facing forward. It snaps back a beat too late.",
+      "vo": "",
+      "speaker": "",
+      "duration_s": 8,
+      "vo_start": null,
+      "audio": [
+        "scrape"
+      ]
+    },
+    {
+      "id": 3,
+      "slug": "scene-3",
+      "title": "The Corner",
+      "act": "Climax",
+      "shot_type": "medium",
+      "focus": "leo",
+      "kind": "shadow_rise",
+      "prompt": "kaomei Classic Minimalist Dark, high-contrast 2D: The flashlight clicks dead. Leo backs against the wall. In the moonlight his shadow tilts up off the floorboards and rises into a solid black figure with no eyes.",
+      "vo": "",
+      "speaker": "",
+      "duration_s": 8,
+      "vo_start": null,
+      "audio": [
+        "click",
+        "scrape",
+        "heartbeat"
+      ]
+    },
+    {
+      "id": 4,
+      "slug": "scene-4",
+      "title": "The Merge",
+      "act": "Climax",
+      "shot_type": "medium",
+      "focus": "leo",
+      "kind": "shadow_merge",
+      "prompt": "kaomei Classic Minimalist Dark, high-contrast 2D: The shadow lunges into Leo's chest. A sharp thud, then silence. Leo looks down at his hands, whole and alone, and gasps for breath.",
+      "vo": "I'm okay...",
+      "speaker": "leo",
+      "duration_s": 8,
+      "vo_start": 28.8,
+      "audio": [
+        "thud",
+        "heartbeat"
+      ]
+    },
+    {
+      "id": 5,
+      "slug": "scene-5",
+      "title": "The Twist",
+      "act": "Twist",
+      "shot_type": "wide",
+      "focus": "leo",
+      "kind": "shadow_twist",
+      "prompt": "kaomei Classic Minimalist Dark, high-contrast 2D: Leo steps into the dark hallway. Two white pinprick eyes open on his face. Behind him, in the moonlight, a flat Leo lies on the floor clawing silently at the boards.",
+      "vo": "",
+      "speaker": "",
+      "duration_s": 8,
+      "vo_start": null,
+      "audio": [
+        "wind",
+        "snap"
+      ]
+    }
+  ]
+}

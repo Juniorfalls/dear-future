@@ -595,6 +595,248 @@ function roadScene(t,cam,s,u,kind){
   comp([['sky',cam.b[0]],['far',cam.b[1]],['set',0],['act',0],['rain',0,.55],['fg',cam.b[2]]]);
 }
 
+
+// ---------------- abandoned hallway / the other silhouette ----------------
+function hallStick(x,cx,footY,h,opt){
+  opt=opt||{};
+  const col=opt.color||'#e9e6da', hr=h*.072, headY=footY-h+hr;
+  x.save();
+  if(opt.solid){x.shadowColor='rgba(222,216,198,.32)';x.shadowBlur=opt.rim||12;}
+  if(opt.flatten){x.translate(cx,footY);x.scale(opt.flatten,1);x.translate(-cx,-footY);}
+  x.strokeStyle=col;x.lineCap='round';x.lineJoin='round';x.lineWidth=Math.max(4,h*.03);
+  const lean=opt.lean||0, shY=headY+hr+h*.03, hipY=footY-h*.44;
+  x.beginPath();x.moveTo(cx,shY);x.lineTo(cx+lean*h*.10,hipY);x.stroke();
+  x.beginPath();x.moveTo(cx+lean*h*.10,hipY);x.lineTo(cx-h*.10+ (opt.stride||0),footY);x.stroke();
+  x.beginPath();x.moveTo(cx+lean*h*.10,hipY);x.lineTo(cx+h*.12-(opt.stride||0),footY);x.stroke();
+  const armA=opt.armA===undefined?.5:opt.armA, armB=opt.armB===undefined?.5:opt.armB;
+  x.beginPath();x.moveTo(cx,shY+h*.02);
+  x.lineTo(cx-h*.20-armA*h*.08, shY+h*.26-armA*h*.10);x.stroke();
+  x.beginPath();x.moveTo(cx,shY+h*.02);
+  x.lineTo(cx+h*.20+armB*h*.08, shY+h*.26-armB*h*.10);x.stroke();
+  x.beginPath();x.arc(cx+(opt.headX||0),headY+(opt.headY||0),hr,0,Math.PI*2);
+  if(opt.solid){x.fillStyle=col;x.fill();}
+  else{x.strokeStyle=col;x.lineWidth=Math.max(3,h*.020);x.stroke();}
+  if(opt.eyes){
+    x.fillStyle='rgba(238,244,255,.92)';
+    x.beginPath();x.arc(cx+(opt.headX||0)-hr*.28,headY-hr*.05,hr*.10,0,Math.PI*2);x.fill();
+    x.beginPath();x.arc(cx+(opt.headX||0)+hr*.28,headY-hr*.05,hr*.10,0,Math.PI*2);x.fill();
+  }
+  x.restore();
+}
+function hallFlash(x,cx,cy,dir,on){
+  if(on<=0)return;
+  x.save();
+  x.strokeStyle='rgba(210,214,206,.55)';x.lineWidth=5;
+  x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+dir*26,cy-6);x.stroke();
+  const g=x.createLinearGradient(cx,cy,cx+dir*620,cy+70);
+  g.addColorStop(0,`rgba(246,240,214,${.20*on})`);g.addColorStop(1,'rgba(246,240,214,0)');
+  x.fillStyle=g;x.beginPath();x.moveTo(cx+dir*16,cy-6);x.lineTo(cx+dir*680,cy-150);x.lineTo(cx+dir*680,cy+260);x.closePath();x.fill();
+  x.fillStyle=`rgba(255,252,232,${.8*on})`;x.beginPath();x.arc(cx+dir*20,cy-8,6,0,Math.PI*2);x.fill();
+  x.restore();
+}
+function hallwaySet(x,t,kind,lit){
+  // wall and floor, high-contrast charcoal
+  let g=x.createLinearGradient(0,0,0,700);
+  g.addColorStop(0,'#0a0b0e');g.addColorStop(.52,'#15171b');g.addColorStop(1,'#07080a');
+  x.fillStyle=g;x.fillRect(-400,-300,2800,980);
+  // charcoal bloom and paper scars
+  for(let i=0;i<90;i++){
+    const a1=Math.sin(i*91.7)*43758.5453, a2=Math.sin(i*47.3)*24634.6345;
+    const bx=(a1-Math.floor(a1))*1920, by=(a2-Math.floor(a2))*660;
+    const r=12+((i*37)%70), al=.012+.028*Math.abs(Math.sin(i*1.7));
+    x.fillStyle=`rgba(214,212,200,${al})`;x.beginPath();x.arc(bx,by,r,0,Math.PI*2);x.fill();
+  }
+  // peeling wallpaper strips
+  for(let i=0;i<14;i++){
+    const wx=-200+i*160, a=.03+.05*Math.sin(i*2.1);
+    x.fillStyle=`rgba(210,205,190,${a})`;x.fillRect(wx,80,70+(i%3)*26,520);
+    x.fillStyle='rgba(10,11,14,.35)';x.fillRect(wx+70,80,10,520);
+  }
+  // baseboard
+  x.fillStyle='#080a0e';x.fillRect(-400,620,2800,46);
+  x.fillStyle='rgba(190,185,170,.08)';x.fillRect(-400,618,2800,5);
+  // floor
+  g=x.createLinearGradient(0,660,0,1080);
+  g.addColorStop(0,'#0a0b0d');g.addColorStop(.55,'#121316');g.addColorStop(1,'#060708');
+  x.fillStyle=g;x.fillRect(-400,660,2800,460);
+  x.strokeStyle='rgba(150,146,132,.10)';x.lineWidth=3;
+  for(let i=0;i<10;i++){x.beginPath();x.moveTo(-300+i*240,660);x.lineTo(-700+i*340,1080);x.stroke();}
+  // boarded window
+  x.fillStyle='#05070b';x.fillRect(260,120,300,380);
+  x.strokeStyle='rgba(150,148,140,.16)';x.lineWidth=10;x.strokeRect(260,120,300,380);
+  for(let i=0;i<4;i++){
+    x.save();x.translate(410,310+i*86);x.rotate(-.12+(i%2)*.18);
+    x.fillStyle='#1c1b18';x.fillRect(-170,-18,340,36);
+    x.fillStyle='rgba(210,205,190,.10)';x.fillRect(-170,-18,340,4);
+    x.restore();
+  }
+  // moonlight shaft
+  if(lit){
+    const a=kind==='hallway_dark'?.05:.115;
+    g=x.createLinearGradient(420,180,1000,980);
+    g.addColorStop(0,`rgba(224,232,244,${a*1.6})`);g.addColorStop(.6,`rgba(214,226,240,${a})`);g.addColorStop(1,'rgba(214,226,240,0)');
+    x.fillStyle=g;x.beginPath();x.moveTo(300,150);x.lineTo(560,150);x.lineTo(1240,1010);x.lineTo(760,1010);x.closePath();x.fill();
+    // pool on the floor
+    g=x.createRadialGradient(980,960,20,980,960,330);
+    g.addColorStop(0,`rgba(220,230,242,${a*2.2})`);g.addColorStop(1,'rgba(220,230,242,0)');
+    x.fillStyle=g;x.fillRect(600,720,900,360);
+  }
+  // dust motes in the beam
+  for(let i=0;i<42;i++){
+    const px=520+((i*137+t*9)%720), py=240+((i*89+t*16)%700);
+    const a=.05+.12*Math.abs(Math.sin(t*.7+i));
+    x.fillStyle=`rgba(226,232,240,${a})`;x.beginPath();x.arc(px,py,1.4+(i%3),0,Math.PI*2);x.fill();
+  }
+  // dark doorway at the end of the hall
+  x.fillStyle='#030407';x.fillRect(1520,250,240,410);
+  x.fillStyle='rgba(120,128,140,.10)';x.fillRect(1512,244,256,8);
+}
+function hallScene(t,cam,s,u,kind){
+  const st=stOf(s),en=enOf(s);
+  const lit = true;
+  let x=layer('sky',cam,.12);
+  x.fillStyle='#07080c';x.fillRect(-400,-300,2800,1700);
+  x=layer('far',cam,.35);
+  hallwaySet(x,t,kind,lit);
+  x=layer('set',cam);
+  // floor shadow patch and actors are drawn in act layer below
+  x=layer('act',cam);
+  if(kind==='hallway_moonlight'){
+    // long wall shadow, Leo in the beam
+    x.save();x.globalAlpha=.55;
+    hallStick(x,1120,770,430,{color:'#000',solid:true,flatten:1.25,lean:.5,stride:.1,armA:.2,armB:.2});
+    x.restore();
+    const walk=kf(t,[[st,-.10],[en,.10]]);
+    hallStick(x,760+u*40,940,420,{lean:.55,stride:walk,armA:.2,armB:.6,headX:4});
+    hallFlash(x,700+u*40,700,.55,.6+.25*Math.sin(t*9));
+  }
+  if(kind==='shadow_detach'){
+    const turn=kf(t,[[st,.0],[st+1.2,.9],[en,.9]]);
+    hallStick(x,700,940,420,{lean:.35+turn*.45,stride:.25,armA:.35,armB:.45,headX:turn*6});
+    hallFlash(x,760,706,.6,.55);
+    // shadow on the wall lags, then its head snaps back at 60% of the shot
+    const lag=u<.62?1:0;
+    x.save();x.globalAlpha=.9;
+    hallStick(x,1080,790,470,{color:'#000',solid:true,flatten:1.18,lean:.2,stride:.06,
+      armA:.2+lag*.5,armB:.2+lag*.35,headX:lag*46,headY:lag*6});
+    x.restore();
+  }
+  const n=s+1;
+  if(kind==='shadow_rise'){
+    // flashlight dies, Leo backs to the wall, the flat shadow stands up
+    hallStick(x,1210,950,420,{lean:-.32,stride:.05,armA:.45,armB:.65,headX:-4});
+    hallFlash(x,1150,712,-.55,Math.max(0,.8*(1-u/.32)));
+    x.fillStyle='rgba(214,226,242,.09)';
+    x.beginPath();x.moveTo(640,150);x.lineTo(940,150);x.lineTo(1300,980);x.lineTo(760,980);x.closePath();x.fill();
+    const rise=Math.min(1,Math.max(0,(u-.26)/.55));
+    if(rise<=0.02){
+      x.save();x.translate(860,965);x.scale(1.6,.24);
+      hallStick(x,0,0,440,{color:'#000',solid:true,lean:.1,stride:.4,armA:.4,armB:.3});
+      x.restore();
+    }else{
+      x.save();x.globalAlpha=.6+.4*rise;
+      x.translate(880,970);x.scale(1,.30+.70*rise);x.translate(-880,-970);
+      hallStick(x,880,970,450,{color:'#000',solid:true,lean:-.05,stride:.25,armA:.2+rise*.5,armB:.2+rise*.4});
+      x.restore();
+    }
+  }
+  if(kind==='shadow_twist'){
+    x.fillStyle='rgba(214,226,242,.10)';
+    x.beginPath();x.moveTo(640,150);x.lineTo(930,150);x.lineTo(1290,980);x.lineTo(750,980);x.closePath();x.fill();
+    hallStick(x,760,950,430,{lean:0,stride:.05,armA:.3,armB:.3,eyes:true});
+    hallFlash(x,720,712,.45,.2);
+    x.fillStyle='rgba(228,236,250,.16)';
+    x.beginPath();x.ellipse(1080,962,340,64,0,0,Math.PI*2);x.fill();
+    x.save();x.globalAlpha=.92;x.translate(1080,986);x.scale(1.8,.20);
+    const claw=.25+.75*Math.abs(Math.sin(t*7));
+    hallStick(x,0,0,440,{color:'#000',solid:true,lean:.15,stride:.3,armA:claw,armB:1.0,headX:8});
+    x.restore();
+    // hard cut to black
+    const cut=seg(u,.90,1); if(cut>0){x.fillStyle=`rgba(0,0,0,${cut})`;x.fillRect(-400,-300,2800,1700);}
+  }
+  if(kind==='shadow_merge'){
+    // moon pool from a cracked ceiling
+    x.fillStyle='rgba(210,224,240,.10)';
+    x.beginPath();x.moveTo(620,140);x.lineTo(930,140);x.lineTo(1280,980);x.lineTo(740,980);x.closePath();x.fill();
+    if(n===10){
+      // flat shadow lying in front of Leo, wrong way round
+      x.save();x.globalAlpha=.85;x.translate(860,950);x.scale(1.7,.26);
+      hallStick(x,0,0,440,{color:'#000',solid:true,lean:.1,stride:.45,armA:.4,armB:.2});
+      x.restore();
+      hallStick(x,1240,950,420,{lean:-.3,stride:.1,armA:.55,armB:.7,headX:-4});
+      hallFlash(x,1180,712,-.6,.35);
+    }else if(n===11){
+      // it peels up off the boards, full height by the end of the beat
+      const rise=Math.min(1,Math.max(0,(u-.10)/.80));
+      x.save();x.globalAlpha=.55+.35*rise;
+      x.translate(880,960);x.scale(1,.35+.65*rise);x.translate(-880,-960);
+      hallStick(x,880,960,440,{color:'#000',solid:true,lean:-.05,stride:.3,armA:.2+rise*.5,armB:.2+rise*.45});
+      x.restore();
+      hallStick(x,1260,950,420,{lean:-.2,stride:.1,armA:.5,armB:.6,headX:-3});
+    }else if(n===12){
+      // eyeless figure inches from him; Leo shields his face
+      hallStick(x,860,960,450,{color:'#000',solid:true,lean:.15,stride:.2,armA:.65,armB:.55});
+      hallStick(x,1160,950,420,{lean:.35,stride:.05,armA:1.1,armB:1.1,headX:6});
+      x.save();x.globalAlpha=.9;x.fillStyle='rgba(0,0,0,.55)';
+      x.beginPath();x.ellipse(1010,650,120,170,0,0,Math.PI*2);x.fill();x.restore();
+    }else{
+      // n===13: the merge, then Leo alone and whole
+      if(u<.42){
+        const k=u/.42;
+        hallStick(x,860+160*k,960,450,{color:'#000',solid:true,lean:.1,stride:.2,armA:.6,armB:.55});
+        hallStick(x,1160-140*k,950,420,{lean:.1,stride:.05,armA:.7,armB:.7,headX:4});
+      }else if(u<.62){
+        // black impact: two silhouettes occupying the same space
+        x.save();x.globalAlpha=.92;x.fillStyle='#000';
+        x.beginPath();x.ellipse(1040,700,190,280,0,0,Math.PI*2);x.fill();x.restore();
+        hallStick(x,1040,950,430,{color:'#000',solid:true,lean:.05,stride:.1,armA:.8,armB:.8});
+      }else{
+        hallStick(x,1080,950,420,{lean:.05,stride:.1,armA:.55,armB:.5});
+      }
+    }
+  }
+  if(kind==='hallway_dark'){
+    const isFinal = n===14;
+    if(!isFinal){
+      const dying = u>.55?.22:.8;
+      hallStick(x,900+u*40,950,420,{lean:.2,stride:.1,armA:.2,armB:.7,headX:2});
+      hallFlash(x,840,712,.65,dying*(.75+.2*Math.sin(t*13)));
+    }else{
+      // the twist: white pinprick eyes on Leo, flat copy clawing in the beam
+      hallStick(x,780,950,430,{lean:0,stride:.05,armA:.3,armB:.3,eyes:true});
+      hallFlash(x,720,712,.55,.25);
+      x.fillStyle='rgba(228,236,250,.16)';
+      x.beginPath();x.ellipse(1050,960,340,64,0,0,Math.PI*2);x.fill();
+      x.save();x.globalAlpha=.92;x.translate(1050,985);x.scale(1.8,.20);
+      const claw=.25+.75*Math.abs(Math.sin(t*7));
+      hallStick(x,0,0,440,{color:'#000',solid:true,lean:.15,stride:.3,armA:claw,armB:1.0,headX:8});
+      x.restore();
+    }
+    const vg=x.createRadialGradient(960,600,100,960,600,1050);
+    vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.62)');
+    x.fillStyle=vg;x.fillRect(-400,-300,2800,1700);
+  }
+  x=layer('fg',cam,1.12);
+  x.fillStyle=`rgba(200,215,235,${.034+.028*Math.sin(t*2.4)+.008*Math.sin(t*8.1)})`;
+  x.fillRect(-400,-300,2800,1700);
+  const fx=((t*24)%2600)-400;
+  const fg2=x.createRadialGradient(fx,500,40,fx,500,700);
+  fg2.addColorStop(0,'rgba(190,205,225,.05)');fg2.addColorStop(1,'rgba(190,205,225,0)');
+  x.fillStyle=fg2;x.fillRect(-400,-300,2800,1700);
+  const fr=Math.floor(t*30);
+  for(let i=0;i<170;i++){
+    const a=Math.sin(i*127.1+fr*311.7)*43758.5453, b=Math.sin(i*269.5+fr*183.3)*43758.5453;
+    const rx=(a-Math.floor(a))*1920, ry=(b-Math.floor(b))*1080;
+    x.fillStyle=`rgba(228,236,250,${.03+.05*Math.abs(Math.sin(i+fr*.7))})`;
+    x.fillRect(rx,ry,2,2);
+  }
+  const v=x.createLinearGradient(0,0,0,1080);
+  v.addColorStop(0,'rgba(0,0,0,.55)');v.addColorStop(.45,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.65)');
+  x.fillStyle=v;x.fillRect(-400,-300,2800,1700);
+  x.fillStyle='#000';x.fillRect(-400,-300,2800,356);x.fillRect(-400,1024,2800,356);
+  comp([['sky',cam.b[0]],['far',cam.b[1]],['set',0],['act',0],['fg',cam.b[2]]]);
+}
+
 const CAMS={
   opening:{x:1250,y:520,z:1.03,push:.06,dx:26,dy:-4,b:[4,1.4,0]},
   console:{x:1400,y:420,z:1.62,push:.08,dx:10,dy:-3,b:[9,4,0]},
@@ -611,23 +853,42 @@ const CAMS={
   highway:{x:960,y:548,z:.86,push:.07,dx:0,dy:-2,b:[3,1.0,0]},
   car_interior:{x:960,y:560,z:1.04,push:.05,dx:0,dy:0,b:[4,0,0]},
   rearview_mirror:{x:960,y:520,z:1.30,push:.10,dx:0,dy:0,b:[4,0,0]},
-  roadside_sign:{x:1200,y:540,z:.94,push:.06,dx:26,dy:-2,b:[3,1.0,0]}
+  roadside_sign:{x:1200,y:540,z:.94,push:.06,dx:26,dy:-2,b:[3,1.0,0]},
+  hallway_moonlight:{x:1000,y:560,z:1.00,push:.05,dx:14,dy:-2,b:[3,1,0]},
+  shadow_detach:{x:980,y:560,z:1.10,push:.07,dx:8,dy:-1,b:[3,1,0]},
+  shadow_merge:{x:1000,y:580,z:1.02,push:.08,dx:4,dy:-2,b:[3,1,0]},
+  hallway_dark:{x:980,y:560,z:1.14,push:.06,dx:10,dy:-2,b:[3,1,0]},
+  shadow_rise:{x:1000,y:560,z:1.04,push:.06,dx:8,dy:-2,b:[3,1,0]},
+  shadow_twist:{x:1000,y:560,z:1.02,push:.06,dx:6,dy:-2,b:[3,1,0]}
 };
 
 const INT_KINDS=new Set(['opening','console','radio_insert','speaks','hand','final']);
 const ROAD_KINDS=new Set(['highway','car_interior','rearview_mirror','roadside_sign']);
+const HALL_KINDS=new Set(['hallway_moonlight','shadow_detach','shadow_merge','hallway_dark','shadow_rise','shadow_twist']);
 
 FILM={dur:SCENES.dur,cuts:SCENES.cuts,fadeIn:.7,fadeOut:.9,
   cam(s,u,t){
     const k=SCENES.shots[s].kind,c=CAMS[k]||CAMS.console;
     let x=c.x+(c.dx||0)*u,y=c.y+(c.dy||0)*u,z=c.z*(1+(c.push||0)*u);
     if(k==='storm'){x+=Math.sin(t*1.6)*2.4;y+=Math.cos(t*1.25)*1.7}
+    if(k.indexOf('hallway_')===0||k.indexOf('shadow_')===0){x+=Math.sin(t*1.3)*6;y+=Math.cos(t*1.55)*4}
     return {x,y,z,b:c.b};
   },
   draw(t,cam,s,u){
     const k=SCENES.shots[s].kind;
-    if(ROAD_KINDS.has(k))roadScene(t,cam,s,u,k);
+    if(HALL_KINDS.has(k))hallScene(t,cam,s,u,k);
+    else if(ROAD_KINDS.has(k))roadScene(t,cam,s,u,k);
     else if(INT_KINDS.has(k))interior(t,cam,s,u,k);else exterior(t,cam,s,u,k);
+    for(const c of (SCENES.captions||[])){
+      if(t<c.t0||t>c.t1)continue;
+      const a=Math.min(1,Math.min((t-c.t0)/.18,(c.t1-t)/.18));
+      ctx.save();ctx.globalAlpha=Math.max(0,a);
+      ctx.font='600 46px "Helvetica Neue", Arial, sans-serif';ctx.textAlign='center';
+      ctx.lineJoin='round';ctx.lineWidth=9;ctx.strokeStyle='rgba(6,7,9,.92)';
+      ctx.strokeText(c.text,960,958);
+      ctx.fillStyle='#f4ecd8';ctx.fillText(c.text,960,958);
+      ctx.restore();
+    }
   },
   warm(t){return .04},
   plants(){return {}}

@@ -127,6 +127,19 @@ def make_srt(episode: dict, timing: dict, align: Path, at: float, srt: Path,
     cuts = timing.get("cuts") or []
     n = rendered or (len(cuts) - 1 if cuts else len(shots))
     shots = shots[:max(1, n)]
+    if timing.get("fixed"):
+        cues = []
+        for i, shot in enumerate(shots):
+            line = str(shot.get("vo", "")).strip()
+            if not line:
+                continue
+            start = float(shot.get("vo_start") or (cuts[i] / 30 if i < len(cuts) else 0))
+            end = start + min(4.5, max(1.2, len(line) / 3.2))
+            if i + 1 < len(cuts):
+                end = min(end, cuts[i + 1] / 30 - .06)
+            cues.append((start, max(start + .5, end), line))
+        _write_srt(cues, srt)
+        return
     vo = [str(s.get("vo", "")).strip() for s in shots]
     words = []
     if align.exists():
@@ -156,6 +169,10 @@ def make_srt(episode: dict, timing: dict, align: Path, at: float, srt: Path,
             end = cuts[i + 1] / 30 - .06 if i + 1 < len(cuts) else start + 3
             cues.append((start, end, line))
 
+    _write_srt(cues, srt)
+
+
+def _write_srt(cues: list[tuple[float, float, str]], srt: Path) -> None:
     def stamp(t: float) -> str:
         h, rem = divmod(max(0.0, t), 3600)
         m, s = divmod(rem, 60)
