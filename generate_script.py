@@ -2,6 +2,9 @@
 """
 generate_script.py — write a 60 s horror short as episode_schema.json.
 
+Every episode is a four-act short: hook (1-2), escalation (3-6), climax
+(7-9), twist/cliffhanger (10-12), with short show-don't-tell narration.
+
 "The End of the Corridor" was hand-written. This is the head of the pipeline:
 topic in, shot list out, shaped exactly like the schema that
 make_horror_stickman.py (the active CPU engine) reads.
@@ -58,6 +61,15 @@ LLM_MODEL = "openai"          # the free anonymous model (gpt-oss-20b)
 LAYOUTS = ("broll_only", "host_pip", "host_full")
 MIN_SHOT, MAX_SHOT = 3.0, 5.0
 SHOT_COUNT = 12
+
+# 4-Act structure, mapped onto the 12 shots. The writer must hit these turns;
+# validate() checks the model actually labelled them correctly.
+ACTS = {
+    1: (1, 2, "THE HOOK"),
+    2: (3, 6, "THE ESCALATION"),
+    3: (7, 9, "THE CLIMAX"),
+    4: (10, 12, "THE TWIST / CLIFFHANGER"),
+}
 
 # A cast of two or three: one protagonist, one antagonist, optionally a victim.
 MIN_CHARS, MAX_CHARS = 2, 3
@@ -127,9 +139,32 @@ FIGURE = re.compile(
     r"\b(figure|silhouette|narrator|she|he|her|his|woman|man|nurse|girl|boy|"
     r"someone|something)\b", re.I)
 
+# Show, don't tell: narration that names the feeling instead of the evidence.
+TELLING = re.compile(
+    r"\b(scared|terrified|afraid|frightened|horrified|panic|panicked|petrified|"
+    r"fear|fearful|terrifying)\b", re.I)
+
+# Lines that break the fiction instead of deepening it.
+META = re.compile(
+    r"\b(tune in|next time|subscribe|like and|follow|comment|stay tuned|"
+    r"episode|series|channel)\b", re.I)
+
 SYSTEM = f"""You write 60-second horror shorts for a channel called "The End of \
-the Corridor". The house style is quiet dread, not gore: one impossible thing, \
-seen at a distance, never fully explained.
+the Corridor". You are a master of quiet dread: Stephen King's ordinary \
+detail meeting a creepypasta's rules and wrongness. One impossible thing, seen \
+at a distance, never fully explained. No gore.
+
+Every episode MUST follow this 4-Act structure, mapped onto the {SHOT_COUNT} shots:
+1. THE HOOK (shots 1-2): shot 1 opens mid-crisis with a terrifying line that \
+makes the viewer stop scrolling. No setup, no weather report, no waking up.
+2. THE ESCALATION (shots 3-6): the protagonist realises they are in danger. \
+Establish the creepy setting and, when it fits, a RULE they must obey ("never \
+look at the passenger"). Raise the pressure every shot; let ordinary objects \
+turn wrong.
+3. THE CLIMAX (shots 7-9): the visual reveal or jump-scare. Show the threat \
+clearly for one beat, then take it away.
+4. THE TWIST / CLIFFHANGER (shots 10-12): the last voiceover line \
+recontextualises what we saw or leaves dread hanging. Never resolve safely.
 
 Cast every episode with {MIN_CHARS}-{MAX_CHARS} named characters. The image model \
 renders ONE character per frame reliably and two unreliably, so write the \
@@ -141,7 +176,7 @@ Return ONLY a JSON object, no prose and no markdown fence:
 {{
   "title": "short episode title",
   "logline": "one sentence",
-  "story": "the 60 second story as continuous prose, 120-160 words",
+  "story": "the 60 second story as continuous prose, 80-100 words",
   "characters": [
     {{"id": "mara",
       "name": "Mara",
@@ -154,10 +189,11 @@ Return ONLY a JSON object, no prose and no markdown fence:
   ],
   "shots": [
     {{"title": "beat title",
+      "act": 1,
       "shot_type": "close_up",
       "focus": "mara",
       "foreground": null,
-      "prompt": "the image: place, light, action, 20-35 words",
+      "prompt": "the image: place, light, action, 15-25 words",
       "vo": "the line spoken over this shot",
       "speaker": "narrator",
       "duration_s": 5.0,
@@ -165,7 +201,28 @@ Return ONLY a JSON object, no prose and no markdown fence:
   ]
 }}
 
-Rules, all mandatory:
+Writing rules, all mandatory:
+- one present-tense sentence per shot, 10-15 words, never more than 15. Shot 1 \
+carries the hook line; shot 12 carries the twist.
+- Show, don't tell. Never name an emotion ("she was terrified"); write its \
+physical evidence ("her hands shook on the wheel", "the wipers stopped \
+mid-swipe"). Put the fear in objects, movement and sound.
+- The monster stays mysterious: no name, origin, motive or full explanation. \
+Give one or two concrete wrong details (too many joints, a smile that does not \
+move, a thumb on the wrong side) and never let a character explain it.
+- Reveal order: wrongness before danger, danger before the full sight. The \
+climax shows only what the protagonist can see.
+- The antagonist must be the focus of at least one climax shot (7-9), seen from \
+behind, in profile or as a silhouette. The viewer must see the threat, even if \
+they cannot understand it.
+- Every character in "characters" must appear as a focus or foreground in at \
+least one shot. Do not invent filler cast.
+- Count the words in every "vo": 10-15, never fewer than 10 and never more \
+than 15.
+
+Technical rules, all mandatory:
+- every shot carries "act": 1-4, matching the structure above (shots 1-2 -> 1, \
+3-6 -> 2, 7-9 -> 3, 10-12 -> 4)
 - exactly {SHOT_COUNT} shots in story order, each {MIN_SHOT}-{MAX_SHOT} seconds, \
 total about 60 seconds
 - roles: exactly one "protagonist" and exactly one "antagonist"; "victim" and \
@@ -180,13 +237,33 @@ object or empty room, focus "none"), pov. Never repeat the same setup twice in \
 a row
 - identify characters by their "look" in the prompt (clothing, hair, build), \
 never by name alone, so the image model can actually render them
-- "vo" is ONE present-tense sentence, at most 14 words, and must belong to the \
-shot it sits on. "speaker" is "narrator" for narration, or a character id when \
-that character says the line (they may be off-screen)
+- each "vo" must belong to the shot it sits on. "speaker" is "narrator" for \
+narration, or a character id when that character says the line (they may be \
+off-screen)
 - prompts never contain faces, eyes, teeth or gore: a figure is seen from \
 behind, in profile, out of focus, or as a silhouette. Start each prompt with \
 "cinematic film still, horror,".
 - set on_camera true for at most TWO shots, and only the opening and final beat
+"""
+
+POLISH_SYSTEM = f"""You are the head writer on a horror anthology. You receive a \
+finished {SHOT_COUNT}-shot, four-act episode and rewrite ONLY its voiceover \
+lines.
+
+Return ONLY a JSON object, no prose and no fence:
+{{"vo": ["line for shot 1", "line for shot 2", ... exactly {SHOT_COUNT} strings]}}
+
+Rules, all mandatory:
+- each line is ONE present-tense sentence of 10-15 words. Count the words; \
+never go below 10 or above 15.
+- show, don't tell: no emotion words. Use physical evidence, objects and sound.
+- keep each line tied to that shot's image, action and speaker.
+- shots 1-2 are the hook (line 1 must stop a scroll). Shots 3-6 escalate; keep \
+any rule stated in the original. Shots 7-9 are the reveal. Shots 10-12 are the \
+twist; line 12 must recontextualise the story.
+- never address the audience. No "tune in", "next time", "subscribe" or \
+episode/series talk.
+- the monster stays unexplained: no name, origin or motive.
 """
 
 
@@ -204,9 +281,10 @@ def die(msg, code=1):
 
 
 # --------------------------------------------------------------------- the LLM
-def call_llm(topic: str, args, correction: str | None = None) -> dict:
+def call_llm(topic: str, args, correction: str | None = None, *,
+             system: str | None = None, user: str | None = None) -> dict:
     """One anonymous Pollinations request; retries only on the 45 s slot."""
-    user = (
+    user = user or (
         f"Topic: {topic}\n"
         f"Write the episode now with {MIN_CHARS}-{MAX_CHARS} characters and "
         f"{SHOT_COUNT} shots, about {args.total} seconds in total. JSON only."
@@ -216,7 +294,7 @@ def call_llm(topic: str, args, correction: str | None = None) -> dict:
     payload = {
         "model": args.model,
         "messages": [
-            {"role": "system", "content": SYSTEM},
+            {"role": "system", "content": system or SYSTEM},
             {"role": "user", "content": user},
         ],
         "temperature": args.temperature,
@@ -575,6 +653,33 @@ def structural_problems(data) -> list[str]:
         problems.append("no 'shots' array")
     elif len(shots) != SHOT_COUNT:
         problems.append(f"{len(shots)} shots returned, need exactly {SHOT_COUNT}")
+    else:
+        built = [s for s in shots if isinstance(s, dict)]
+        # ---- voiceover must never exceed 15 words; shorter is a warning
+        long = [f"shot {i}:{len(str(s.get('vo', '')).split())}"
+                for i, s in enumerate(built, 1)
+                if len(str(s.get("vo", "")).split()) > 15]
+        if long:
+            problems.append("vo over the 15-word limit on " + ", ".join(long))
+        # ---- the antagonist has to actually be seen in the climax
+        by_role = {str(c.get("role", "")).strip().lower(): slugify(str(c.get("id", "")))
+                   for c in (chars or []) if isinstance(c, dict)}
+        antagonist = by_role.get("antagonist")
+        climax = built[6:9]
+        if antagonist and not any(
+                slugify(str(s.get("focus", ""))) == antagonist for s in climax):
+            problems.append("the antagonist is never the focus of a climax shot (7-9)")
+        # ---- no filler cast: every named character must be on screen somewhere
+        seen = set()
+        for s in built:
+            focus = s.get("focus")
+            for value in (focus if isinstance(focus, list) else [focus]):
+                seen.add(slugify(str(value or "")))
+            seen.add(slugify(str(s.get("foreground") or "")))
+        unused = [str(c.get("id")) for c in (chars or [])
+                  if isinstance(c, dict) and slugify(str(c.get("id", ""))) not in seen]
+        if unused:
+            problems.append("characters never on screen: " + ", ".join(unused))
     return problems
 
 
@@ -671,6 +776,35 @@ def validate(data: dict, args, characters: list[dict]) -> tuple[list[dict], list
         if not vo:
             die(f"shot {index} has no narrator line (vo)")
 
+        # ---- the 4-act structure, as the writer labelled it
+        expected_act = next(a for a, (lo, hi, _) in ACTS.items()
+                            if lo <= index <= hi)
+        raw_act = raw.get("act")
+        try:
+            raw_act = int(raw_act)
+        except (TypeError, ValueError):
+            raw_act = None
+        if raw_act is None:
+            warnings.append(f"shot {index}: no act label; placed in act "
+                            f"{expected_act} ({ACTS[expected_act][2]})")
+        elif raw_act != expected_act:
+            warnings.append(
+                f"shot {index}: labelled act {raw_act} but lands in act "
+                f"{expected_act} ({ACTS[expected_act][2]}); reclassified")
+
+        # ---- voiceover length and the show-don't-tell rule
+        words = len(vo.split())
+        if words > 15:
+            warnings.append(f"shot {index}: {words}-word line exceeds the "
+                            f"15-word voiceover limit")
+        elif words < 10:
+            warnings.append(f"shot {index}: {words}-word line is under the "
+                            f"10-word target")
+        if TELLING.search(vo):
+            warnings.append(
+                f"shot {index}: vo names an emotion ({TELLING.search(vo).group(0)}); "
+                f"show it through physical detail instead")
+
         slug = slugify(raw.get("slug") or title)
         if slug in seen_slugs:
             slug = f"{slug}-{index}"
@@ -681,6 +815,7 @@ def validate(data: dict, args, characters: list[dict]) -> tuple[list[dict], list
             "id": index,
             "slug": slug,
             "title": title,
+            "act": expected_act,
             "shot_type": shot_type,
             "focus": focus["id"] if focus else "none",
             "foreground": foreground["id"] if foreground else None,
@@ -749,10 +884,83 @@ def validate(data: dict, args, characters: list[dict]) -> tuple[list[dict], list
                         f" \u00b7 {who} \u00b7 {shot['shot_type']}"
                         f" \u00b7 beat {shot['id']}/{SHOT_COUNT}")
 
-    order = ["id", "slug", "title", "shot_type", "focus", "foreground", "prompt",
-             "vo", "speaker", "layout", "duration_s", "frames", "seed", "note"]
+    order = ["id", "slug", "title", "act", "shot_type", "focus", "foreground",
+             "prompt", "vo", "speaker", "layout", "duration_s", "frames", "seed",
+             "note"]
     shots = [{k: shot[k] for k in order} for shot in shots]
     return shots, warnings
+
+
+def vo_problems(shots: list[dict]) -> list[str]:
+    """Reasons the narration needs the head-writer pass."""
+    out = []
+    for shot in shots:
+        words = len(shot["vo"].split())
+        if words > 15:
+            out.append(f"shot {shot['id']}: {words} words")
+        elif words < 10:
+            out.append(f"shot {shot['id']}: {words} words")
+        if TELLING.search(shot["vo"]):
+            out.append(f"shot {shot['id']}: names an emotion")
+        if META.search(shot["vo"]):
+            out.append(f"shot {shot['id']}: breaks the fiction")
+    return out
+
+
+def polish_vo(episode: dict, args) -> dict:
+    """Rewrite narration to the 10-15 word, show-don't-tell bar.
+
+    Small reply, so it fits the free model's output cap far more often than a
+    full episode. On failure the draft is kept rather than lost.
+    """
+    shots = episode["shots"]
+    problems = vo_problems(shots)
+    if not problems:
+        return episode
+    log("polish: " + "; ".join(problems[:6])
+        + (" ..." if len(problems) > 6 else ""))
+    brief = {
+        "title": episode["episode"],
+        "logline": episode["logline"],
+        "story": episode["story"],
+        "shots": [
+            {"id": s["id"], "act": s["act"], "title": s["title"],
+             "shot_type": s["shot_type"], "speaker": s["speaker"],
+             "image": s["prompt"][:180], "current_vo": s["vo"]}
+            for s in shots
+        ],
+    }
+    user = ("Episode:\n" + json.dumps(brief, indent=1)
+            + f"\nReturn exactly {SHOT_COUNT} replacement lines as JSON.")
+    for attempt in range(1, 4):
+        try:
+            data = call_llm(episode["episode"], args, system=POLISH_SYSTEM,
+                            user=user)
+        except SystemExit:
+            log("WARN polish request failed; keeping the original narration")
+            return episode
+        except SoftError as exc:
+            log(f"polish attempt {attempt}/3: {exc}")
+            continue
+        lines = data.get("vo")
+        if (not isinstance(lines, list) or len(lines) != SHOT_COUNT
+                or not all(isinstance(x, str) for x in lines)):
+            log(f"polish attempt {attempt}/3: expected {SHOT_COUNT} strings")
+            continue
+        cleaned = [" ".join(x.split()) for x in lines]
+        bad = [i + 1 for i, x in enumerate(cleaned)
+               if not 10 <= len(x.split()) <= 15]
+        wrong = [i + 1 for i, x in enumerate(cleaned)
+                 if TELLING.search(x) or META.search(x)]
+        if bad or wrong:
+            log(f"polish attempt {attempt}/3: length {bad}, telling/meta {wrong}")
+            continue
+        for shot, line in zip(shots, cleaned):
+            shot["vo"] = line
+        log(f"polish: rewrote {len(cleaned)} narration lines")
+        return episode
+    log("WARN kept the original narration (polish gave no usable lines)")
+    return episode
 
 
 def build(topic: str, data: dict, args) -> dict:
@@ -805,7 +1013,7 @@ def summary(episode: dict) -> None:
         cam = "CAM " if shot["layout"] == "host_full" else "broll"
         fg = f" o/s {shot['foreground']}" if shot["foreground"] else ""
         said = "" if shot["speaker"] == "narrator" else f"  [{shot['speaker']} speaks]"
-        print(f"  {shot['id']:>2} [{cam}] {shot['duration_s']:.1f}s "
+        print(f"  {shot['id']:>2} [act {shot['act']}] {shot['duration_s']:.1f}s "
               f"{shot['frames']:>2}f  {shot['shot_type']:<13} "
               f"{shot['focus']}{fg}")
         print(f"      vo: {shot['vo']}{said}")
@@ -836,12 +1044,29 @@ def main(argv=None) -> int:
                    help="reply budget; 12 shots + 3 characters needs ~2000")
     p.add_argument("--max-wait", type=float, default=120.0,
                    help="seconds to wait out the free 45 s slot")
-    p.add_argument("--retries", type=int, default=1,
+    p.add_argument("--retries", type=int, default=3,
                    help="re-ask when the cast or shot count is wrong (each "
                         "retry costs one 45 s slot)")
+    p.add_argument("--no-polish", action="store_true",
+                   help="skip the head-writer narration pass")
+    p.add_argument("--polish-file",
+                   help="rewrite only the narration of an existing episode JSON")
     p.add_argument("--print-only", action="store_true",
                    help="show the schema on stdout, write nothing")
     args = p.parse_args(argv)
+
+    if args.polish_file:
+        path = Path(args.polish_file)
+        if not path.exists():
+            die(f"no such episode: {path}")
+        episode = json.loads(path.read_text(encoding="utf8"))
+        (path.parent / (path.stem + ".prepolish.json")).write_text(
+            json.dumps(episode, indent=2) + "\n", encoding="utf8")
+        episode = polish_vo(episode, args)
+        path.write_text(json.dumps(episode, indent=2) + "\n", encoding="utf8")
+        summary(episode)
+        log(f"wrote {path}")
+        return 0
 
     if not args.topic:
         die('no topic given; e.g. python3 generate_script.py "A haunted asylum"')
@@ -886,6 +1111,8 @@ def main(argv=None) -> int:
         )
 
     episode = build(args.topic, data, args)
+    if not args.offline and not args.no_polish:
+        episode = polish_vo(episode, args)
     summary(episode)
 
     text = json.dumps(episode, indent=2) + "\n"

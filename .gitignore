@@ -24,6 +24,12 @@ __pycache__/
 .voice-models/
 .sfxcache/
 
+# director/writer checkpoints
+*.written.json
+
+# pre-polish narration backups
+*.prepolish.json
+
 # stickman render logs
 stickman-render.log
 playwright-install.log
