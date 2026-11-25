@@ -3,7 +3,7 @@
   "slug": "rearview-fade",
   "format": "horror-teaser",
   "logline": "A hitchhiker refuses to obey an unseen rule, and the highway turns against her.",
-  "story": "I slam the rear window, truck siren erupting through my quiet drive. The glass shatters, I clutch cold shards, pressing them against my palm, seeking silence. A rusted sign reads Do Not Stop, and highway lights dim progressively. I recall the rule: stopping amplifies the echo louder than one\u2019s breath. I sever the hitchhiker\u2019s hand from the seat, and the road\u2019s hum intensifies. Car headlights flicker; a cracked mirror shows my reflection moving then vanishing. The hitchhiker\u2019s face materializes in the rearview, eyes hollow, lips murmuring numbers. I pivot, and the road ahead transforms into a wall of faded photographs, each blinking. Numbers reverberate, photographs seep into night, assembling a staircase of darkness. The rule never meant to look; observation unravels the paint consuming the scene. Paint curls around my hands, world folds, a name slides in darkness unseen. Silence after the stop, the world withdraws, and my reflected breath disappears.",
+  "story": "I slam the rear window, truck siren erupting through my quiet drive. The glass shatters, I clutch cold shards, pressing them against my palm, seeking silence. A rusted sign reads Do Not Stop, and highway lights dim progressively. I recall the rule: stopping amplifies the echo louder than one’s breath. I sever the hitchhiker’s hand from the seat, and the road’s hum intensifies. Car headlights flicker; a cracked mirror shows my reflection moving then vanishing. The hitchhiker’s face materializes in the rearview, eyes hollow, lips murmuring numbers. I pivot, and the road ahead transforms into a wall of faded photographs, each blinking. Numbers reverberate, photographs seep into night, assembling a staircase of darkness. The rule never meant to look; observation unravels the paint consuming the scene. Paint curls around my hands, world folds, a name slides in darkness unseen. Silence after the stop, the world withdraws, and my reflected breath disappears.",
   "source": {
     "topic": "A hitchhiker on a deserted highway",
     "model": "pollinations",
@@ -88,7 +88,7 @@
       "focus": "eli",
       "foreground": null,
       "prompt": "cinematic film still, horror, Eli's view of the road, a faint whisper of echo amplifying in paint",
-      "vo": "I recall the rule: stopping amplifies the echo louder than one\u2019s breath.",
+      "vo": "I recall the rule: stopping amplifies the echo louder than one’s breath.",
       "speaker": "narrator",
       "layout": "broll_only",
       "duration_s": 5.0,
@@ -136,7 +136,7 @@
       "focus": "the-echo",
       "foreground": null,
       "prompt": "cinematic film still, horror, the Echo materializes in rearview, silhouette, lips murmuring numbers",
-      "vo": "The hitchhiker\u2019s face materializes in the rearview, eyes hollow, lips murmuring numbers.",
+      "vo": "The hitchhiker’s face materializes in the rearview, eyes hollow, lips murmuring numbers.",
       "speaker": "narrator",
       "layout": "broll_only",
       "duration_s": 5.0,
@@ -167,13 +167,14 @@
       "shot_type": "medium",
       "focus": "eli",
       "foreground": null,
-      "prompt": "cinematic film still, horror, numbers reverberate, photographs seep into darkness, forming staircase of shadows",
+      "prompt": "cinematic horror still of a car dashboard radio hissing static, hands gripping the steering wheel, pale green dial glow, rain outside the glass",
       "vo": "Numbers reverberate, photographs seep into night, assembling a staircase of darkness.",
       "speaker": "narrator",
       "layout": "broll_only",
       "duration_s": 5.0,
       "frames": 150,
-      "on_camera": false
+      "on_camera": false,
+      "kind": "car_interior"
     },
     {
       "id": 10,
@@ -199,13 +200,14 @@
       "shot_type": "close_up",
       "focus": "eli",
       "foreground": null,
-      "prompt": "cinematic film still, horror, paint curls around Eli's hands, world folding, unseen name glides in black",
+      "prompt": "cinematic horror still of glossy black paint curling around the steering wheel and dashboard, warning lights drowning under the paint",
       "vo": "Paint curls around my hands, world folds, a name slides in darkness unseen.",
       "speaker": "narrator",
       "layout": "broll_only",
       "duration_s": 5.0,
       "frames": 150,
-      "on_camera": false
+      "on_camera": false,
+      "kind": "car_interior"
     },
     {
       "id": 12,

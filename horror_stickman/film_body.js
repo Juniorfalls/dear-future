@@ -412,7 +412,8 @@ function drawSign(x,t,st,en){
   lg.addColorStop(0,'rgba(200,190,160,.10)');lg.addColorStop(1,'rgba(200,190,160,0)');
   x.fillStyle=lg;x.fillRect(980,220,720,460);
 }
-function drawCabin(x,t,st,en,cam){
+function drawCabin(x,t,st,en,cam,variant){
+  variant=variant||'';
   // glass and what is beyond it
   const g=x.createLinearGradient(0,120,0,760);
   g.addColorStop(0,'#0a1220');g.addColorStop(.6,'#0d1726');g.addColorStop(1,'#121a24');
@@ -460,6 +461,73 @@ function drawCabin(x,t,st,en,cam){
   x.beginPath();x.moveTo(0,40);x.lineTo(0,176);x.stroke();
   x.fillStyle='#0c1017';x.beginPath();x.arc(0,0,44,0,Math.PI*2);x.fill();
   x.restore();
+
+  // ---- director variants: dashboard radio / paint ----
+  if(variant==='radio'){
+    // radio faceplate on the dash
+    x.fillStyle='#06090e';x.beginPath();x.roundRect(1120,812,380,152,12);x.fill();
+    x.strokeStyle='rgba(120,140,150,.22)';x.lineWidth=2;x.strokeRect(1136,826,348,124);
+    const gy=x.createLinearGradient(0,838,0,910);
+    gy.addColorStop(0,'#0a2018');gy.addColorStop(1,'#06120e');
+    x.fillStyle=gy;x.fillRect(1150,838,228,72);
+    // static scanlines
+    for(let i=0;i<7;i++){
+      const a=.05+.10*Math.abs(Math.sin(t*2.3+i*1.7));
+      x.fillStyle=`rgba(140,220,190,${a})`;
+      x.fillRect(1152,842+((i*11+t*30)%68),224,2);
+    }
+    x.fillStyle='rgba(150,235,200,.85)';x.font='bold 34px monospace';x.textAlign='left';
+    x.fillText('103.7',1158,888);
+    x.fillStyle='rgba(150,235,200,.5)';x.font='18px monospace';x.fillText('AM',1310,884);
+    // knobs
+    for(const kx of [1400,1440]){
+      x.fillStyle='#0a0e14';x.beginPath();x.arc(kx,862,14,0,Math.PI*2);x.fill();
+      x.strokeStyle='rgba(160,180,190,.35)';x.lineWidth=2;x.beginPath();x.arc(kx,862,14,0,Math.PI*2);x.stroke();
+      x.beginPath();x.moveTo(kx,862);x.lineTo(kx,850);x.stroke();
+    }
+    x.fillStyle='rgba(150,235,200,.18)';x.fillRect(1390,890,80,6);
+    const rg=x.createRadialGradient(1264,874,10,1264,874,220);
+    rg.addColorStop(0,'rgba(130,220,185,.13)');rg.addColorStop(1,'rgba(130,220,185,0)');
+    x.fillStyle=rg;x.fillRect(1040,760,470,260);
+  }
+    // hands on the wheel
+    for(const side of [-1,1]){
+      const hx=960+side*176, hy=902;
+      x.save();x.translate(hx,hy);x.rotate(side*.16);
+      x.fillStyle='#8a6a4f';x.beginPath();x.roundRect(-26,-20,52,46,18);x.fill();
+      x.fillStyle='#6f543e';
+      for(let i=0;i<4;i++){x.beginPath();x.roundRect(-20+i*11,-4,9,28,4);x.fill();}
+      x.fillStyle='#5d4634';x.beginPath();x.roundRect(side>0?16:-32,-8,16,32,8);x.fill();
+      x.restore();
+    }
+  if(variant==='paint'){
+    // glossy black paint climbing the dash and curling round the wheel
+    x.save();
+    x.strokeStyle='rgba(7,8,10,.94)';x.lineCap='round';
+    const tendrils=[[700,1080,760,880,1010,930,1120,760],[1520,1080,1470,860,1240,900,1160,752],
+                    [980,1080,1010,940,900,860,860,760]];
+    for(let i=0;i<tendrils.length;i++){
+      const [x0,y0,x1,y1,x2,y2,x3,y3]=tendrils[i];
+      x.lineWidth=46-i*8;
+      x.beginPath();x.moveTo(x0,y0);x.bezierCurveTo(x1,y1,x2,y2,x3,y3);x.stroke();
+      x.strokeStyle='rgba(150,160,175,.20)';x.lineWidth=4;
+      x.beginPath();x.moveTo(x0-6,y0);x.bezierCurveTo(x1-8,y1,x2-8,y2,x3-6,y3);x.stroke();
+      x.strokeStyle='rgba(7,8,10,.94)';
+    }
+    // paint swallowing the wheel rim
+    x.strokeStyle='rgba(7,8,10,.96)';x.lineWidth=30;
+    x.beginPath();x.arc(960,900,190,Math.PI*.98,Math.PI*1.62);x.stroke();
+    x.strokeStyle='rgba(7,8,10,.9)';x.lineWidth=22;
+    x.beginPath();x.arc(960,900,190,Math.PI*1.72,Math.PI*2.2);x.stroke();
+    // wet highlights and drips
+    x.strokeStyle='rgba(165,175,190,.28)';x.lineWidth=3;
+    x.beginPath();x.moveTo(900,900);x.bezierCurveTo(940,880,980,872,1010,858);x.stroke();
+    x.fillStyle='rgba(7,8,10,.95)';
+    for(const [dx,dy,r] of [[880,842,16],[1050,806,12],[1180,792,10],[770,900,13]]){
+      x.beginPath();x.ellipse(dx,dy,r,r*1.5,0,0,Math.PI*2);x.fill();
+    }
+    x.restore();
+  }
   // rear-view mirror
   x.fillStyle='#05070b';x.beginPath();x.roundRect(820,66,300,110,18);x.fill();
   x.fillStyle='#101722';x.beginPath();x.roundRect(836,80,268,82,12);x.fill();
@@ -512,7 +580,7 @@ function roadScene(t,cam,s,u,kind){
   }
   x=layer('set',cam,1);
   if(kind==='rearview_mirror')drawMirror(x,t,st,en,cam);
-  else if(kind==='car_interior')drawCabin(x,t,st,en,cam);
+  else if(kind==='car_interior')drawCabin(x,t,st,en,cam,SCENES.shots[s].variant||'');
   else drawRoad(x,t,st,en,kind);
 
   x=layer('act',cam);

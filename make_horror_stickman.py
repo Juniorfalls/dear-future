@@ -440,6 +440,11 @@ def main() -> None:
                 "title": s.get("title", ""),
                 "shot_type": s.get("shot_type", ""),
                 "focus": s.get("focus", ""),
+                "variant": (
+                    "radio" if "radio" in str(s.get("prompt", "")).lower()
+                    else "paint" if "paint" in str(s.get("prompt", "")).lower()
+                    else ""
+                ),
             }
             for i, s in enumerate(shots)
         ],
