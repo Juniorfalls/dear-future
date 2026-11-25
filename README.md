@@ -38,7 +38,25 @@ out/episodes/runs.jsonl           one line per successful run
 
 A lock serialises renders (one CPU box), a disk guard refuses to start below
 `--min-free-gb` (default 0.8), and retention keeps only the newest `--keep`
-finals. The older Remotion "Before You" pipeline is documented below.
+finals.
+
+### Archive finished episodes
+
+Send the MP4, SRT and manifest off the box and keep local disk free:
+
+```bash
+python3 make_episode.py "..." --archive /mnt/media/stickman
+python3 make_episode.py "..." --archive rsync:user@host:/srv/stickman
+export ARCHIVE_DIR=/mnt/media/stickman   # also used by run_queue.py
+```
+
+Local copies are verified by SHA-256; rsync targets trust rsync's exit code and
+store the destination plus local hashes in the manifest. With `--archive` set,
+retention deletes a local final only when its manifest carries an archive
+receipt — unarchived episodes are kept and reported. `run_queue.py` forwards
+`--archive` / `ARCHIVE_DIR` for every job.
+
+The older Remotion "Before You" pipeline is documented below.
 
 ## Pipeline
 

@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import fcntl
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -83,6 +84,8 @@ def main() -> None:
     ap.add_argument("--speed", type=float, default=.82)
     ap.add_argument("--keep", type=int, default=3)
     ap.add_argument("--min-free-gb", type=float, default=.8)
+    ap.add_argument("--archive", default=os.environ.get("ARCHIVE_DIR"),
+                    help="local folder or rsync:user@host:/path")
     ap.add_argument("--retry-failed", action="store_true")
     o = ap.parse_args()
 
@@ -118,6 +121,8 @@ def main() -> None:
                "--min-free-gb", str(o.min_free_gb)]
         if o.max_seconds:
             cmd += ["--max-seconds", str(o.max_seconds)]
+        if o.archive:
+            cmd += ["--archive", o.archive]
         try:
             p = subprocess.run(cmd, cwd=ROOT)
             ok = p.returncode == 0

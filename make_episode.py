@@ -27,6 +27,8 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+from archive_kit import archive as archive_files
+
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "out" / "episodes"
 LOCK = OUT / ".lock"
@@ -191,7 +193,7 @@ def read_scenes(base: Path) -> dict:
 
 
 def package(base: Path, mp4: Path, episode_path: Path, speed: float,
-            keep: int, log: Path) -> dict:
+            log: Path) -> dict:
     episode = json.loads(episode_path.read_text(encoding="utf8"))
     timing_path = base / "film" / "timing.json"
     timing = json.loads(timing_path.read_text(encoding="utf8")) if timing_path.exists() else {}
@@ -224,18 +226,30 @@ def package(base: Path, mp4: Path, episode_path: Path, speed: float,
     }
     (base / f"{base.name}.json").write_text(
         json.dumps(manifest, indent=2), encoding="utf8")
+    return manifest
 
-    # Retention: newest --keep finals only, plus their folders.
-    finals = sorted(OUT.glob("*.mp4"), key=lambda p: p.stat().st_mtime, reverse=True)
+
+def prune(keep: int, require_archived: bool) -> None:
+    """Delete old finals, but never one whose manifest is not archived."""
+    if keep < 1:
+        return
+    finals = sorted(OUT.glob("*/*.mp4"), key=lambda p: p.stat().st_mtime, reverse=True)
     for old in finals[keep:]:
-        if old.resolve() == mp4.resolve():
+        folder = old.parent
+        manifest_path = folder / f"{old.stem}.json"
+        archived = False
+        if manifest_path.exists():
+            try:
+                archived = bool(json.loads(manifest_path.read_text(encoding="utf8")).get("archive"))
+            except ValueError:
+                archived = False
+        if require_archived and not archived:
+            print(f"retention: keeping {old.name} (not archived yet)")
             continue
-        folder = OUT / old.stem
         old.unlink(missing_ok=True)
         if folder.is_dir():
             shutil.rmtree(folder, ignore_errors=True)
         print(f"retention: removed {old.name} and {folder.name}/")
-    return manifest
 
 
 def main() -> None:
@@ -246,6 +260,8 @@ def main() -> None:
     ap.add_argument("--speed", type=float, default=.82)
     ap.add_argument("--max-seconds", type=float, default=None)
     ap.add_argument("--keep", type=int, default=3, help="finals to keep in out/episodes")
+    ap.add_argument("--archive", default=os.environ.get("ARCHIVE_DIR"),
+                    help="local folder or rsync:user@host:/path for finished episodes")
     ap.add_argument("--min-free-gb", type=float, default=.8)
     ap.add_argument("--render-timeout", type=float, default=3600)
     ap.add_argument("--force", action="store_true", help="redo every stage")
@@ -329,8 +345,26 @@ def main() -> None:
 
     # ---- 4. package + retention
     guard(o.min_free_gb, "before packaging")
-    manifest = package(base, mp4, episode_path, o.speed, o.keep, log_dir / "render.log")
+    manifest = package(base, mp4, episode_path, o.speed, log_dir / "render.log")
     finish("package", manifest=str(base / f"{slug}.json"))
+
+    previous = state["stages"].get("archive", {})
+    already = previous.get("done") and previous.get("dest") == o.archive
+    if o.archive and not already:
+        receipt = archive_files(base, o.archive)
+        manifest["archive"] = receipt
+        (base / f"{slug}.json").write_text(json.dumps(manifest, indent=2), encoding="utf8")
+        finish("archive", **receipt)
+        print(f"[archive] {receipt['mode']} -> {receipt['dest']}")
+    elif o.archive:
+        # Re-packaging rewrites the manifest: put the receipt back so retention
+        # can still prove this final is safe to delete locally.
+        receipt = {k: v for k, v in previous.items() if k not in ("done", "at")}
+        manifest["archive"] = receipt
+        (base / f"{slug}.json").write_text(json.dumps(manifest, indent=2), encoding="utf8")
+        print(f"[archive] cached {o.archive}")
+
+    prune(o.keep, require_archived=bool(o.archive))
     state.update({"mp4": str(mp4.relative_to(ROOT)), "duration": video})
     state_path.write_text(json.dumps(state, indent=2), encoding="utf8")
 
