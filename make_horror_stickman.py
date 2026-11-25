@@ -211,7 +211,7 @@ def classify(shot: dict) -> str:
     return "console"
 
 
-def write_voice_script(shots: list[dict], path: Path) -> None:
+def write_voice_script(shots: list[dict], path: Path, one_take: bool = False) -> None:
     blocks = []
     for shot in shots:
         vo = str(shot.get("vo", "")).strip()
@@ -219,7 +219,112 @@ def write_voice_script(shots: list[dict], path: Path) -> None:
             blocks.append(vo)
     if not blocks:
         raise SystemExit("the selected shots have no voiceover lines")
-    path.write_text("\n\n".join(blocks) + "\n", encoding="utf8")
+    if one_take:
+        # A single spoken paragraph: one line, one Kokoro call, so sentence
+        # pitch and breathing carry across beats. "..." would be parsed as a
+        # line break by tts.py and reintroduce per-sentence synthesis.
+        para = " ".join(" ".join(b.split()) for b in blocks)
+        path.write_text(para + "\n", encoding="utf8")
+    else:
+        path.write_text("\n\n".join(blocks) + "\n", encoding="utf8")
+
+
+def _tokens(text: str) -> list[str]:
+    return [w for w in re.findall(r"[a-z0-9']+", text.lower()) if w]
+
+
+def _silence_gaps(wav_path: Path) -> list[float]:
+    """Start time of quiet runs (>=120 ms) in the narration, in seconds."""
+    import wave
+
+    import numpy as np
+
+    try:
+        with wave.open(str(wav_path), "rb") as w:
+            sr = w.getframerate()
+            raw = w.readframes(w.getnframes())
+    except (OSError, wave.Error):
+        return []
+    a = np.frombuffer(raw, dtype="<i2").astype(np.float32) / 32767
+    if not len(a):
+        return []
+    win = max(1, int(.01 * sr))
+    n = len(a) // win
+    rms = np.sqrt((a[: n * win].reshape(n, win) ** 2).mean(axis=1) + 1e-12)
+    quiet = rms < .012
+    gaps, run = [], 0
+    for i, q in enumerate(quiet):
+        if q:
+            run += 1
+        else:
+            if run * win / sr >= .12:
+                gaps.append((i - run) * win / sr)
+            run = 0
+    if run * win / sr >= .12:
+        gaps.append((len(quiet) - run) * win / sr)
+    return gaps
+
+
+def one_take_cuts(work: Path, shots: list[dict], at: float,
+                  max_seconds: float | None) -> tuple[list[int], str]:
+    """Cut times from the single narration take, using word timestamps."""
+    import wave
+
+    with wave.open(str(work / "vo.wav"), "rb") as w:
+        voice_dur = w.getnframes() / float(w.getframerate())
+
+    beat_tokens = [_tokens(str(s.get("vo", ""))) for s in shots]
+    word_counts = [max(1, len(b)) for b in beat_tokens]
+    # Time of the first word of every beat, in vo.wav time.
+    starts = [0.0]
+    method = "proportional"
+    align_path = work / "align.json"
+    aligned: list[tuple[str, float, float]] = []
+    if align_path.exists():
+        try:
+            aligned = [(str(a[0]).lower(), float(a[1]), float(a[2]))
+                       for a in json.loads(align_path.read_text(encoding="utf8"))]
+        except (ValueError, TypeError, IndexError):
+            aligned = []
+    total_words = sum(word_counts)
+    if aligned and len(aligned) >= total_words * .9:
+        # Word counts can differ when the aligner splits contractions; walk the
+        # aligned list at the same fraction instead of requiring an exact match.
+        cum = 0
+        for n in word_counts[:-1]:
+            cum += n
+            frac = cum / total_words
+            idx = min(len(aligned) - 1, int(round(frac * len(aligned))))
+            starts.append(max(starts[-1] + .05, aligned[idx][1]))
+        method = "aligned"
+    else:
+        cum = 0
+        for n in word_counts[:-1]:
+            cum += n
+            starts.append(voice_dur * cum / total_words)
+        # Snap each estimate to the nearest real pause in the take, so a beat
+        # change lands in silence rather than mid-word.
+        gaps = _silence_gaps(work / "vo.wav")
+        if gaps:
+            snapped = []
+            for s in starts[1:]:
+                near = min(gaps, key=lambda g: abs(g - s))
+                snapped.append(near if abs(near - s) <= 1.2 else s)
+            for i in range(1, len(snapped)):
+                snapped[i] = max(snapped[i], snapped[i - 1] + .3)
+            starts = [0.0] + snapped
+            method = "silence"
+
+    cuts = [0]
+    for i in range(1, len(shots)):
+        # Change picture a hair before the beat's first word.
+        t = at + max(0.0, starts[i] - .10)
+        cuts.append(max(cuts[-1] + FPS // 2, int(round(t * FPS))))
+    end = at + voice_dur + .95
+    if max_seconds and end > max_seconds + .05:
+        end = max_seconds
+    cuts.append(max(cuts[-1] + FPS // 2, int(round(end * FPS))))
+    return cuts, method
 
 
 # ---------------------------------------------------------------- film
@@ -231,8 +336,9 @@ def write_film_js(work: Path, scenes: dict) -> None:
     (work / "film.js").write_text(f"const SCENES = {payload};\n\n{body}", encoding="utf8")
 
 
-def write_audio_mix(work: Path, at: float, voice: bool) -> None:
-    voice_value = '"vo.wav"' if voice else "None"
+def write_audio_mix(work: Path, at: float, voice: bool,
+                    voice_file: str = "vo.wav") -> None:
+    voice_value = f'"{voice_file}"' if voice else "None"
     text = f'''"""Sound mix for the Fog Ridge stickman film. Generated by make_horror_stickman.py."""
 import json, os, sys
 sys.path.insert(0, os.environ["STICKMAN_SCRIPTS"])
@@ -264,7 +370,7 @@ for e in info["events"]:
 
 m.music(mood="tense", bpm=60, gain=.9)
 if {voice_value}:
-    m.voice("vo.wav", at={at:.3f}, gain_db=-2.5)
+    m.voice("{voice_file}", at={at:.3f}, gain_db=-2.5)
 m.write("audio.wav")
 '''
     (work / "audio_mix.py").write_text(text, encoding="utf8")
@@ -341,6 +447,21 @@ def run_tts(skill: Path, work: Path, voice: str, speed: float) -> None:
     subprocess.run(cmd, check=True)
 
 
+def run_one_take(work: Path, voice: str, speed: float) -> None:
+    """One Kokoro call for the whole monologue (see one_take_tts.py)."""
+    cmd = [
+        sys.executable,
+        str(ROOT / "one_take_tts.py"),
+        str(work),
+        str(work / "script.txt"),
+        "--voice",
+        voice,
+        "--speed",
+        str(speed),
+    ]
+    subprocess.run(cmd, check=True)
+
+
 def build_film(skill: Path, work: Path, out: Path, crf: int) -> None:
     # Encode inside the film folder: the skill's audit resolves the output by
     # basename, so an external absolute path would not be audited.
@@ -381,6 +502,8 @@ def main() -> None:
     ap.add_argument("--speed", type=float, default=.88)
     ap.add_argument("--crf", type=int, default=22)
     ap.add_argument("--force", action="store_true", help="delete the work folder first")
+    ap.add_argument("--line-by-line", action="store_true",
+                    help="old behaviour: speak each beat separately (default is one take)")
     ap.add_argument("--no-voice", action="store_true", help="render picture and effects only")
     ap.add_argument("--dry-run", action="store_true", help="write the film folder but do not render")
     ap.add_argument("--stills", help="comma list of times for a contact sheet after setup")
@@ -402,25 +525,44 @@ def main() -> None:
     prepare_work(work, skill, o.force)
     at = .70
 
+    one_take = not o.line_by_line
     if not o.no_voice:
-        # If the actual voice runs long, drop the last shot and speak the shorter
-        # script again. Every spoken line is cached, so the retry is cheap.
-        for attempt in range(3):
-            write_voice_script(shots, work / "script.txt")
-            run_tts(skill, work, o.voice, o.speed)
+        groups = []
+        if one_take:
+            # The whole monologue is spoken once; shot boundaries come from
+            # word timestamps inside that single take.
+            for attempt in range(2):
+                write_voice_script(shots, work / "script.txt", one_take=True)
+                run_one_take(work, o.voice, o.speed)
+                cuts, method = one_take_cuts(work, shots, at, o.max_seconds)
+                natural = cuts[-1] / FPS
+                if (not o.max_seconds or natural <= o.max_seconds + .3
+                        or len(shots) == 1):
+                    break
+                print(f"voice runs {natural:.1f}s; dropping shot {shots[-1]['id']} "
+                      f"to fit {o.max_seconds:.0f}s")
+                shots = shots[:-1]
+            shutil.copyfile(work / "vo.wav", work / "narration_full.wav")
+            print(f"one take: {natural:.1f}s, {len(shots)} beats, cuts from {method} timings")
+        else:
+            # If the actual voice runs long, drop the last shot and speak the
+            # shorter script again. Every spoken line is cached, so retry is cheap.
+            for attempt in range(3):
+                write_voice_script(shots, work / "script.txt")
+                run_tts(skill, work, o.voice, o.speed)
+                groups = voice_groups(work, len(shots))
+                natural = at + float(groups[-1][-1]["end"]) + .95
+                if not o.max_seconds or natural <= o.max_seconds + 1.5 or len(shots) == 1:
+                    break
+                print(f"voice runs {natural:.1f}s; dropping shot {shots[-1]['id']} to fit {o.max_seconds:.0f}s")
+                shots = shots[:-1]
             groups = voice_groups(work, len(shots))
-            natural = at + float(groups[-1][-1]["end"]) + .95
-            if not o.max_seconds or natural <= o.max_seconds + 1.5 or len(shots) == 1:
-                break
-            print(f"voice runs {natural:.1f}s; dropping shot {shots[-1]['id']} to fit {o.max_seconds:.0f}s")
-            shots = shots[:-1]
-        groups = voice_groups(work, len(shots))
-        # Pull the lead-in tighter when the spoken take is already longer than
-        # the target; the alternative is cutting narration off mid-line.
-        if o.max_seconds:
-            last_end = float(groups[-1][-1]["end"])
-            at = min(at, max(.15, o.max_seconds - (last_end + .15)))
-        cuts = timeline(groups, at, o.max_seconds)
+            # Pull the lead-in tighter when the spoken take is already longer than
+            # the target; the alternative is cutting narration off mid-line.
+            if o.max_seconds:
+                last_end = float(groups[-1][-1]["end"])
+                at = min(at, max(.15, o.max_seconds - (last_end + .15)))
+            cuts = timeline(groups, at, o.max_seconds)
     else:
         groups = []
         # picture-only fallback: about 2.6 s per shot
@@ -451,10 +593,12 @@ def main() -> None:
         "events": event_list(shots, cuts),
     }
     write_film_js(work, scenes)
-    write_audio_mix(work, at, not o.no_voice)
-    if groups:
+    write_audio_mix(work, at, not o.no_voice,
+                    "narration_full.wav" if one_take and not o.no_voice else "vo.wav")
+    if groups or one_take:
         (work / "timing.json").write_text(
-            json.dumps({"at": at, "cuts": cuts, "groups": groups}, indent=1), encoding="utf8"
+            json.dumps({"at": at, "cuts": cuts, "groups": groups,
+                        "one_take": one_take}, indent=1), encoding="utf8"
         )
     print(f"film:    {dur:.2f}s, {len(shots)} shots, {len(cuts) - 1} cuts -> {work}")
     if o.dry_run:
