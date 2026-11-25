@@ -694,6 +694,7 @@ def main() -> None:
             for i, s in enumerate(shots)
         ],
         "events": event_list(shots, cuts),
+        "title": episode.get("title_card"),
         "captions": [
             {"t0": float(s.get("vo_start") or cuts[i] / FPS),
              "t1": float(s.get("vo_start") or cuts[i] / FPS)

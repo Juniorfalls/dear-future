@@ -879,6 +879,17 @@ FILM={dur:SCENES.dur,cuts:SCENES.cuts,fadeIn:.7,fadeOut:.9,
     if(HALL_KINDS.has(k))hallScene(t,cam,s,u,k);
     else if(ROAD_KINDS.has(k))roadScene(t,cam,s,u,k);
     else if(INT_KINDS.has(k))interior(t,cam,s,u,k);else exterior(t,cam,s,u,k);
+    const ti=SCENES.title;
+    if(ti && t<ti.out){
+      const a=Math.min(1,t/.30,Math.max(0,(ti.out-t)/.55));
+      ctx.save();ctx.globalAlpha=a;ctx.fillStyle='rgba(4,5,7,.93)';ctx.fillRect(0,0,1920,1080);
+      let fs=86;ctx.font='700 '+fs+'px "Helvetica Neue", Arial, sans-serif';
+      while(ctx.measureText(ti.text).width>1360 && fs>44){fs-=4;ctx.font='700 '+fs+'px "Helvetica Neue", Arial, sans-serif';}
+      ctx.textAlign='center';ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.9)';
+      ctx.strokeText(ti.text,960,520);ctx.fillStyle='#f4ecd8';ctx.fillText(ti.text,960,520);
+      if(ti.sub){ctx.font='400 26px "Helvetica Neue", Arial, sans-serif';ctx.fillStyle='rgba(228,222,206,.72)';ctx.fillText(ti.sub,960,590);}
+      ctx.restore();
+    }
     for(const c of (SCENES.captions||[])){
       if(t<c.t0||t>c.t1)continue;
       const a=Math.min(1,Math.min((t-c.t0)/.18,(c.t1-t)/.18));

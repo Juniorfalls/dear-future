@@ -210,7 +210,7 @@ def read_scenes(base: Path) -> dict:
 
 
 def package(base: Path, mp4: Path, episode_path: Path, speed: float,
-            log: Path) -> dict:
+            log: Path, vertical: bool = True) -> dict:
     episode = json.loads(episode_path.read_text(encoding="utf8"))
     timing_path = base / "film" / "timing.json"
     timing = json.loads(timing_path.read_text(encoding="utf8")) if timing_path.exists() else {}
@@ -222,6 +222,9 @@ def package(base: Path, mp4: Path, episode_path: Path, speed: float,
     rendered = len(shots) if film else (len(cuts) - 1 if cuts else len(shots))
     make_srt(episode, timing, base / "film" / "align.json", at, srt, rendered)
 
+    vert = base / f"{base.name}-vertical.mp4"
+    if vertical:
+        subprocess.run([PY, str(ROOT / "make_vertical.py"), str(mp4), str(vert)], check=True)
     durations = mobile_mp4_durations(mp4)
     video = durations.get("vide", 0.0)
     audio = durations.get("soun", 0.0)
@@ -233,6 +236,7 @@ def package(base: Path, mp4: Path, episode_path: Path, speed: float,
         "created": now(),
         "mp4": str(mp4.relative_to(ROOT)),
         "srt": str(srt.relative_to(ROOT)),
+        "vertical": str(vert.relative_to(ROOT)) if vertical else "",
         "video_seconds": video,
         "audio_seconds": audio,
         "shots": len(shots),
@@ -281,6 +285,7 @@ def main() -> None:
                     help="local folder or rsync:user@host:/path for finished episodes")
     ap.add_argument("--min-free-gb", type=float, default=.8)
     ap.add_argument("--render-timeout", type=float, default=3600)
+    ap.add_argument("--no-vertical", action="store_true", help="skip the 9:16 cut")
     ap.add_argument("--force", action="store_true", help="redo every stage")
     ap.add_argument("--resume", action="store_true", help="keep finished stages (default)")
     o = ap.parse_args()
@@ -362,7 +367,8 @@ def main() -> None:
 
     # ---- 4. package + retention
     guard(o.min_free_gb, "before packaging")
-    manifest = package(base, mp4, episode_path, o.speed, log_dir / "render.log")
+    manifest = package(base, mp4, episode_path, o.speed, log_dir / "render.log",
+                       vertical=not o.no_vertical)
     finish("package", manifest=str(base / f"{slug}.json"))
 
     previous = state["stages"].get("archive", {})

@@ -30,8 +30,9 @@ python3 make_episode.py "..." --keep 2 --speed .82 # retention / pacing
 Outputs per episode:
 
 ```
-out/episodes/<slug>/<slug>.mp4    final film
-out/episodes/<slug>/<slug>.srt    captions from the word alignment
+out/episodes/<slug>/<slug>.mp4            final film (1920x1080)
+out/episodes/<slug>/<slug>-vertical.mp4   9:16 Shorts cut, blurred fill
+out/episodes/<slug>/<slug>.srt            captions
 out/episodes/<slug>/<slug>.json   manifest (duration, shots, kinds, sizes)
 out/episodes/runs.jsonl           one line per successful run
 ```

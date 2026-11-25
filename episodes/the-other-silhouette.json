@@ -121,5 +121,10 @@
         "snap"
       ]
     }
-  ]
+  ],
+  "title_card": {
+    "text": "THE OTHER SILHOUETTE",
+    "sub": "A STICKMAN HORROR",
+    "out": 2.9
+  }
 }
