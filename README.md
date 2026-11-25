@@ -9,6 +9,37 @@ episode, Pollinations prompts and its narration) has been removed. The
 reference-film subtitle system, music bed, colour grades and optional presenter
 layouts from the previous pass are retained.
 
+## Stickman horror factory (current pipeline)
+
+One command takes a topic to a finished, captioned episode:
+
+```bash
+python3 make_episode.py "a night bus that stops where no bus stop exists"
+```
+
+Stages are resumable (`out/episodes/<slug>/state.json`): writer (Director Mode
+monologue + 12-shot storyboard), one-take Kokoro narration, Playwright render,
+QA (stream durations and file size), then packaging.
+
+```bash
+python3 make_episode.py "..." --max-seconds 15   # short test cut
+python3 make_episode.py --episode episodes/x.json  # skip the writer
+python3 make_episode.py "..." --keep 2 --speed .82 # retention / pacing
+```
+
+Outputs per episode:
+
+```
+out/episodes/<slug>/<slug>.mp4    final film
+out/episodes/<slug>/<slug>.srt    captions from the word alignment
+out/episodes/<slug>/<slug>.json   manifest (duration, shots, kinds, sizes)
+out/episodes/runs.jsonl           one line per successful run
+```
+
+A lock serialises renders (one CPU box), a disk guard refuses to start below
+`--min-free-gb` (default 0.8), and retention keeps only the newest `--keep`
+finals. The older Remotion "Before You" pipeline is documented below.
+
 ## Pipeline
 
 ```
