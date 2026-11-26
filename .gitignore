@@ -56,3 +56,5 @@ tools/bin/
 
 # raw 512x896 clips from the older clips-dir layout
 /clips/
+
+.venv-voice/
