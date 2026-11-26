@@ -1,20 +1,21 @@
 {
-  "name": "before-you-cinematic",
+  "name": "math-classroom",
   "version": "1.0.0",
   "private": true,
-  "description": "Cinematic documentary videos rendered fully in Remotion",
   "scripts": {
-    "render": "node render.js",
-    "studio": "remotion studio src/index.ts"
+    "studio": "remotion studio",
+    "render": "remotion render MathClassroom out/solving-for-x.mp4",
+    "voice": "../.venv-voice/bin/python scripts/make_voice.py"
   },
   "dependencies": {
-    "@remotion/bundler": "^4.0.200",
-    "@remotion/cli": "^4.0.200",
-    "@remotion/google-fonts": "^4.0.200",
-    "@remotion/media-utils": "^4.0.545",
-    "@remotion/renderer": "^4.0.200",
+    "@remotion/cli": "^4.0.0",
+    "katex": "^0.16.11",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "remotion": "^4.0.200"
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "typescript": "^5.6.3"
   }
 }

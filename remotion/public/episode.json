@@ -1,0 +1,44 @@
+{
+  "title": "Solving for X",
+  "script": "Today we solve for x. Start with two x plus three equals eleven. Subtract three from both sides, and two x equals eight. Finally, divide by two: x equals four. Now you can solve it too.",
+  "duration": 15,
+  "lines": [
+    {
+      "id": "l1",
+      "latex": "2x + 3 = 11",
+      "plain": "2x+3=11",
+      "at": 1.891
+    },
+    {
+      "id": "l2",
+      "latex": "2x = 8",
+      "plain": "2x=8",
+      "at": 6.083
+    },
+    {
+      "id": "l3",
+      "latex": "x = 4",
+      "plain": "x=4",
+      "at": 9.196
+    }
+  ],
+  "actions": [
+    {
+      "at": 0.0,
+      "action": "walkTo",
+      "x": -2.55
+    },
+    {
+      "at": 1.5,
+      "action": "turnToBoard"
+    },
+    {
+      "at": 2.0,
+      "action": "writeOnBoard"
+    },
+    {
+      "at": 12.4,
+      "action": "turnToCamera"
+    }
+  ]
+}
