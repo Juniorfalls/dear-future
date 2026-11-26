@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "skills": {
+    "remotion-editing": {
+      "source": "CleanExpo/Pi-Dev-Ops",
+      "commit": "e67473e379e3bdc69179b71ab9a34aa8bb63cad3",
+      "sourceType": "github",
+      "skillPath": "skills/remotion-editing/SKILL.md",
+      "computedHash": "895fa4d0057c94368577769dc44297d43e735d8f048ca2bd32f4026ea94ea2b3"
+    }
+  }
+}

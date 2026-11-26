@@ -9,20 +9,41 @@ import {
   useVideoConfig,
 } from 'remotion';
 import katex from 'katex';
+import {createTikTokStyleCaptions, type Caption} from '@remotion/captions';
 import 'katex/dist/katex.min.css';
 import './styles.css';
 import episode from '../public/episode.json';
 import voiceWords from '../public/vo_words.json';
+import lipsync from '../public/lipsync.json';
 
 type Line = {id: string; latex: string; plain: string; at: number};
 
 const WALK = Array.from({length: 6}, (_, i) => `characters/teacher_walk_${i}.png`);
-const TALK = Array.from({length: 6}, (_, i) => `characters/teacher_talk_${i}.png`);
 const TYPE_SECONDS: Record<string, number> = {l1: 1.9, l2: 1.35, l3: 1.05};
 const LINE_TOP: Record<string, number> = {l1: 132, l2: 268, l3: 360};
 const WORDS = voiceWords as {word: string; start: number; end: number}[];
 const speakingAt = (t: number) =>
   WORDS.some((w) => t >= w.start - 0.05 && t <= w.end + 0.26);
+
+const MOUTH: Record<string, number> = {A: 0, B: 1, C: 2, D: 3, E: 4, F: 5, G: 2, H: 3, X: 2};
+const CUES = (lipsync as {mouthCues: {start: number; end: number; value: string}[]}).mouthCues;
+const mouthAt = (t: number) => {
+  const c = CUES.find((cue) => t >= cue.start && t < cue.end);
+  return MOUTH[c?.value ?? 'X'] ?? 2;
+};
+
+const CAPTION_INPUT: Caption[] = WORDS.map((w, i) => ({
+  text: (i === 0 ? '' : ' ') + w.word,
+  startMs: Math.round(w.start * 1000),
+  endMs: Math.round(w.end * 1000),
+  timestampMs: Math.round(((w.start + w.end) / 2) * 1000),
+  confidence: null,
+}));
+const {pages: CAPTION_PAGES} = createTikTokStyleCaptions({
+  captions: CAPTION_INPUT,
+  combineTokensWithinMilliseconds: 1750,
+  breakOnSilenceAfterMilliseconds: 350,
+});
 
 const TypedEquation: React.FC<{
   line: Line;
@@ -100,6 +121,26 @@ const Desk: React.FC<{left: number; student: string; phase: number; time: number
   );
 };
 
+const Subtitles: React.FC<{time: number; frame: number}> = ({time}) => {
+  const ms = time * 1000;
+  const page = CAPTION_PAGES.find((p) => ms >= p.startMs && ms < p.startMs + p.durationMs);
+  if (!page) return null;
+  return (
+    <div className="caption-wrap">
+      <div className="caption-plate">
+        {page.tokens.map((tok, i) => {
+          const active = ms >= tok.fromMs && ms <= tok.toMs;
+          return (
+            <span key={i} className={active ? 'caption-token active' : 'caption-token'}>
+              {tok.text}
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 export const MathClassroom: React.FC = () => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
@@ -107,11 +148,8 @@ export const MathClassroom: React.FC = () => {
 
   const walking = t < 1.55;
   const talking = !walking && speakingAt(t);
-  const teacherSrc = walking
-    ? WALK[Math.floor(t * 12) % 6]
-    : talking
-      ? TALK[Math.floor(t * 9) % 6]
-      : 'characters/teacher_point.png';
+  const mouthSrc = `characters/mouth_v3_${mouthAt(t)}.png`;
+  const teacherSrc = WALK[Math.floor(t * 12) % 6];
 
   const walkX = interpolate(t, [0, 1.55], [-430, 118], {
     extrapolateLeft: 'clamp',
@@ -156,16 +194,27 @@ export const MathClassroom: React.FC = () => {
           </div>
         </div>
 
-        <Img
-          src={staticFile(teacherSrc)}
-          className="teacher"
-          style={{left: teacherX, bottom: 38 + teacherBob}}
-        />
+        {walking ? (
+          <Img
+            src={staticFile(teacherSrc)}
+            className="teacher"
+            style={{left: teacherX, bottom: 38 + teacherBob}}
+          />
+        ) : (
+          <div className="teacher-wrap" style={{left: teacherX, bottom: 38 + teacherBob}}>
+            <Img src={staticFile('characters/teacher_point.png')} className="teacher-body" />
+            <Img
+              src={staticFile(mouthSrc)}
+              className={`teacher-mouth${talking ? ' is-talking' : ''}`}
+            />
+          </div>
+        )}
 
         <Desk left={648} student="characters/student_1.png" phase={0.4} time={t} />
         <Desk left={984} student="characters/student_2.png" phase={2.2} time={t} />
         <Desk left={1320} student="characters/student_3.png" phase={4.1} time={t} />
       </div>
+      <Subtitles time={t} frame={frame} />
     </AbsoluteFill>
   );
 };

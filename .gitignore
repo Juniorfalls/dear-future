@@ -58,3 +58,7 @@ tools/bin/
 /clips/
 
 .venv-voice/
+
+# Rhubarb Lip Sync binary and generated WAV
+tools/rhubarb/
+remotion/public/vo.wav
