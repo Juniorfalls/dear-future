@@ -241,19 +241,23 @@ const texLoad = (name) => texLoader.loadAsync(`./assets/characters/${name}.png`)
 const spriteMat = (tex) => new THREE.SpriteMaterial({map: tex, transparent: true, depthWrite: false});
 let teacherSprite = null, teacherPoses = {}, spriteAspect = 1;
 const studentSprites = [];
+let TALK_FRAMES = [], WALK_FRAMES = [];
 async function buildCharacterSprites() {
-  const names = ['teacher_talk', 'teacher_point', 'teacher_write', 'teacher_walk'];
+  const names = ['teacher_point', 'teacher_write'];
   const texs = await Promise.all([...names, 'student_1', 'student_2', 'student_3'].map(texLoad));
   names.forEach((n, i) => { texs[i].colorSpace = THREE.SRGBColorSpace; teacherPoses[n] = texs[i]; });
-  teacherSprite = new THREE.Sprite(spriteMat(teacherPoses.teacher_talk));
-  const img = teacherPoses.teacher_talk.image;
+  TALK_FRAMES = await Promise.all([...Array(6)].map((_, i) => texLoad(`teacher_talk_${i}`)));
+  WALK_FRAMES = await Promise.all([...Array(6)].map((_, i) => texLoad(`teacher_walk_${i}`)));
+  for (const t of [...TALK_FRAMES, ...WALK_FRAMES]) t.colorSpace = THREE.SRGBColorSpace;
+  teacherSprite = new THREE.Sprite(spriteMat(TALK_FRAMES[0]));
+  const img = TALK_FRAMES[0].image;
   spriteAspect = img.width / img.height;
   teacherSprite.center.set(.5, 0);
   teacherSprite.scale.set(2.65 * spriteAspect, 2.65, 1);
   scene.add(teacherSprite);
   teacher.group.visible = false;
   for (let i = 0; i < 3; i++) {
-    const t = texs[4 + i]; t.colorSpace = THREE.SRGBColorSpace;
+    const t = texs[2 + i]; t.colorSpace = THREE.SRGBColorSpace;
     const sp = new THREE.Sprite(spriteMat(t));
     sp.center.set(.5, 0);
     const a = t.image.width / t.image.height;
@@ -403,8 +407,11 @@ window.renderFrame = (t) => {
   if (teacherSprite) {
     teacherSprite.position.set(teacher.group.position.x, .02, teacher.group.position.z + .12);
     const pose = poseAt(t);
-    if (teacherSprite.material.map !== teacherPoses[pose]) {
-      teacherSprite.material.map = teacherPoses[pose];
+    let frame = teacherPoses[pose];
+    if (pose === 'teacher_talk' && TALK_FRAMES.length) frame = TALK_FRAMES[Math.floor(t * 9) % 6];
+    else if (pose === 'teacher_walk' && WALK_FRAMES.length) frame = WALK_FRAMES[Math.floor(t * 12) % 6];
+    if (frame && teacherSprite.material.map !== frame) {
+      teacherSprite.material.map = frame;
       teacherSprite.material.needsUpdate = true;
     }
   }
