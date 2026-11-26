@@ -1,182 +1,307 @@
 [
  {
-  "word": "Today",
-  "start": 0.094625,
-  "end": 0.418291
+  "word": "Here",
+  "start": 0.096291,
+  "end": 0.339332
  },
  {
-  "word": "we",
-  "start": 0.440625,
-  "end": 0.563375
+  "word": "is",
+  "start": 0.350916,
+  "end": 0.466666
  },
  {
-  "word": "solve",
-  "start": 0.585708,
-  "end": 0.842416
+  "word": "one",
+  "start": 0.489833,
+  "end": 0.721333
  },
  {
-  "word": "for",
-  "start": 0.86475,
-  "end": 1.021
+  "word": "hundred",
+  "start": 0.744458,
+  "end": 1.056958
  },
  {
-  "word": "x",
-  "start": 1.043291,
-  "end": 1.266499
+  "word": "dollars",
+  "start": 1.080083,
+  "end": 1.554624
  },
  {
-  "word": "Start",
-  "start": 1.445083,
-  "end": 1.712958
+  "word": "It",
+  "start": 2.372666,
+  "end": 2.534707
  },
  {
-  "word": "with",
-  "start": 1.73525,
-  "end": 1.880333
- },
- {
-  "word": "two",
-  "start": 1.8915,
-  "end": 2.058916
- },
- {
-  "word": "x",
-  "start": 2.08125,
-  "end": 2.282125
- },
- {
-  "word": "plus",
-  "start": 2.293291,
-  "end": 2.527666
- },
- {
-  "word": "three",
-  "start": 2.538833,
-  "end": 2.762041
- },
- {
-  "word": "equals",
-  "start": 2.773208,
-  "end": 3.119208
- },
- {
-  "word": "eleven",
-  "start": 3.1415,
-  "end": 3.543291
- },
- {
-  "word": "Subtract",
-  "start": 4.330375,
-  "end": 4.787958
- },
- {
-  "word": "three",
-  "start": 4.81025,
-  "end": 5.022291
- },
- {
-  "word": "from",
-  "start": 5.044625,
-  "end": 5.200875
- },
- {
-  "word": "both",
-  "start": 5.223208,
-  "end": 5.435249
- },
- {
-  "word": "sides",
-  "start": 5.457583,
-  "end": 5.814708
- },
- {
-  "word": "and",
-  "start": 5.926333,
-  "end": 6.060249
- },
- {
-  "word": "two",
-  "start": 6.082583,
-  "end": 6.249999
- },
- {
-  "word": "x",
-  "start": 6.261166,
-  "end": 6.462041
- },
- {
-  "word": "equals",
-  "start": 6.484375,
-  "end": 6.785708
- },
- {
-  "word": "eight",
-  "start": 6.796875,
-  "end": 7.087041
- },
- {
-  "word": "Finally",
-  "start": 7.868291,
-  "end": 8.325874
- },
- {
-  "word": "divide",
-  "start": 8.459833,
-  "end": 8.783499
+  "word": "drops",
+  "start": 2.557875,
+  "end": 2.893541
  },
  {
   "word": "by",
-  "start": 8.805791,
-  "end": 8.917416
+  "start": 2.905083,
+  "end": 3.043958
  },
  {
-  "word": "two",
-  "start": 8.93975,
-  "end": 9.185291
+  "word": "fifty",
+  "start": 3.067125,
+  "end": 3.391208
  },
  {
-  "word": ": x",
-  "start": 9.196416,
-  "end": 9.397291
+  "word": "percent",
+  "start": 3.402791,
+  "end": 3.958332
  },
  {
-  "word": "equals",
-  "start": 9.419625,
-  "end": 9.720958
+  "word": "That",
+  "start": 4.756958,
+  "end": 5.034749
  },
  {
-  "word": "four",
-  "start": 9.743291,
-  "end": 10.133916
+  "word": "leaves",
+  "start": 5.046291,
+  "end": 5.347207
  },
  {
-  "word": "Now",
-  "start": 10.926333,
-  "end": 11.194208
+  "word": "fifty",
+  "start": 5.370375,
+  "end": 5.844916
  },
  {
-  "word": "you",
-  "start": 11.205375,
-  "end": 11.328125
- },
- {
-  "word": "can",
-  "start": 11.350458,
-  "end": 11.495541
- },
- {
-  "word": "solve",
-  "start": 11.517875,
-  "end": 11.808041
+  "word": "Then",
+  "start": 6.6435,
+  "end": 6.817125
  },
  {
   "word": "it",
-  "start": 11.830375,
-  "end": 11.9085
+  "start": 6.840291,
+  "end": 6.932874
  },
  {
-  "word": "too",
-  "start": 11.919625,
-  "end": 12.265625
+  "word": "gains",
+  "start": 6.956,
+  "end": 7.245333
+ },
+ {
+  "word": "fifty",
+  "start": 7.256958,
+  "end": 7.557874
+ },
+ {
+  "word": "percent",
+  "start": 7.569458,
+  "end": 7.928249
+ },
+ {
+  "word": "of",
+  "start": 7.951375,
+  "end": 8.020833
+ },
+ {
+  "word": "fifty",
+  "start": 8.032416,
+  "end": 8.414374
+ },
+ {
+  "word": "adding",
+  "start": 8.587958,
+  "end": 8.830999
+ },
+ {
+  "word": "twenty",
+  "start": 8.842583,
+  "end": 9.097208
+ },
+ {
+  "word": "five",
+  "start": 9.120375,
+  "end": 9.548625
+ },
+ {
+  "word": "You",
+  "start": 10.370375,
+  "end": 10.578708
+ },
+ {
+  "word": "land",
+  "start": 10.601833,
+  "end": 10.879624
+ },
+ {
+  "word": "at",
+  "start": 10.902791,
+  "end": 10.983791
+ },
+ {
+  "word": "seventy",
+  "start": 11.006958,
+  "end": 11.412041
+ },
+ {
+  "word": "five",
+  "start": 11.435166,
+  "end": 11.898124
+ },
+ {
+  "word": "Most",
+  "start": 12.708333,
+  "end": 13.032416
+ },
+ {
+  "word": "people",
+  "start": 13.055541,
+  "end": 13.344874
+ },
+ {
+  "word": "expect",
+  "start": 13.368041,
+  "end": 13.784707
+ },
+ {
+  "word": "one",
+  "start": 13.807875,
+  "end": 13.969916
+ },
+ {
+  "word": "hundred",
+  "start": 13.993041,
+  "end": 14.317124
+ },
+ {
+  "word": "again",
+  "start": 14.340291,
+  "end": 14.733791
+ },
+ {
+  "word": "But",
+  "start": 15.555541,
+  "end": 15.729166
+ },
+ {
+  "word": "percentages",
+  "start": 15.752333,
+  "end": 16.412041
+ },
+ {
+  "word": "don't",
+  "start": 16.423625,
+  "end": 16.631958
+ },
+ {
+  "word": "work",
+  "start": 16.655083,
+  "end": 16.863416
+ },
+ {
+  "word": "that",
+  "start": 16.886583,
+  "end": 17.071749
+ },
+ {
+  "word": "way",
+  "start": 17.094916,
+  "end": 17.407416
+ },
+ {
+  "word": "The",
+  "start": 18.229166,
+  "end": 18.356499
+ },
+ {
+  "word": "dashed",
+  "start": 18.379625,
+  "end": 18.680541
+ },
+ {
+  "word": "line",
+  "start": 18.703708,
+  "end": 18.900458
+ },
+ {
+  "word": "marks",
+  "start": 18.923625,
+  "end": 19.212958
+ },
+ {
+  "word": "the",
+  "start": 19.236125,
+  "end": 19.328708
+ },
+ {
+  "word": "missing",
+  "start": 19.340291,
+  "end": 19.641207
+ },
+ {
+  "word": "twenty",
+  "start": 19.652791,
+  "end": 19.918999
+ },
+ {
+  "word": "five",
+  "start": 19.942125,
+  "end": 20.3935
+ },
+ {
+  "word": "That",
+  "start": 21.203708,
+  "end": 21.365749
+ },
+ {
+  "word": "is",
+  "start": 21.388875,
+  "end": 21.493041
+ },
+ {
+  "word": "why",
+  "start": 21.516208,
+  "end": 21.643541
+ },
+ {
+  "word": "a",
+  "start": 21.666666,
+  "end": 21.724541
+ },
+ {
+  "word": "fifty",
+  "start": 21.736125,
+  "end": 22.025458
+ },
+ {
+  "word": "percent",
+  "start": 22.037041,
+  "end": 22.395832
+ },
+ {
+  "word": "gain",
+  "start": 22.419,
+  "end": 22.673625
+ },
+ {
+  "word": "cannot",
+  "start": 22.69675,
+  "end": 22.986083
+ },
+ {
+  "word": "undo",
+  "start": 23.00925,
+  "end": 23.275458
+ },
+ {
+  "word": "a",
+  "start": 23.287041,
+  "end": 23.3333319
+ },
+ {
+  "word": "fifty",
+  "start": 23.344916,
+  "end": 23.645832
+ },
+ {
+  "word": "percent",
+  "start": 23.657416,
+  "end": 24.016207
+ },
+ {
+  "word": "loss",
+  "start": 24.039333,
+  "end": 24.444416
  }
 ]

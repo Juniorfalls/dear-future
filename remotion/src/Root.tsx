@@ -1,11 +1,11 @@
 import {Composition} from 'remotion';
-import {MathClassroom} from './MathClassroom';
+import {DataVisualizer} from './DataVisualizer';
 
 export const RemotionRoot = () => (
   <Composition
-    id="MathClassroom"
-    component={MathClassroom}
-    durationInFrames={450}
+    id="DataVisualizer"
+    component={DataVisualizer}
+    durationInFrames={750}
     fps={30}
     width={1920}
     height={1080}

@@ -1,0 +1,323 @@
+{
+  "title": "The 50% Trap",
+  "subtitle": "Why +50% does not undo -50%",
+  "duration": 25,
+  "script": "Here is one hundred dollars. It drops by fifty percent. That leaves fifty. Then it gains fifty percent of fifty, adding twenty five. You land at seventy five. Most people expect one hundred again. But percentages don't work that way. The dashed line marks the missing twenty five. That is why a fifty percent gain cannot undo a fifty percent loss.",
+  "triggers": {
+    "bar": 0.49,
+    "drop": 2.558,
+    "fifty": 5.046,
+    "gain": 6.956,
+    "land": 10.602,
+    "dashed": 18.38,
+    "gap": 19.34,
+    "rule": 15.752
+  },
+  "words": [
+    {
+      "word": "Here",
+      "start": 0.096291,
+      "end": 0.339332
+    },
+    {
+      "word": "is",
+      "start": 0.350916,
+      "end": 0.466666
+    },
+    {
+      "word": "one",
+      "start": 0.489833,
+      "end": 0.721333
+    },
+    {
+      "word": "hundred",
+      "start": 0.744458,
+      "end": 1.056958
+    },
+    {
+      "word": "dollars",
+      "start": 1.080083,
+      "end": 1.554624
+    },
+    {
+      "word": "It",
+      "start": 2.372666,
+      "end": 2.534707
+    },
+    {
+      "word": "drops",
+      "start": 2.557875,
+      "end": 2.893541
+    },
+    {
+      "word": "by",
+      "start": 2.905083,
+      "end": 3.043958
+    },
+    {
+      "word": "fifty",
+      "start": 3.067125,
+      "end": 3.391208
+    },
+    {
+      "word": "percent",
+      "start": 3.402791,
+      "end": 3.958332
+    },
+    {
+      "word": "That",
+      "start": 4.756958,
+      "end": 5.034749
+    },
+    {
+      "word": "leaves",
+      "start": 5.046291,
+      "end": 5.347207
+    },
+    {
+      "word": "fifty",
+      "start": 5.370375,
+      "end": 5.844916
+    },
+    {
+      "word": "Then",
+      "start": 6.6435,
+      "end": 6.817125
+    },
+    {
+      "word": "it",
+      "start": 6.840291,
+      "end": 6.932874
+    },
+    {
+      "word": "gains",
+      "start": 6.956,
+      "end": 7.245333
+    },
+    {
+      "word": "fifty",
+      "start": 7.256958,
+      "end": 7.557874
+    },
+    {
+      "word": "percent",
+      "start": 7.569458,
+      "end": 7.928249
+    },
+    {
+      "word": "of",
+      "start": 7.951375,
+      "end": 8.020833
+    },
+    {
+      "word": "fifty",
+      "start": 8.032416,
+      "end": 8.414374
+    },
+    {
+      "word": "adding",
+      "start": 8.587958,
+      "end": 8.830999
+    },
+    {
+      "word": "twenty",
+      "start": 8.842583,
+      "end": 9.097208
+    },
+    {
+      "word": "five",
+      "start": 9.120375,
+      "end": 9.548625
+    },
+    {
+      "word": "You",
+      "start": 10.370375,
+      "end": 10.578708
+    },
+    {
+      "word": "land",
+      "start": 10.601833,
+      "end": 10.879624
+    },
+    {
+      "word": "at",
+      "start": 10.902791,
+      "end": 10.983791
+    },
+    {
+      "word": "seventy",
+      "start": 11.006958,
+      "end": 11.412041
+    },
+    {
+      "word": "five",
+      "start": 11.435166,
+      "end": 11.898124
+    },
+    {
+      "word": "Most",
+      "start": 12.708333,
+      "end": 13.032416
+    },
+    {
+      "word": "people",
+      "start": 13.055541,
+      "end": 13.344874
+    },
+    {
+      "word": "expect",
+      "start": 13.368041,
+      "end": 13.784707
+    },
+    {
+      "word": "one",
+      "start": 13.807875,
+      "end": 13.969916
+    },
+    {
+      "word": "hundred",
+      "start": 13.993041,
+      "end": 14.317124
+    },
+    {
+      "word": "again",
+      "start": 14.340291,
+      "end": 14.733791
+    },
+    {
+      "word": "But",
+      "start": 15.555541,
+      "end": 15.729166
+    },
+    {
+      "word": "percentages",
+      "start": 15.752333,
+      "end": 16.412041
+    },
+    {
+      "word": "don't",
+      "start": 16.423625,
+      "end": 16.631958
+    },
+    {
+      "word": "work",
+      "start": 16.655083,
+      "end": 16.863416
+    },
+    {
+      "word": "that",
+      "start": 16.886583,
+      "end": 17.071749
+    },
+    {
+      "word": "way",
+      "start": 17.094916,
+      "end": 17.407416
+    },
+    {
+      "word": "The",
+      "start": 18.229166,
+      "end": 18.356499
+    },
+    {
+      "word": "dashed",
+      "start": 18.379625,
+      "end": 18.680541
+    },
+    {
+      "word": "line",
+      "start": 18.703708,
+      "end": 18.900458
+    },
+    {
+      "word": "marks",
+      "start": 18.923625,
+      "end": 19.212958
+    },
+    {
+      "word": "the",
+      "start": 19.236125,
+      "end": 19.328708
+    },
+    {
+      "word": "missing",
+      "start": 19.340291,
+      "end": 19.641207
+    },
+    {
+      "word": "twenty",
+      "start": 19.652791,
+      "end": 19.918999
+    },
+    {
+      "word": "five",
+      "start": 19.942125,
+      "end": 20.3935
+    },
+    {
+      "word": "That",
+      "start": 21.203708,
+      "end": 21.365749
+    },
+    {
+      "word": "is",
+      "start": 21.388875,
+      "end": 21.493041
+    },
+    {
+      "word": "why",
+      "start": 21.516208,
+      "end": 21.643541
+    },
+    {
+      "word": "a",
+      "start": 21.666666,
+      "end": 21.724541
+    },
+    {
+      "word": "fifty",
+      "start": 21.736125,
+      "end": 22.025458
+    },
+    {
+      "word": "percent",
+      "start": 22.037041,
+      "end": 22.395832
+    },
+    {
+      "word": "gain",
+      "start": 22.419,
+      "end": 22.673625
+    },
+    {
+      "word": "cannot",
+      "start": 22.69675,
+      "end": 22.986083
+    },
+    {
+      "word": "undo",
+      "start": 23.00925,
+      "end": 23.275458
+    },
+    {
+      "word": "a",
+      "start": 23.287041,
+      "end": 23.3333319
+    },
+    {
+      "word": "fifty",
+      "start": 23.344916,
+      "end": 23.645832
+    },
+    {
+      "word": "percent",
+      "start": 23.657416,
+      "end": 24.016207
+    },
+    {
+      "word": "loss",
+      "start": 24.039333,
+      "end": 24.444416
+    }
+  ]
+}
