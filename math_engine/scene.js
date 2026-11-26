@@ -235,6 +235,48 @@ for (const a of (EPISODE.actions || [])) {
   }
 }
 
+// ---- character sprites (2D vector art inside the 3D room) ----
+const TEX = {};
+const texLoad = (name) => texLoader.loadAsync(`./assets/characters/${name}.png`);
+const spriteMat = (tex) => new THREE.SpriteMaterial({map: tex, transparent: true, depthWrite: false});
+let teacherSprite = null, teacherPoses = {}, spriteAspect = 1;
+const studentSprites = [];
+async function buildCharacterSprites() {
+  const names = ['teacher_talk', 'teacher_point', 'teacher_write', 'teacher_walk'];
+  const texs = await Promise.all([...names, 'student_1', 'student_2', 'student_3'].map(texLoad));
+  names.forEach((n, i) => { texs[i].colorSpace = THREE.SRGBColorSpace; teacherPoses[n] = texs[i]; });
+  teacherSprite = new THREE.Sprite(spriteMat(teacherPoses.teacher_talk));
+  const img = teacherPoses.teacher_talk.image;
+  spriteAspect = img.width / img.height;
+  teacherSprite.center.set(.5, 0);
+  teacherSprite.scale.set(2.65 * spriteAspect, 2.65, 1);
+  scene.add(teacherSprite);
+  teacher.group.visible = false;
+  for (let i = 0; i < 3; i++) {
+    const t = texs[4 + i]; t.colorSpace = THREE.SRGBColorSpace;
+    const sp = new THREE.Sprite(spriteMat(t));
+    sp.center.set(.5, 0);
+    const a = t.image.width / t.image.height;
+    sp.scale.set(1.52 * a, 1.52, 1);
+    sp.position.set(-2.6 + i * 2.6, .38, 1.55);
+    scene.add(sp); studentSprites.push(sp);
+    students[i].visible = false;
+  }
+}
+await buildCharacterSprites();
+const POSE_SEQ = [];
+function poseAt(t) {
+  let pose = 'teacher_talk';
+  for (const a of EPISODE.actions || []) {
+    if (a.at > t) break;
+    if (a.action === 'walkTo') pose = (t < a.at + 1.75) ? 'teacher_walk' : 'teacher_talk';
+    else if (a.action === 'writeOnBoard' || a.action === 'turnToBoard') pose = 'teacher_write';
+    else if (a.action === 'pointAt') pose = 'teacher_point';
+    else if (a.action === 'turnToCamera') pose = 'teacher_talk';
+  }
+  return pose;
+}
+
 // GSAP teacher timeline from episode.actions
 let MASTER = null;
 function targetPoint(target) {
@@ -358,6 +400,14 @@ window.renderFrame = (t) => {
   camera.lookAt(c.look[0] + c.push[0] * k * .4, c.look[1], c.look[2]);
 
   if (MASTER) MASTER.time(t);
+  if (teacherSprite) {
+    teacherSprite.position.set(teacher.group.position.x, .02, teacher.group.position.z + .12);
+    const pose = poseAt(t);
+    if (teacherSprite.material.map !== teacherPoses[pose]) {
+      teacherSprite.material.map = teacherPoses[pose];
+      teacherSprite.material.needsUpdate = true;
+    }
+  }
   for (const eq of EQ) {
     const a = Math.min(1, Math.max(0, (t - eq.at) / .45));
     eq.mesh.material.opacity = a;

@@ -1,67 +1,58 @@
 {
-  "title": "The Quadratic Formula",
-  "duration": 30,
-  "narration": "The quadratic formula solves any equation in the form a x squared plus b x plus c equals zero. Here it is: x equals negative b, plus or minus the square root of b squared minus four a c, all divided by two a. The letter a is the coefficient of x squared. The letter b is the coefficient of x. And c is the constant term. Plug them in, simplify, and you have your solutions.",
+  "title": "Meet Mr. Stickman",
+  "duration": 15,
+  "narration": "Welcome to class! Today we solve the quadratic formula. Watch the board as I point to each part.",
+  "speech": "Welcome to class! Today we solve the quadratic formula. Watch the board as I point to each part.",
   "equations": [
     {
       "id": "equation_1",
-      "latex": "x = \\frac{-b \\pm \\sqrt{b^{2}-4ac}}{2a}",
-      "at": 4.6,
-      "height": 1.95
+      "latex": "x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}",
+      "at": 3.4,
+      "height": 1.9
     }
   ],
   "actions": [
     {
-      "at": 0.3,
+      "at": 0.2,
       "action": "walkTo",
-      "x": 3.3,
+      "x": 3.2,
       "z": -2.05
     },
     {
-      "at": 2.4,
+      "at": 2.0,
       "action": "turnToBoard"
     },
     {
-      "at": 4.0,
+      "at": 2.6,
       "action": "writeOnBoard"
     },
     {
-      "at": 5.5,
+      "at": 3.6,
       "action": "pointAt",
       "target": "equation_1"
     },
     {
-      "at": 11.5,
+      "at": 6.4,
       "action": "turnToCamera"
     },
     {
-      "at": 12.2,
+      "at": 7.6,
       "action": "pointAt",
       "target": "a"
     },
     {
-      "at": 15.08,
+      "at": 9.0,
       "action": "pointAt",
       "target": "b"
     },
     {
-      "at": 17.49,
+      "at": 10.4,
       "action": "pointAt",
       "target": "c"
     },
     {
-      "at": 20.49,
+      "at": 13.0,
       "action": "turnToCamera"
-    },
-    {
-      "at": 26.0,
-      "action": "turnToCamera"
-    },
-    {
-      "at": 28.5,
-      "action": "pointAt",
-      "target": "equation_1"
     }
-  ],
-  "speech": "The quadratic formula solves any equation in the form a x squared plus b x plus c equals zero. Here it is: x equals negative b, plus or minus the square root of b squared minus four a c, all divided by two a. The letter a is the coefficient of x squared. The letter b is the coefficient of x. And c is the constant term. Plug them in, simplify, and you have your solutions."
+  ]
 }

@@ -1,1 +1,1 @@
-The quadratic formula solves any equation in the form a x squared plus b x plus c equals zero. Here it is: x equals negative b, plus or minus the square root of b squared minus four a c, all divided by two a. The letter a is the coefficient of x squared. The letter b is the coefficient of x. And c is the constant term. Plug them in, simplify, and you have your solutions.
+Welcome to class! Today we solve the quadratic formula. Watch the board as I point to each part.
