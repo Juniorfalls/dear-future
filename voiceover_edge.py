@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""edge-tts voiceover with word boundaries (faster, engaging read)."""
+"""edge-tts voiceover from math_engine/assets/episode.json + word timings."""
 import asyncio, json, subprocess, sys
 from pathlib import Path
 import edge_tts
 
-TEXT = ("To solve for X, we first subtract four from both sides, leaving "
-        "two X equals six. Then we divide by two, giving us X equals three.")
+OUT = Path("math_engine/assets")
 VOICE = "en-US-GuyNeural"
 RATE = "+15%"
-OUT = Path("math_engine/assets")
 
 async def main():
+    ep = json.loads((OUT / "episode.json").read_text())
+    text = ep.get("speech") or ep["narration"]
     OUT.mkdir(parents=True, exist_ok=True)
-    comm = edge_tts.Communicate(TEXT, VOICE, rate=RATE, boundary="WordBoundary")
+    comm = edge_tts.Communicate(text, VOICE, rate=RATE, boundary="WordBoundary")
     words, mp3 = [], OUT / "vo.mp3"
     with open(mp3, "wb") as fh:
         async for chunk in comm.stream():
@@ -23,7 +23,7 @@ async def main():
                 words.append({"word": chunk["text"], "start": round(s, 3),
                               "end": round(s + chunk["duration"] / 1e7, 3)})
     (OUT / "vo_words.json").write_text(json.dumps(words, indent=1))
-    (OUT / "script.txt").write_text(TEXT + "\n")
-    print("words", len(words), "last end", words[-1]["end"])
+    (OUT / "script.txt").write_text(text + "\n")
+    print("words", len(words), "end", words[-1]["end"])
 
 asyncio.run(main())

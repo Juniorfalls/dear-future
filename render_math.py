@@ -7,7 +7,7 @@ import imageio_ffmpeg
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parent
-PORT = 8124
+PORT = 8137
 FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
 OUT = ROOT / "out" / "math_engine"
 
@@ -19,6 +19,7 @@ class Quiet(http.server.SimpleHTTPRequestHandler):
 
 def serve():
     handler = functools.partial(Quiet, directory=str(ROOT))
+    socketserver.TCPServer.allow_reuse_address = True
     httpd = socketserver.TCPServer(("127.0.0.1", PORT), handler)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     return httpd
@@ -28,20 +29,26 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--stills", type=str, default="", help="comma seconds: save PNGs, no video")
     ap.add_argument("--out", default="out/math_engine/math-classroom-2.5d.mp4")
-    ap.add_argument("--duration", type=float, default=9.2)
+    ap.add_argument("--format", choices=["landscape", "vertical"], default="landscape")
+    ap.add_argument("--gl", choices=["swiftshader", "egl", "angle-gl", "default"], default="egl")
+    ap.add_argument("--internal", type=float, default=.667, help="3D render scale (1 = full output size)")
+    ap.add_argument("--duration", type=float, default=60.0)
     o = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
     server = serve()
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(args=[
-            "--use-angle=swiftshader", "--use-gl=angle", "--enable-unsafe-swiftshader",
-            "--ignore-gpu-blocklist", "--disable-dev-shm-usage"])
-        page = browser.new_page(viewport={"width": 1920, "height": 1080}, device_scale_factor=1)
+        gl = {"swiftshader": ["--use-angle=swiftshader", "--use-gl=angle", "--enable-unsafe-swiftshader"],
+              "egl": ["--use-gl=egl", "--enable-unsafe-swiftshader"],
+              "angle-gl": ["--use-gl=angle", "--use-angle=gl", "--ignore-gpu-blocklist"],
+              "default": []}[o.gl]
+        browser = p.chromium.launch(args=gl + ["--ignore-gpu-blocklist", "--disable-dev-shm-usage"])
+        size = (1080, 1920) if o.format == "vertical" else (1920, 1080)
+        page = browser.new_page(viewport={"width": size[0], "height": size[1]}, device_scale_factor=1)
         errs = []
         page.on("pageerror", lambda e: errs.append(str(e)))
         page.on("console", lambda m: errs.append(m.text) if m.type == "error" else None)
-        page.goto(f"http://127.0.0.1:{PORT}/math_engine/index.html")
+        page.goto(f"http://127.0.0.1:{PORT}/math_engine/index.html?format={o.format}&scale={o.internal}")
         try:
             page.wait_for_function("window.READY === true", timeout=120000)
         except Exception:

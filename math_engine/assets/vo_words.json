@@ -1,132 +1,382 @@
 [
  {
-  "word": "To",
+  "word": "The",
   "start": 0.093,
-  "end": 0.191
+  "end": 0.213
  },
  {
-  "word": "solve",
-  "start": 0.213,
-  "end": 0.452
+  "word": "quadratic",
+  "start": 0.235,
+  "end": 0.702
  },
  {
-  "word": "for",
-  "start": 0.474,
-  "end": 0.615
+  "word": "formula",
+  "start": 0.724,
+  "end": 1.104
  },
  {
-  "word": "X",
-  "start": 0.637,
-  "end": 0.876
+  "word": "solves",
+  "start": 1.126,
+  "end": 1.496
  },
  {
-  "word": "we",
-  "start": 1.05,
-  "end": 1.148
+  "word": "any",
+  "start": 1.507,
+  "end": 1.67
  },
  {
-  "word": "first",
-  "start": 1.17,
-  "end": 1.42
+  "word": "equation",
+  "start": 1.691,
+  "end": 2.093
  },
  {
-  "word": "subtract",
-  "start": 1.43,
-  "end": 1.778
- },
- {
-  "word": "four",
-  "start": 1.8,
-  "end": 2.017
- },
- {
-  "word": "from",
-  "start": 2.039,
+  "word": "in",
+  "start": 2.115,
   "end": 2.17
  },
  {
-  "word": "both",
+  "word": "the",
   "start": 2.191,
-  "end": 2.409
+  "end": 2.267
  },
  {
-  "word": "sides",
-  "start": 2.42,
-  "end": 2.746
+  "word": "form",
+  "start": 2.289,
+  "end": 2.506
  },
  {
-  "word": "leaving",
-  "start": 2.93,
-  "end": 3.18
+  "word": "a",
+  "start": 2.528,
+  "end": 2.626
  },
  {
-  "word": "two",
-  "start": 3.202,
-  "end": 3.376
+  "word": "x",
+  "start": 2.648,
+  "end": 2.822
  },
  {
-  "word": "X",
-  "start": 3.398,
-  "end": 3.583
+  "word": "squared",
+  "start": 2.843,
+  "end": 3.17
+ },
+ {
+  "word": "plus",
+  "start": 3.191,
+  "end": 3.409
+ },
+ {
+  "word": "b",
+  "start": 3.43,
+  "end": 3.561
+ },
+ {
+  "word": "x",
+  "start": 3.572,
+  "end": 3.8
+ },
+ {
+  "word": "plus",
+  "start": 3.811,
+  "end": 4.028
+ },
+ {
+  "word": "c",
+  "start": 4.05,
+  "end": 4.191
  },
  {
   "word": "equals",
-  "start": 3.604,
-  "end": 3.854
+  "start": 4.213,
+  "end": 4.528
  },
  {
-  "word": "six",
-  "start": 3.876,
-  "end": 4.267
+  "word": "zero",
+  "start": 4.55,
+  "end": 4.93
  },
  {
-  "word": "Then",
-  "start": 5.033,
-  "end": 5.25
- },
- {
-  "word": "we",
-  "start": 5.272,
-  "end": 5.359
- },
- {
-  "word": "divide",
-  "start": 5.37,
-  "end": 5.685
- },
- {
-  "word": "by",
+  "word": "Here",
   "start": 5.696,
-  "end": 5.804
+  "end": 5.88
  },
  {
-  "word": "two",
-  "start": 5.826,
+  "word": "it",
+  "start": 5.902,
+  "end": 5.967
+ },
+ {
+  "word": "is",
+  "start": 5.989,
   "end": 6.109
  },
  {
-  "word": "giving",
-  "start": 6.293,
-  "end": 6.565
- },
- {
-  "word": "us",
-  "start": 6.576,
-  "end": 6.696
- },
- {
-  "word": "X",
-  "start": 6.717,
-  "end": 6.913
+  "word": ": x",
+  "start": 6.13,
+  "end": 6.304
  },
  {
   "word": "equals",
-  "start": 6.935,
-  "end": 7.239
+  "start": 6.326,
+  "end": 6.609
  },
  {
-  "word": "three",
-  "start": 7.261,
-  "end": 7.652
+  "word": "negative",
+  "start": 6.63,
+  "end": 6.967
+ },
+ {
+  "word": "b",
+  "start": 6.989,
+  "end": 7.174
+ },
+ {
+  "word": "plus",
+  "start": 7.391,
+  "end": 7.609
+ },
+ {
+  "word": "or",
+  "start": 7.63,
+  "end": 7.706
+ },
+ {
+  "word": "minus",
+  "start": 7.728,
+  "end": 8.033
+ },
+ {
+  "word": "the",
+  "start": 8.054,
+  "end": 8.141
+ },
+ {
+  "word": "square",
+  "start": 8.152,
+  "end": 8.435
+ },
+ {
+  "word": "root",
+  "start": 8.446,
+  "end": 8.576
+ },
+ {
+  "word": "of",
+  "start": 8.587,
+  "end": 8.663
+ },
+ {
+  "word": "b",
+  "start": 8.685,
+  "end": 8.783
+ },
+ {
+  "word": "squared",
+  "start": 8.804,
+  "end": 9.12
+ },
+ {
+  "word": "minus",
+  "start": 9.141,
+  "end": 9.413
+ },
+ {
+  "word": "four",
+  "start": 9.424,
+  "end": 9.609
+ },
+ {
+  "word": "a",
+  "start": 9.63,
+  "end": 9.685
+ },
+ {
+  "word": "c",
+  "start": 9.707,
+  "end": 9.989
+ },
+ {
+  "word": "all",
+  "start": 10.185,
+  "end": 10.304
+ },
+ {
+  "word": "divided",
+  "start": 10.326,
+  "end": 10.663
+ },
+ {
+  "word": "by",
+  "start": 10.685,
+  "end": 10.793
+ },
+ {
+  "word": "two",
+  "start": 10.815,
+  "end": 11.033
+ },
+ {
+  "word": "a",
+  "start": 11.054,
+  "end": 11.25
+ },
+ {
+  "word": "The",
+  "start": 12.022,
+  "end": 12.141
+ },
+ {
+  "word": "letter",
+  "start": 12.163,
+  "end": 12.424
+ },
+ {
+  "word": "a",
+  "start": 12.446,
+  "end": 12.5
+ },
+ {
+  "word": "is",
+  "start": 12.511,
+  "end": 12.63
+ },
+ {
+  "word": "the",
+  "start": 12.652,
+  "end": 12.75
+ },
+ {
+  "word": "coefficient",
+  "start": 12.772,
+  "end": 13.37
+ },
+ {
+  "word": "of",
+  "start": 13.391,
+  "end": 13.478
+ },
+ {
+  "word": "x",
+  "start": 13.5,
+  "end": 13.663
+ },
+ {
+  "word": "squared",
+  "start": 13.685,
+  "end": 14.141
+ },
+ {
+  "word": "The",
+  "start": 14.913,
+  "end": 15.033
+ },
+ {
+  "word": "letter",
+  "start": 15.054,
+  "end": 15.304
+ },
+ {
+  "word": "b",
+  "start": 15.326,
+  "end": 15.467
+ },
+ {
+  "word": "is",
+  "start": 15.478,
+  "end": 15.598
+ },
+ {
+  "word": "the",
+  "start": 15.609,
+  "end": 15.707
+ },
+ {
+  "word": "coefficient",
+  "start": 15.728,
+  "end": 16.304
+ },
+ {
+  "word": "of",
+  "start": 16.326,
+  "end": 16.413
+ },
+ {
+  "word": "x",
+  "start": 16.435,
+  "end": 16.793
+ },
+ {
+  "word": "And",
+  "start": 17.554,
+  "end": 17.717
+ },
+ {
+  "word": "c",
+  "start": 17.739,
+  "end": 18.011
+ },
+ {
+  "word": "is",
+  "start": 18.022,
+  "end": 18.152
+ },
+ {
+  "word": "the",
+  "start": 18.174,
+  "end": 18.272
+ },
+ {
+  "word": "constant",
+  "start": 18.283,
+  "end": 18.707
+ },
+ {
+  "word": "term",
+  "start": 18.728,
+  "end": 19.076
+ },
+ {
+  "word": "Plug",
+  "start": 19.837,
+  "end": 20.076
+ },
+ {
+  "word": "them",
+  "start": 20.087,
+  "end": 20.217
+ },
+ {
+  "word": "in",
+  "start": 20.239,
+  "end": 20.391
+ },
+ {
+  "word": "simplify",
+  "start": 20.522,
+  "end": 21.087
+ },
+ {
+  "word": "and",
+  "start": 21.261,
+  "end": 21.38
+ },
+ {
+  "word": "you",
+  "start": 21.402,
+  "end": 21.5
+ },
+ {
+  "word": "have",
+  "start": 21.522,
+  "end": 21.652
+ },
+ {
+  "word": "your",
+  "start": 21.674,
+  "end": 21.804
+ },
+ {
+  "word": "solutions",
+  "start": 21.815,
+  "end": 22.38
  }
 ]
