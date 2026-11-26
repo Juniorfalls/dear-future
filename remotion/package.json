@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "studio": "remotion studio",
-    "render": "remotion render DataVisualizer out/the-50-percent-trap.mp4",
-    "voice": "../.venv-voice/bin/python scripts/make_beat.py"
+    "render": "remotion render DataVisualizer out/the-50-percent-trap-landscape.mp4",
+    "render:vertical": "remotion render DataVisualizerVertical out/the-50-percent-trap-vertical.mp4"
+    ,"voice": "../.venv-voice/bin/python scripts/make_beat.py"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.0",

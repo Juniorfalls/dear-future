@@ -18,9 +18,21 @@ FFMPEG=/path/to/ffmpeg ../.venv-voice/bin/python scripts/make_beat.py
 # sound effects -> public/sfx/{down,up,thud}.wav
 ../.venv/bin/python scripts/make_sfx.py
 
-# render 25 s, 1920x1080, 30 fps -> out/the-50-percent-trap.mp4
-npx remotion render DataVisualizer out/the-50-percent-trap.mp4 --crf=18
+# render the 3-minute episode in both formats
+npx remotion render DataVisualizer out/the-50-percent-trap-landscape.mp4 --crf=18
+npx remotion render DataVisualizerVertical out/the-50-percent-trap-vertical.mp4 --crf=18
 ```
+
+## The five beats
+
+1. **The Hook** — $100 cut by 50%, then +50% lands at $75.
+2. **The Shrinking Base** — ten $10 blocks, one leaves, a $9 recovery is narrower.
+3. **The Asymmetry Curve** — recovery bars for −10/−25/−50/−80% losses.
+4. **Real-World Traps** — discount-then-tax ($96) and rollercoaster paths ($110.25 vs $75).
+5. **The Mental Rule** — a seesaw balancing loss against required gain on a smaller base.
+
+Both `DataVisualizer` (1920×1080) and `DataVisualizerVertical` (1080×1920)
+render the same 5400-frame, 180-second timeline.
 
 ## The Beat 1 chart
 
