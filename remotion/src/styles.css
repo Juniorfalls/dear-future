@@ -120,10 +120,10 @@ html, body { margin: 0; background: #1d1a17; }
   left: 72px;
   height: 150px;
   color: #243d48;
-  font-size: 80px;
+  font-size: 74px;
   filter: drop-shadow(0 1px 0 rgba(255,255,255,.65));
 }
-.eq-wrap.hero { font-size: 96px; }
+.eq-wrap.hero { font-size: 88px; }
 .eq-wrap .katex-display { margin: 0; }
 .eq-wrap .katex { color: #243d48; }
 .eq-clip { display: inline-block; white-space: nowrap; }

@@ -12,13 +12,17 @@ import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import './styles.css';
 import episode from '../public/episode.json';
+import voiceWords from '../public/vo_words.json';
 
 type Line = {id: string; latex: string; plain: string; at: number};
 
 const WALK = Array.from({length: 6}, (_, i) => `characters/teacher_walk_${i}.png`);
 const TALK = Array.from({length: 6}, (_, i) => `characters/teacher_talk_${i}.png`);
 const TYPE_SECONDS: Record<string, number> = {l1: 1.9, l2: 1.35, l3: 1.05};
-const LINE_TOP: Record<string, number> = {l1: 176, l2: 322, l3: 452};
+const LINE_TOP: Record<string, number> = {l1: 132, l2: 268, l3: 360};
+const WORDS = voiceWords as {word: string; start: number; end: number}[];
+const speakingAt = (t: number) =>
+  WORDS.some((w) => t >= w.start - 0.05 && t <= w.end + 0.26);
 
 const TypedEquation: React.FC<{
   line: Line;
@@ -102,7 +106,7 @@ export const MathClassroom: React.FC = () => {
   const t = frame / fps;
 
   const walking = t < 1.55;
-  const talking = t >= 12.35;
+  const talking = !walking && speakingAt(t);
   const teacherSrc = walking
     ? WALK[Math.floor(t * 12) % 6]
     : talking
