@@ -599,6 +599,9 @@ def main() -> None:
     print(f"episode: {episode.get('episode', o.episode.name)}")
     print(f"skill:   {skill}")
 
+    o.voice = (episode.get("voice")
+               or (episode.get("base") or {}).get("voice")
+               or o.voice)
     shots = parse_shot_selector(o.shots, episode["shots"])
     fixed = bool(episode.get("fixed_timing"))
     if not o.shots and not fixed:
@@ -690,11 +693,14 @@ def main() -> None:
                     else "paint" if "paint" in str(s.get("prompt", "")).lower()
                     else ""
                 ),
+                "math": s.get("math", ""),
+                "teacher": s.get("teacher") or {},
             }
             for i, s in enumerate(shots)
         ],
         "events": event_list(shots, cuts),
         "title": episode.get("title_card"),
+        "fade_in": episode.get("fade_in", .7),
         "captions": [
             {"t0": float(s.get("vo_start") or cuts[i] / FPS),
              "t1": float(s.get("vo_start") or cuts[i] / FPS)

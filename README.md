@@ -9,6 +9,26 @@ episode, Pollinations prompts and its narration) has been removed. The
 reference-film subtitle system, music bed, colour grades and optional presenter
 layouts from the previous pass are retained.
 
+## Stickman math classroom
+
+`math_classroom` is a bright 2D set: warm walls, soft-blue dado, green
+blackboard, sunny window, wooden desks, a colourful teacher whose shirt, pants
+and tie are set per shot, and three seated students. Chalk math is drawn on the
+board from `math` (fractions supported):
+
+```json
+{"kind": "math_classroom", "vo": "Today, we are going to learn about fractions.",
+ "duration_s": 10, "vo_start": 6.8, "math": "\frac{1}{2}",
+ "teacher": {"shirt": "#2f6fb3", "pants": "#33415c", "tie": "#d94f4f"}}
+```
+
+The lesson runs through the same one-take voice, fixed timing and packaging as
+the horror episodes:
+
+```bash
+python3 make_episode.py --episode episodes/math-lesson-1.json --slug math-lesson-1
+```
+
 ## Stickman horror factory (current pipeline)
 
 One command takes a topic to a finished, captioned episode:

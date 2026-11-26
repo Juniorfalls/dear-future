@@ -1,0 +1,81 @@
+{
+  "episode": "Math Lesson 1: Introduction to Fractions",
+  "slug": "math-lesson-1",
+  "logline": "A friendly stickman teacher introduces halves to a bright modern classroom.",
+  "fixed_timing": true,
+  "voice": "am_michael",
+  "mix_gain": 1.0,
+  "story": "The teacher welcomes the class, points to the board, and a chalk fraction appears.",
+  "characters": [
+    {
+      "id": "teacher",
+      "name": "Mr. Stick",
+      "role": "teacher",
+      "look": "colorful stickman teacher, blue shirt, red tie, dark trousers"
+    },
+    {
+      "id": "students",
+      "name": "Class",
+      "role": "students",
+      "look": "three seated stickman students in green, red and blue shirts"
+    }
+  ],
+  "base": {
+    "style": "modern classroom, warm yellow walls, soft blue dado, wooden desks, sunny window",
+    "fps": 30,
+    "resolution": [
+      1920,
+      1080
+    ],
+    "voice": "am_michael",
+    "speed": 0.9
+  },
+  "shots": [
+    {
+      "id": 1,
+      "slug": "welcome",
+      "title": "Welcome",
+      "act": "Hook",
+      "shot_type": "wide",
+      "focus": "teacher",
+      "kind": "math_classroom",
+      "prompt": "bright modern classroom, teacher at the board, students at desks",
+      "vo": "Welcome to class!",
+      "speaker": "teacher",
+      "duration_s": 6,
+      "vo_start": 1.0,
+      "audio": [
+        "steps"
+      ],
+      "teacher": {
+        "shirt": "#2f6fb3",
+        "pants": "#33415c",
+        "tie": "#d94f4f"
+      }
+    },
+    {
+      "id": 2,
+      "slug": "fraction",
+      "title": "One half",
+      "act": "Hook",
+      "shot_type": "medium",
+      "focus": "teacher",
+      "kind": "math_classroom",
+      "prompt": "teacher points to a chalk fraction one half on the blackboard",
+      "vo": "Today, we are going to learn about fractions.",
+      "speaker": "teacher",
+      "duration_s": 10,
+      "vo_start": 6.8,
+      "audio": [
+        "click"
+      ],
+      "math": "\\frac{1}{2}",
+      "teacher": {
+        "shirt": "#2f6fb3",
+        "pants": "#33415c",
+        "tie": "#d94f4f"
+      }
+    }
+  ],
+  "fade_in": 0.5
+}

@@ -837,6 +837,157 @@ function hallScene(t,cam,s,u,kind){
   comp([['sky',cam.b[0]],['far',cam.b[1]],['set',0],['act',0],['fg',cam.b[2]]]);
 }
 
+
+// ---------------- modern math classroom ----------------
+function mathPerson(x,cx,footY,h,opt){
+  opt=opt||{};
+  const hr=h*.085, headY=footY-h+hr, shY=headY+hr+h*.02, hipY=footY-h*.46;
+  const skin=opt.skin||'#f0c9a4', hair=opt.hair||'#3a2a22';
+  const shirt=opt.shirt||'#3b82f6', pants=opt.pants||'#2f3b52', tie=opt.tie;
+  x.save();x.lineCap='round';x.lineJoin='round';
+  // legs + shoes
+  x.strokeStyle=pants;x.lineWidth=Math.max(7,h*.035);
+  const sway=opt.sway||0;
+  x.beginPath();x.moveTo(cx,hipY);x.lineTo(cx-h*.07+sway,footY-h*.03);x.stroke();
+  x.beginPath();x.moveTo(cx,hipY);x.lineTo(cx+h*.08-sway,footY-h*.03);x.stroke();
+  x.fillStyle='#20262f';x.beginPath();x.roundRect(cx-h*.11+sway,footY-h*.05,h*.10,h*.05,4);x.fill();
+  x.beginPath();x.roundRect(cx+h*.05-sway,footY-h*.05,h*.10,h*.05,4);x.fill();
+  // torso
+  x.fillStyle=shirt;x.beginPath();x.roundRect(cx-h*.10,shY,h*.20,hipY-shY+h*.02,h*.055);x.fill();
+  if(tie){x.fillStyle=tie;x.beginPath();x.moveTo(cx,shY+h*.01);x.lineTo(cx-h*.018,shY+h*.10);x.lineTo(cx,hipY-h*.02);x.lineTo(cx+h*.018,shY+h*.10);x.closePath();x.fill();}
+  // arms
+  x.strokeStyle=shirt;x.lineWidth=Math.max(6,h*.030);
+  const aL=opt.armL===undefined?.15:opt.armL, aR=opt.armR===undefined?.15:opt.armR;
+  const lx=cx-h*.20-aL*h*.10, ly=shY+h*.18-aL*h*.20;
+  const rx=cx+h*.20+aR*h*.10, ry=shY+h*.18-aR*h*.20;
+  x.beginPath();x.moveTo(cx-h*.07,shY+h*.05);x.lineTo(lx,ly);x.stroke();
+  x.beginPath();x.moveTo(cx+h*.07,shY+h*.05);x.lineTo(rx,ry);x.stroke();
+  // hands
+  x.fillStyle=skin;x.beginPath();x.arc(lx,ly,h*.028,0,Math.PI*2);x.fill();
+  x.beginPath();x.arc(rx,ry,h*.028,0,Math.PI*2);x.fill();
+  // head
+  x.fillStyle=skin;x.beginPath();x.arc(cx,headY,hr,0,Math.PI*2);x.fill();
+  x.fillStyle=hair;x.beginPath();x.arc(cx,headY-hr*.18,hr*.98,Math.PI*1.03,Math.PI*1.97);x.fill();
+  if(opt.eyes!==false){
+    x.fillStyle='#1c2430';
+    x.beginPath();x.arc(cx-hr*.30+(opt.lookX||0),headY+hr*.02,hr*.075,0,Math.PI*2);x.fill();
+    x.beginPath();x.arc(cx+hr*.30+(opt.lookX||0),headY+hr*.02,hr*.075,0,Math.PI*2);x.fill();
+  }
+  if(opt.smile!==false){x.strokeStyle='#8a5b48';x.lineWidth=Math.max(2,h*.006);x.beginPath();x.arc(cx,headY+hr*.20,hr*.30,.25*Math.PI,.75*Math.PI);x.stroke();}
+  x.restore();
+}
+function classroomRoom(x,t){
+  // warm wall, soft blue dado, sunlit floor
+  let g=x.createLinearGradient(0,0,0,740);
+  g.addColorStop(0,'#fbeccb');g.addColorStop(.68,'#f7e3bb');g.addColorStop(1,'#efd5a6');
+  x.fillStyle=g;x.fillRect(-300,-300,2500,1100);
+  x.fillStyle='#a9d8e6';x.fillRect(-300,600,2500,110);
+  x.fillStyle='#8cc4d6';x.fillRect(-300,706,2500,10);
+  // floor
+  g=x.createLinearGradient(0,714,0,1080);
+  g.addColorStop(0,'#d8ab72');g.addColorStop(1,'#b8824d');
+  x.fillStyle=g;x.fillRect(-300,714,2500,400);
+  x.strokeStyle='rgba(120,80,40,.18)';x.lineWidth=3;
+  for(let i=0;i<12;i++){x.beginPath();x.moveTo(-300+i*230,714);x.lineTo(-600+i*320,1080);x.stroke();}
+  // sun patch from the window
+  g=x.createLinearGradient(1560,240,900,1000);
+  g.addColorStop(0,'rgba(255,240,190,.40)');g.addColorStop(1,'rgba(255,240,190,0)');
+  x.fillStyle=g;x.beginPath();x.moveTo(1500,130);x.lineTo(1900,120);x.lineTo(1240,1030);x.lineTo(700,1030);x.closePath();x.fill();
+  // blackboard
+  x.fillStyle='#8a5a33';x.fillRect(250,120,1070,500);
+  x.fillStyle='#a06b3c';x.fillRect(250,120,1070,12);
+  g=x.createLinearGradient(0,140,0,600);g.addColorStop(0,'#24382f');g.addColorStop(1,'#1b2b24');
+  x.fillStyle=g;x.fillRect(272,142,1026,456);
+  x.strokeStyle='rgba(255,255,255,.06)';x.lineWidth=3;x.strokeRect(278,148,1014,444);
+  // chalk tray + markers
+  x.fillStyle='#7a4f2c';x.fillRect(250,596,1070,22);
+  for(const [mx,mc] of [[360,'#f5f1e6'],[420,'#f2d04b'],[470,'#ef7a7a']]){
+    x.fillStyle=mc;x.beginPath();x.roundRect(mx,604,46,10,5);x.fill();
+  }
+  // window with a sunny day
+  x.fillStyle='#f2e6cc';x.fillRect(1500,120,380,410);
+  g=x.createLinearGradient(0,140,0,510);g.addColorStop(0,'#9fd8f7');g.addColorStop(.7,'#c9ecff');g.addColorStop(1,'#e7f7ff');
+  x.fillStyle=g;x.fillRect(1520,140,340,370);
+  x.fillStyle='#ffe28a';x.beginPath();x.arc(1780,205,44,0,Math.PI*2);x.fill();
+  x.fillStyle='rgba(255,255,255,.85)';
+  for(const [cx,cy,r] of [[1600,230,30],[1640,224,38],[1680,232,26],[1700,300,20],[1740,294,26],[1770,302,16]]){
+    x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.fill();
+  }
+  x.fillStyle='#6fae5a';x.beginPath();x.moveTo(1540,510);x.quadraticCurveTo(1600,410,1680,510);x.closePath();x.fill();
+  x.fillStyle='#588f46';x.beginPath();x.moveTo(1660,510);x.quadraticCurveTo(1740,380,1840,510);x.closePath();x.fill();
+  x.strokeStyle='#f7ecd5';x.lineWidth=14;x.strokeRect(1500,120,380,410);
+  x.beginPath();x.moveTo(1690,140);x.lineTo(1690,510);x.stroke();
+  x.beginPath();x.moveTo(1520,325);x.lineTo(1840,325);x.stroke();
+  // posters
+  x.fillStyle='#cfe8d8';x.fillRect(1360,200,90,120);
+  x.fillStyle='#355e46';x.font='bold 22px Arial';x.fillText('a/b',1385,245);
+  x.fillStyle='#cfe3f7';x.fillRect(1360,350,90,120);
+  x.fillStyle='#2f4d6e';x.font='bold 30px Arial';x.fillText('1/2',1382,410);
+}
+function drawChalkMath(x, expr, cx, cy, size, alpha){
+  if(!expr||alpha<=0)return;
+  x.save();x.globalAlpha=alpha;x.fillStyle='#f7f4e8';
+  x.shadowColor='rgba(240,245,235,.45)';x.shadowBlur=6;
+  x.textAlign='center';x.textBaseline='middle';
+  const m=String(expr).match(/\\frac\s*\{([^}]*)\}\s*\{([^}]*)\}/);
+  if(m){
+    const fs=size;
+    x.font=`700 ${fs}px "Segoe UI", Arial, sans-serif`;
+    x.fillText(m[1],cx,cy-fs*.62);
+    x.fillText(m[2],cx,cy+fs*.62);
+    x.fillRect(cx-fs*.55,cy-fs*.06,fs*1.10,fs*.07);
+  }else{
+    x.font=`700 ${size}px "Segoe UI", Arial, sans-serif`;
+    const txt=String(expr).replace(/\^([0-9a-zA-Z]+)/g,'$1');
+    x.fillText(txt,cx,cy);
+  }
+  x.restore();
+}
+function mathClassroom(t,cam,s,u,shot){
+  let x=layer('sky',cam,.18);
+  x.fillStyle='#f8e8c8';x.fillRect(-300,-300,2500,1700);
+  x=layer('far',cam,.5);classroomRoom(x,t);
+  x=layer('set',cam);
+  // desks in perspective, students seated behind them
+  const desks=[[420,860,'#4f8f6b'],[900,930,'#d1604f'],[1360,880,'#4f77c8']];
+  for(const [dx,dy,sc] of desks){
+    x.fillStyle='#7a4d2b';x.fillRect(dx-130,dy,260,26);
+    x.fillStyle='#b5793f';x.fillRect(dx-138,dy-12,276,18);
+    x.fillStyle='#6b4326';x.fillRect(dx-112,dy+22,18,140);
+    x.fillStyle='#6b4326';x.fillRect(dx+94,dy+22,18,140);
+  }
+  // teacher at the board
+  const tc=shot.teacher||{};
+  const point=kf(t,[[0,.10],[2.2,.55],[4.0,.72],[6.0,.62]]);
+  mathPerson(x,1240,715,360,{shirt:tc.shirt||'#2f6fb3',pants:tc.pants||'#33415c',tie:tc.tie||'#d94f4f',
+    armL:.55+point*.45,armR:.12,sway:Math.sin(t*1.1)*2,lookX:-2});
+  // students, backs to camera
+  for(let i=0;i<3;i++){
+    const [dx,dy,shirt]=desks[i];
+    mathPerson(x,dx,dy+92,250,{shirt,pants:'#3a4252',tie:null,eyes:false,smile:false,
+      armL:.05,armR:.05,sway:Math.sin(t*1.4+i)*1.5,hair:i===1?'#6b4a2f':'#2f231d'});
+  }
+  x=layer('act',cam);
+  // board math reveal: chalk writes from left to right
+  const rev=clamp((u-.30)/.42);
+  if(shot.math && rev>0){
+    drawChalkMath(x,shot.math,800,360,150,Math.min(1,rev*1.6));
+    x.globalAlpha=.5*rev;x.fillStyle='#f7f4e8';x.font='600 34px "Segoe UI", Arial';
+    x.textAlign='center';x.fillText('FRACTIONS',800,200);x.globalAlpha=1;
+  }
+  // chalk dust drifting in the sun
+  for(let i=0;i<26;i++){
+    const px=520+((i*137+t*18)%760), py=250+((i*89+t*11)%420);
+    x.fillStyle=`rgba(255,255,255,${.06+.10*Math.abs(Math.sin(t+i))})`;
+    x.beginPath();x.arc(px,py,1.5+(i%3),0,Math.PI*2);x.fill();
+  }
+  x=layer('fg',cam,1.05);
+  const vg=x.createRadialGradient(960,540,300,960,540,1200);
+  vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(60,40,20,.18)');
+  x.fillStyle=vg;x.fillRect(-300,-300,2500,1700);
+  comp([['sky',cam.b[0]],['far',cam.b[1]],['set',0],['act',0],['fg',cam.b[2]]]);
+}
+
 const CAMS={
   opening:{x:1250,y:520,z:1.03,push:.06,dx:26,dy:-4,b:[4,1.4,0]},
   console:{x:1400,y:420,z:1.62,push:.08,dx:10,dy:-3,b:[9,4,0]},
@@ -859,14 +1010,16 @@ const CAMS={
   shadow_merge:{x:1000,y:580,z:1.02,push:.08,dx:4,dy:-2,b:[3,1,0]},
   hallway_dark:{x:980,y:560,z:1.14,push:.06,dx:10,dy:-2,b:[3,1,0]},
   shadow_rise:{x:1000,y:560,z:1.04,push:.06,dx:8,dy:-2,b:[3,1,0]},
-  shadow_twist:{x:1000,y:560,z:1.02,push:.06,dx:6,dy:-2,b:[3,1,0]}
+  shadow_twist:{x:1000,y:560,z:1.02,push:.06,dx:6,dy:-2,b:[3,1,0]},
+  math_classroom:{x:960,y:540,z:1.00,push:.04,dx:10,dy:-1,b:[2,1,0]}
 };
 
 const INT_KINDS=new Set(['opening','console','radio_insert','speaks','hand','final']);
 const ROAD_KINDS=new Set(['highway','car_interior','rearview_mirror','roadside_sign']);
 const HALL_KINDS=new Set(['hallway_moonlight','shadow_detach','shadow_merge','hallway_dark','shadow_rise','shadow_twist']);
+const CLASS_KINDS=new Set(['math_classroom']);
 
-FILM={dur:SCENES.dur,cuts:SCENES.cuts,fadeIn:.7,fadeOut:.9,
+FILM={dur:SCENES.dur,cuts:SCENES.cuts,fadeIn:(SCENES.fade_in??.7),fadeOut:.9,
   cam(s,u,t){
     const k=SCENES.shots[s].kind,c=CAMS[k]||CAMS.console;
     let x=c.x+(c.dx||0)*u,y=c.y+(c.dy||0)*u,z=c.z*(1+(c.push||0)*u);
@@ -876,7 +1029,8 @@ FILM={dur:SCENES.dur,cuts:SCENES.cuts,fadeIn:.7,fadeOut:.9,
   },
   draw(t,cam,s,u){
     const k=SCENES.shots[s].kind;
-    if(HALL_KINDS.has(k))hallScene(t,cam,s,u,k);
+    if(CLASS_KINDS.has(k))mathClassroom(t,cam,s,u,SCENES.shots[s]);
+    else if(HALL_KINDS.has(k))hallScene(t,cam,s,u,k);
     else if(ROAD_KINDS.has(k))roadScene(t,cam,s,u,k);
     else if(INT_KINDS.has(k))interior(t,cam,s,u,k);else exterior(t,cam,s,u,k);
     const ti=SCENES.title;
