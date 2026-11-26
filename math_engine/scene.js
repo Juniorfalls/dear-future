@@ -118,7 +118,7 @@ function makeTeacher() {
   };
   return {group: g, arms: {l: arm(-1), r: arm(1)}};
 }
-const teacher = makeTeacher(); teacher.group.position.set(3.35, 0, -2.05); teacher.group.rotation.y = -.05; scene.add(teacher.group);
+const teacher = makeTeacher(); teacher.group.position.set(-3.55, 0, -2.0); teacher.group.rotation.y = -.05; scene.add(teacher.group);
 
 const shirtCols = ['#4a9d6e', '#d1604f', '#4f77c8'];
 function makeStudent(shirtColor, hairColor) {
@@ -221,7 +221,7 @@ for (const eq of EPISODE.equations) {
 // coloured rings that reveal which variable is being explained
 const RINGS = {};
 for (const [name, color] of [['a', '#e0a23a'], ['b', '#4fa3d9'], ['c', '#d1604f']]) {
-  const m = new THREE.Mesh(new THREE.TorusGeometry(.19, .028, 8, 32),
+  const m = new THREE.Mesh(new THREE.TorusGeometry(.155, .022, 8, 32),
     new THREE.MeshBasicMaterial({color, transparent: true, opacity: 0, depthWrite: false}));
   const p = null; // targetPoint is defined below; position set after timeline build
   m.position.set(0, 0, -4.055); scene.add(m);
@@ -253,7 +253,7 @@ async function buildCharacterSprites() {
   const img = TALK_FRAMES[0].image;
   spriteAspect = img.width / img.height;
   teacherSprite.center.set(.5, 0);
-  teacherSprite.scale.set(2.65 * spriteAspect, 2.65, 1);
+  teacherSprite.scale.set(2.85 * spriteAspect, 2.85, 1);
   scene.add(teacherSprite);
   teacher.group.visible = false;
   for (let i = 0; i < 3; i++) {
@@ -299,13 +299,14 @@ function buildTimeline() {
   for (const a of acts) {
     const at = Math.max(0, a.at || 0);
     if (a.action === 'walkTo') {
-      MASTER.to(T.position, {x: a.x ?? 3.3, z: a.z ?? -2.05, duration: 1.7, ease: 'power2.inOut'}, at);
+      MASTER.to(T.position, {x: a.x ?? -2.55, z: a.z ?? -2.0, duration: 1.7, ease: 'power2.inOut'}, at);
     } else if (a.action === 'turnToBoard') {
       MASTER.to(T.rotation, {y: 2.55, duration: .7, ease: 'power2.inOut'}, at);
     } else if (a.action === 'turnToCamera') {
       MASTER.to(T.rotation, {y: 0, duration: .7, ease: 'power2.inOut'}, at);
     } else if (a.action === 'writeOnBoard') {
       MASTER.to(T.rotation, {y: 2.45, duration: .5}, at);
+      MASTER.to(T.position, {x: -2.55, z: -2.0, duration: .5}, at);
       MASTER.to(teacher.arms.r.pivot.rotation, {x: .55, z: -1.15, duration: .35, yoyo: true, repeat: 3}, at);
       MASTER.to(teacher.arms.r.elbow.rotation, {x: .45, duration: .35, yoyo: true, repeat: 3}, at);
     } else if (a.action === 'pointAt') {
@@ -313,7 +314,7 @@ function buildTimeline() {
       MASTER.to(T.rotation, {y: 1.35, duration: .55, ease: 'power2.inOut'}, at);
       MASTER.to(teacher.arms.r.pivot.rotation, {x: .35, z: -1.05 - (p[1] - 3.0) * .22, duration: .5, ease: 'power2.out'}, at);
       MASTER.to(teacher.arms.r.elbow.rotation, {x: .28, duration: .5}, at);
-      MASTER.to(T.position, {x: Math.max(-1.2, Math.min(3.4, p[0] + .9)), duration: .6, ease: 'power2.inOut'}, at);
+      MASTER.to(T.position, {x: -2.55, z: -2.0, duration: .6, ease: 'power2.inOut'}, at);
     }
   }
   MASTER.to(T.rotation, {y: 0, duration: .8}, Math.max(0, DUR - 1.2));
@@ -336,7 +337,7 @@ const CAMS = VERT ? {
   insert: {pos: [-.5, 3.15, 13.2], look: [-.5, 3.0, -4.1], push: [0, -.05, -.6], fov: 40},
   ots: {pos: [-2.45, 1.72, 4.35], look: [-.5, 2.32, -4.0], push: [.1, -.03, -.5], fov: 50}
 } : {
-  wide: {pos: [0, 2.0, 11.7], look: [.1, 1.95, 0], push: [.08, -.08, -1.3], fov: 33},
+  wide: {pos: [-.35, 2.0, 11.7], look: [-.95, 1.95, 0], push: [.05, -.08, -1.3], fov: 33},
   insert: {pos: [-.5, 3.05, 2.7], look: [-.5, 3.0, -4.1], push: [0, -.03, -.55], fov: 35},
   ots: {pos: [-2.55, 1.95, 4.3], look: [-.5, 2.5, -4.0], push: [.1, -.05, -.55], fov: 40}
 };
@@ -405,6 +406,7 @@ window.renderFrame = (t) => {
 
   if (MASTER) MASTER.time(t);
   if (teacherSprite) {
+    teacherSprite.visible = shootAt(t).name !== 'insert';
     teacherSprite.position.set(teacher.group.position.x, .02, teacher.group.position.z + .12);
     const pose = poseAt(t);
     let frame = teacherPoses[pose];
