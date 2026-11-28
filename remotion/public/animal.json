@@ -12,48 +12,89 @@
   "species": "Odontodactylus scyllarus",
   "image": "animals/mantis-shrimp.jpg",
   "audio": "vo_mantis-shrimp.mp3",
-  "duration": 15.58,
-  "script": "Mantis shrimp. Fifty miles an hour, underwater. Fast enough to boil the water it swims in. Every punch fires a bubble that collapses in a flash of light, hotter than the surface of the sun. Animal one: impossible superpowers.",
+  "duration": 58.8,
+  "script": "What if I told you a creature in the ocean punches so fast the water boils? One strike, and the sea flashes brighter than the surface of the sun. And the culprit is smaller than your hand. Meet the mantis shrimp. Not a shrimp, not a mantis, and far stranger than either. It lives on the seafloor, and it is armed. It fires its club at fifty miles an hour, faster than a speeding bullet. The strike is so violent it vaporises the water in front of it. That vapour bubble collapses in a flash of four thousand four hundred degrees Celsius. And its eyes carry twelve to sixteen colour receptors. We have three. It sees a world we cannot even name. But the mantis shrimp is just the beginning. Because in the canals of Mexico, there is a creature that regrows limbs, its spine, and part of its brain.",
   "stat": {
     "value": 50,
     "unit": "MPH",
-    "label": "strike speed underwater",
-    "caption": "The fastest punch in the ocean"
+    "label": "strike speed underwater"
   },
   "cues": {
+    "hookAt": [
+      "what",
+      "if",
+      "i",
+      "told"
+    ],
     "titleAt": [
-      "mantis",
-      "shrimp"
+      "meet",
+      "the",
+      "mantis"
     ],
-    "subtitleAt": [
+    "breakdownAt": [
+      "fires",
+      "its",
+      "club"
+    ],
+    "stat1At": [
       "fifty",
       "miles",
       "an",
       "hour"
     ],
-    "statAt": [
-      "fifty",
-      "miles",
-      "an",
-      "hour"
+    "stat2At": [
+      "four",
+      "thousand",
+      "four",
+      "hundred"
     ],
     "flashAt": [
-      "flash",
-      "of",
-      "light"
+      "collapses",
+      "in",
+      "a",
+      "flash"
     ],
-    "outroAt": [
-      "animal",
-      "one"
+    "cliffhangAt": [
+      "but",
+      "the",
+      "mantis",
+      "shrimp",
+      "is",
+      "just"
     ]
   },
   "timeline": {
-    "titleAt": 0.0,
-    "subtitleAt": 0.92,
-    "statAt": 0.92,
-    "flashAt": 8.44,
-    "outroAt": 12.06
+    "hookAt": 0,
+    "titleAt": 0,
+    "breakdownAt": 0,
+    "stat1At": 0,
+    "stat2At": 0,
+    "flashAt": 0,
+    "cliffhangAt": 0
   },
   "voiceEnd": 14.66,
-  "voice": "af_heart"
+  "voice": "af_heart",
+  "acts": {
+    "hook": "What if I told you a creature in the ocean punches so fast the water boils? One strike, and the sea flashes brighter than the surface of the sun. And the culprit is smaller than your hand.",
+    "reveal": "Meet the mantis shrimp. Not a shrimp, not a mantis, and far stranger than either. It lives on the seafloor, and it is armed.",
+    "breakdown": "It fires its club at fifty miles an hour, faster than a speeding bullet. The strike is so violent it vaporises the water in front of it. That vapour bubble collapses in a flash of four thousand four hundred degrees Celsius. And its eyes carry twelve to sixteen colour receptors. We have three. It sees a world we cannot even name.",
+    "cliffhanger": "But the mantis shrimp is just the beginning. Because in the canals of Mexico, there is a creature that regrows limbs, its spine, and part of its brain."
+  },
+  "stats": [
+    {
+      "value": 50,
+      "unit": "MPH",
+      "label": "strike speed underwater"
+    },
+    {
+      "value": 4400,
+      "unit": "°C",
+      "label": "peak bubble temperature"
+    },
+    {
+      "value": 16,
+      "unit": "RECEPTORS",
+      "label": "colour channels in its eyes"
+    }
+  ]
 }

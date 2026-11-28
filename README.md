@@ -40,6 +40,28 @@ npx remotion render SeriesOutro out/outro.mp4 --crf=18
 `--provider openai|openrouter|groq|anthropic` (with the matching `*_API_KEY`)
 writes a fresh script; `--dry-run` prints the exact prompt and sends nothing.
 
+## The script: four locked acts
+
+`scripts/generate_animal_script.py` writes every episode as exactly four acts,
+and validates the structure instead of trusting the model:
+
+| Act | Slot | Words | Rule |
+|-----|------|-------|------|
+| THE HOOK | 0:00–0:15 | 30–50 | Impossible question. The animal is **never** named. |
+| THE REVEAL | 0:15–0:25 | 16–32 | Names the animal as the answer. |
+| THE BREAKDOWN | 0:25–0:50 | 45–80 | The science, with 2–3 real numbers. |
+| THE CLIFFHANGER | 0:50–1:00 | 22–40 | Teases the next animal **without** naming it. |
+
+A hook that names the animal, a reveal that does not, fewer than two numbers, a
+cliffhanger that spoils the next creature, a cue phrase that is not verbatim in
+the script, or an act outside its word budget is a hard error — the run stops.
+`--print` (the default) prints the formatted script with per-act timings, the
+stat block and the scene cues; `--dry-run` prints the exact prompt.
+
+```bash
+.venv-voice/bin/python scripts/generate_animal_script.py --provider none --apply 1
+```
+
 ## The voice
 
 `scripts/install_kokoro.sh` creates `.venv-voice/`, installs `kokoro-onnx`

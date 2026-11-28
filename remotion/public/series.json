@@ -7,42 +7,77 @@
       "title": "The Mantis Shrimp",
       "subtitle": "It punches fast enough to boil the sea",
       "species": "Odontodactylus scyllarus",
-      "script": "Mantis shrimp. Fifty miles an hour, underwater. Fast enough to boil the water it swims in. Every punch fires a bubble that collapses in a flash of light, hotter than the surface of the sun. Animal one: impossible superpowers.",
-      "stat": {
-        "value": 50,
-        "unit": "MPH",
-        "label": "strike speed underwater",
-        "caption": "The fastest punch in the ocean"
+      "acts": {
+        "hook": "What if I told you a creature in the ocean punches so fast the water boils? One strike, and the sea flashes brighter than the surface of the sun. And the culprit is smaller than your hand.",
+        "reveal": "Meet the mantis shrimp. Not a shrimp, not a mantis, and far stranger than either. It lives on the seafloor, and it is armed.",
+        "breakdown": "It fires its club at fifty miles an hour, faster than a speeding bullet. The strike is so violent it vaporises the water in front of it. That vapour bubble collapses in a flash of four thousand four hundred degrees Celsius. And its eyes carry twelve to sixteen colour receptors. We have three. It sees a world we cannot even name.",
+        "cliffhanger": "But the mantis shrimp is just the beginning. Because in the canals of Mexico, there is a creature that regrows limbs, its spine, and part of its brain."
       },
+      "stats": [
+        {
+          "value": 50,
+          "unit": "MPH",
+          "label": "strike speed underwater"
+        },
+        {
+          "value": 4400,
+          "unit": "°C",
+          "label": "peak bubble temperature"
+        },
+        {
+          "value": 16,
+          "unit": "RECEPTORS",
+          "label": "colour channels in its eyes"
+        }
+      ],
       "cues": {
+        "hookAt": [
+          "what",
+          "if",
+          "i",
+          "told"
+        ],
         "titleAt": [
-          "mantis",
-          "shrimp"
+          "meet",
+          "the",
+          "mantis"
         ],
-        "subtitleAt": [
+        "breakdownAt": [
+          "fires",
+          "its",
+          "club"
+        ],
+        "stat1At": [
           "fifty",
           "miles",
           "an",
           "hour"
         ],
-        "statAt": [
-          "fifty",
-          "miles",
-          "an",
-          "hour"
+        "stat2At": [
+          "four",
+          "thousand",
+          "four",
+          "hundred"
         ],
         "flashAt": [
-          "flash",
-          "of",
-          "light"
+          "collapses",
+          "in",
+          "a",
+          "flash"
         ],
-        "outroAt": [
-          "animal",
-          "one"
+        "cliffhangAt": [
+          "but",
+          "the",
+          "mantis",
+          "shrimp",
+          "is",
+          "just"
         ]
       },
       "imagePrompt": "macro underwater still of a peacock mantis shrimp, iridescent teal and magenta, dark volcanic sand, single light shaft, prestige documentary",
-      "duration": 15
+      "script": "What if I told you a creature in the ocean punches so fast the water boils? One strike, and the sea flashes brighter than the surface of the sun. And the culprit is smaller than your hand. Meet the mantis shrimp. Not a shrimp, not a mantis, and far stranger than either. It lives on the seafloor, and it is armed. It fires its club at fifty miles an hour, faster than a speeding bullet. The strike is so violent it vaporises the water in front of it. That vapour bubble collapses in a flash of four thousand four hundred degrees Celsius. And its eyes carry twelve to sixteen colour receptors. We have three. It sees a world we cannot even name. But the mantis shrimp is just the beginning. Because in the canals of Mexico, there is a creature that regrows limbs, its spine, and part of its brain.",
+      "estimatedSeconds": 58.82,
+      "duration": 58.8
     },
     {
       "rank": 2,
@@ -50,38 +85,78 @@
       "title": "The Axolotl",
       "subtitle": "It grows back pieces of its own brain",
       "species": "Ambystoma mexicanum",
-      "script": "Axolotl. Lose a limb and it grows back whole. Muscle, bone, nerves, even part of the spinal cord. Regeneration runs on cells that never finish growing up. It stays a child its entire life. Animal two.",
-      "stat": {
-        "value": 100,
-        "unit": "%",
-        "label": "of a lost limb regrown",
-        "caption": "A body that rebuilds itself"
+      "acts": {
+        "hook": "What if a body could lose a leg, or a spine, or a piece of its brain, and simply grow them back? No scar. No trace. Working parts, rebuilt from nothing at all.",
+        "reveal": "That animal exists. The axolotl, a smiling amphibian that never leaves the canals of Mexico City.",
+        "breakdown": "Cut off a limb and it rebuilds muscle, bone, nerve and blood vessels in three weeks. Sever its spinal cord and within eight weeks the cord reconnects. Remove part of its heart and the heart returns. Its secret is that it never truly grows up. Its cells stay young, and young cells still remember how to build a body. We keep a scar. The axolotl keeps a blueprint.",
+        "cliffhanger": "But regrowing a limb is nothing. Because on the highest, driest ground on Earth, there is a creature that survives being boiled, frozen, and left in the vacuum of space."
       },
+      "stats": [
+        {
+          "value": 100,
+          "unit": "%",
+          "label": "of a lost limb rebuilt"
+        },
+        {
+          "value": 3,
+          "unit": "ORGANS",
+          "label": "regrown including the heart"
+        },
+        {
+          "value": 1,
+          "unit": "SPECIES",
+          "label": "left in the wild habitat"
+        }
+      ],
       "cues": {
-        "titleAt": [
-          "axolotl"
+        "hookAt": [
+          "what",
+          "if",
+          "a",
+          "body"
         ],
-        "subtitleAt": [
-          "lose",
+        "titleAt": [
+          "that",
+          "animal",
+          "exists"
+        ],
+        "breakdownAt": [
+          "cut",
+          "off",
           "a",
           "limb"
         ],
-        "statAt": [
-          "grows",
-          "back",
-          "whole"
+        "stat1At": [
+          "rebuilds",
+          "muscle",
+          "bone"
+        ],
+        "stat2At": [
+          "remove",
+          "part",
+          "of",
+          "its",
+          "heart"
         ],
         "flashAt": [
-          "spinal",
-          "cord"
+          "young",
+          "cells",
+          "still",
+          "remember"
         ],
-        "outroAt": [
-          "animal",
-          "two"
+        "cliffhangAt": [
+          "but",
+          "regrowing",
+          "a",
+          "limb",
+          "is",
+          "nothing"
         ]
       },
       "imagePrompt": "cinematic still of a pink axolotl in dark water, feathery gills backlit, black-green aquatic plants, shallow depth of field",
-      "duration": 15
+      "script": "What if a body could lose a leg, or a spine, or a piece of its brain, and simply grow them back? No scar. No trace. Working parts, rebuilt from nothing at all. That animal exists. The axolotl, a smiling amphibian that never leaves the canals of Mexico City. Cut off a limb and it rebuilds muscle, bone, nerve and blood vessels in three weeks. Sever its spinal cord and within eight weeks the cord reconnects. Remove part of its heart and the heart returns. Its secret is that it never truly grows up. Its cells stay young, and young cells still remember how to build a body. We keep a scar. The axolotl keeps a blueprint. But regrowing a limb is nothing. Because on the highest, driest ground on Earth, there is a creature that survives being boiled, frozen, and left in the vacuum of space.",
+      "estimatedSeconds": 57.65,
+      "duration": 57.6
     },
     {
       "rank": 3,
@@ -89,38 +164,74 @@
       "title": "The Tardigrade",
       "subtitle": "It survives the vacuum of space",
       "species": "Milnesium tardigradum",
-      "script": "Tardigrade. Half a millimetre long, and it survives space. Vacuum, radiation, boiling water, decades of drought. It drains itself into a glass-like state and stops. When water returns, it walks again. Animal three.",
-      "stat": {
-        "value": 6,
-        "unit": "K ATM",
-        "label": "pressure survived",
-        "caption": "The animal that cannot be killed"
+      "acts": {
+        "hook": "What if something no bigger than a grain of salt could be boiled, frozen, dried to dust and fired into space, and still walk away? Not a rumour, and not a myth.",
+        "reveal": "It is the tardigrade. The water bear. Eight legs, a see-through body, and almost nothing that can kill it.",
+        "breakdown": "Strip away its water and it does not die. It curls into a tun, a glassy ball with no measurable metabolism at all. In that state it survives six thousand atmospheres of pressure, radiation that would shred human DNA, and decades without a drop of water. Add water, and it unfolds and walks away. It has already outlived five mass extinctions.",
+        "cliffhanger": "But surviving is not the strangest trick. Because in the rivers of South America, there is a fish that hunts by taking control of another animal's nerves."
       },
+      "stats": [
+        {
+          "value": 6000,
+          "unit": "ATM",
+          "label": "pressure survived"
+        },
+        {
+          "value": 30,
+          "unit": "YEARS",
+          "label": "dry, without water"
+        },
+        {
+          "value": 5,
+          "unit": "EXTINCTIONS",
+          "label": "already outlived"
+        }
+      ],
       "cues": {
+        "hookAt": [
+          "what",
+          "if",
+          "something",
+          "no"
+        ],
         "titleAt": [
+          "it",
+          "is",
+          "the",
           "tardigrade"
         ],
-        "subtitleAt": [
-          "survives",
-          "space"
+        "breakdownAt": [
+          "strip",
+          "away",
+          "its",
+          "water"
         ],
-        "statAt": [
-          "half",
+        "stat1At": [
+          "six",
+          "thousand",
+          "atmospheres"
+        ],
+        "stat2At": [
+          "decades",
+          "without",
           "a",
-          "millimetre"
+          "drop"
         ],
         "flashAt": [
-          "glass",
-          "like",
-          "state"
+          "add",
+          "water"
         ],
-        "outroAt": [
-          "animal",
-          "three"
+        "cliffhangAt": [
+          "but",
+          "surviving",
+          "is",
+          "not"
         ]
       },
       "imagePrompt": "extreme macro of a tardigrade, translucent segmented body and claws, crystalline ice field, cool blue rim light, documentary microscopy aesthetic",
-      "duration": 15
+      "script": "What if something no bigger than a grain of salt could be boiled, frozen, dried to dust and fired into space, and still walk away? Not a rumour, and not a myth. It is the tardigrade. The water bear. Eight legs, a see-through body, and almost nothing that can kill it. Strip away its water and it does not die. It curls into a tun, a glassy ball with no measurable metabolism at all. In that state it survives six thousand atmospheres of pressure, radiation that would shred human DNA, and decades without a drop of water. Add water, and it unfolds and walks away. It has already outlived five mass extinctions. But surviving is not the strangest trick. Because in the rivers of South America, there is a fish that hunts by taking control of another animal's nerves.",
+      "estimatedSeconds": 54.51,
+      "duration": 54.5
     },
     {
       "rank": 4,
@@ -128,39 +239,76 @@
       "title": "The Electric Eel",
       "subtitle": "It hunts with eight hundred volts",
       "species": "Electrophorus voltai",
-      "script": "Electric eel. Eight hundred and sixty volts, fired into the water. Three organs stack cells like batteries. It can remote control the muscles of a hiding fish, forcing it to twitch and give itself away. Animal four.",
-      "stat": {
-        "value": 860,
-        "unit": "VOLTS",
-        "label": "peak discharge",
-        "caption": "A lightning storm with a spine"
+      "acts": {
+        "hook": "What if a fish could reach into your nerves and switch them on from across the water? No teeth. No venom. Just raw current, aimed with surgical precision into a body it cannot even see.",
+        "reveal": "The electric eel. Nearly three metres of muscle, mud and voltage, hunting in the dark rivers of the Amazon.",
+        "breakdown": "Three separate organs stack thousands of cells the way a battery stacks plates. The discharge peaks at eight hundred and sixty volts. But the voltage is not the trick. It fires weak pulses first and reads the twitch of a hidden fish's muscles. Then it sends a full burst that forces those muscles to fire and gives the prey away. It does not only shock. It takes control.",
+        "cliffhanger": "But every animal so far can still die. Because somewhere in the Mediterranean, there is a creature that has found a way to skip death entirely."
       },
+      "stats": [
+        {
+          "value": 860,
+          "unit": "VOLTS",
+          "label": "peak discharge"
+        },
+        {
+          "value": 3,
+          "unit": "ORGANS",
+          "label": "stacked like batteries"
+        },
+        {
+          "value": 3,
+          "unit": "METRES",
+          "label": "nose to tail"
+        }
+      ],
       "cues": {
+        "hookAt": [
+          "what",
+          "if",
+          "a",
+          "fish"
+        ],
         "titleAt": [
+          "the",
           "electric",
           "eel"
         ],
-        "subtitleAt": [
-          "eight",
-          "hundred"
+        "breakdownAt": [
+          "three",
+          "separate",
+          "organs"
         ],
-        "statAt": [
+        "stat1At": [
           "eight",
           "hundred",
           "and",
           "sixty"
         ],
-        "flashAt": [
-          "remote",
-          "control"
+        "stat2At": [
+          "fires",
+          "weak",
+          "pulses"
         ],
-        "outroAt": [
+        "flashAt": [
+          "it",
+          "does",
+          "not",
+          "only",
+          "shock"
+        ],
+        "cliffhangAt": [
+          "but",
+          "every",
           "animal",
-          "four"
+          "so",
+          "far"
         ]
       },
       "imagePrompt": "cinematic underwater still of a large electric eel in murky dark river water, bioelectric shimmer along its flank, single torch beam",
-      "duration": 15
+      "script": "What if a fish could reach into your nerves and switch them on from across the water? No teeth. No venom. Just raw current, aimed with surgical precision into a body it cannot even see. The electric eel. Nearly three metres of muscle, mud and voltage, hunting in the dark rivers of the Amazon. Three separate organs stack thousands of cells the way a battery stacks plates. The discharge peaks at eight hundred and sixty volts. But the voltage is not the trick. It fires weak pulses first and reads the twitch of a hidden fish's muscles. Then it sends a full burst that forces those muscles to fire and gives the prey away. It does not only shock. It takes control. But every animal so far can still die. Because somewhere in the Mediterranean, there is a creature that has found a way to skip death entirely.",
+      "estimatedSeconds": 58.04,
+      "duration": 58.0
     },
     {
       "rank": 5,
@@ -168,42 +316,74 @@
       "title": "The Immortal Jellyfish",
       "subtitle": "It ages backwards to escape death",
       "species": "Turritopsis dohrnii",
-      "script": "Immortal jellyfish. Wounded or starving, it reverses its own life. The adult body melts back into a juvenile polyp and starts again. It can loop forever. The only animal that never has to grow old. Animal five.",
-      "stat": {
-        "value": 0,
-        "unit": "LIMIT",
-        "label": "known natural lifespan",
-        "caption": "The creature that refuses to end"
+      "finale": true,
+      "acts": {
+        "hook": "What if death was optional? What if growing old was something a living body could simply decide to undo, the way you undo a sentence you did not mean to write, again and again, without end?",
+        "reveal": "Turritopsis dohrnii. The immortal jellyfish. Smaller than your fingernail, and the only animal known to reverse its own life.",
+        "breakdown": "Wounded or starving, it does not die. Its adult body dissolves back into a juvenile polyp, a ball of tissue that begins again. Then it grows, matures, and repeats the loop. It is not invulnerable. A fish can still eat it. But at three millimetres across, it has no fixed lifespan, and after one hundred years of study we still do not know its limit.",
+        "cliffhanger": "Five animals. Five impossible powers. And the ocean is still full of creatures we have never once seen. The next one is already down there, waiting."
       },
+      "stats": [
+        {
+          "value": 0,
+          "unit": "LIMIT",
+          "label": "known natural lifespan"
+        },
+        {
+          "value": 3,
+          "unit": "MM",
+          "label": "across the bell"
+        },
+        {
+          "value": 5,
+          "unit": "ANIMALS",
+          "label": "in this series"
+        }
+      ],
       "cues": {
+        "hookAt": [
+          "what",
+          "if",
+          "death",
+          "was"
+        ],
         "titleAt": [
-          "immortal",
-          "jellyfish"
+          "turritopsis",
+          "dohrnii"
         ],
-        "subtitleAt": [
-          "reverses",
-          "its",
-          "own",
-          "life"
-        ],
-        "statAt": [
+        "breakdownAt": [
           "wounded",
           "or",
           "starving"
         ],
-        "flashAt": [
-          "juvenile",
-          "polyp"
+        "stat1At": [
+          "dissolves",
+          "back",
+          "into",
+          "a",
+          "juvenile"
         ],
-        "outroAt": [
-          "animal",
-          "five"
+        "stat2At": [
+          "no",
+          "fixed",
+          "lifespan"
+        ],
+        "flashAt": [
+          "then",
+          "it",
+          "grows"
+        ],
+        "cliffhangAt": [
+          "five",
+          "animals"
         ]
       },
       "imagePrompt": "cinematic macro of a translucent Turritopsis jellyfish glowing in black water, trailing tentacles, deep red bell, single soft light from below",
-      "duration": 15
+      "script": "What if death was optional? What if growing old was something a living body could simply decide to undo, the way you undo a sentence you did not mean to write, again and again, without end? Turritopsis dohrnii. The immortal jellyfish. Smaller than your fingernail, and the only animal known to reverse its own life. Wounded or starving, it does not die. Its adult body dissolves back into a juvenile polyp, a ball of tissue that begins again. Then it grows, matures, and repeats the loop. It is not invulnerable. A fish can still eat it. But at three millimetres across, it has no fixed lifespan, and after one hundred years of study we still do not know its limit. Five animals. Five impossible powers. And the ocean is still full of creatures we have never once seen. The next one is already down there, waiting.",
+      "estimatedSeconds": 57.25,
+      "duration": 57.2
     }
   ],
   "generatedBy": "curated",
-  "generatedAt": "2026-11-28T11:49:06+00:00"
+  "generatedAt": "2026-11-28T12:23:40+00:00"
 }
