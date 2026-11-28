@@ -1,0 +1,59 @@
+{
+  "series": "IMPOSSIBLE SUPERPOWERS",
+  "episode": 1,
+  "total": 5,
+  "title": "The Mantis Shrimp",
+  "titleWords": [
+    "The",
+    "Mantis",
+    "Shrimp"
+  ],
+  "subtitle": "It punches fast enough to boil the sea",
+  "species": "Odontodactylus scyllarus",
+  "image": "animals/mantis-shrimp.jpg",
+  "audio": "vo_mantis.mp3",
+  "duration": 15.58,
+  "script": "Mantis shrimp. Fifty miles an hour, underwater. Fast enough to boil the water it swims in. Every punch fires a bubble that collapses in a flash of light, hotter than the surface of the sun. Animal one: impossible superpowers.",
+  "stat": {
+    "value": 50,
+    "unit": "MPH",
+    "label": "strike speed underwater",
+    "caption": "The fastest punch in the ocean"
+  },
+  "cues": {
+    "titleAt": [
+      "mantis",
+      "shrimp"
+    ],
+    "subtitleAt": [
+      "fifty",
+      "miles",
+      "an",
+      "hour"
+    ],
+    "statAt": [
+      "fifty",
+      "miles",
+      "an",
+      "hour"
+    ],
+    "flashAt": [
+      "flash",
+      "of",
+      "light"
+    ],
+    "outroAt": [
+      "animal",
+      "one"
+    ]
+  },
+  "timeline": {
+    "titleAt": 0.0,
+    "subtitleAt": 0.92,
+    "statAt": 0.92,
+    "flashAt": 8.44,
+    "outroAt": 12.06
+  },
+  "voiceEnd": 14.52,
+  "voice": "af_heart"
+}

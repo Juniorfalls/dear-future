@@ -62,3 +62,5 @@ tools/bin/
 # Rhubarb Lip Sync binary and generated WAV
 tools/rhubarb/
 remotion/public/vo.wav
+# intermediate Kokoro take (normalized into the episode mp3 and deleted)
+remotion/public/vo_take.wav

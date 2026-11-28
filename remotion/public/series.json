@@ -1,0 +1,209 @@
+{
+  "topic": "5 Animals With Impossible Superpowers",
+  "animals": [
+    {
+      "rank": 1,
+      "animal": "Mantis Shrimp",
+      "title": "The Mantis Shrimp",
+      "subtitle": "It punches fast enough to boil the sea",
+      "species": "Odontodactylus scyllarus",
+      "script": "Mantis shrimp. Fifty miles an hour, underwater. Fast enough to boil the water it swims in. Every punch fires a bubble that collapses in a flash of light, hotter than the surface of the sun. Animal one: impossible superpowers.",
+      "stat": {
+        "value": 50,
+        "unit": "MPH",
+        "label": "strike speed underwater",
+        "caption": "The fastest punch in the ocean"
+      },
+      "cues": {
+        "titleAt": [
+          "mantis",
+          "shrimp"
+        ],
+        "subtitleAt": [
+          "fifty",
+          "miles",
+          "an",
+          "hour"
+        ],
+        "statAt": [
+          "fifty",
+          "miles",
+          "an",
+          "hour"
+        ],
+        "flashAt": [
+          "flash",
+          "of",
+          "light"
+        ],
+        "outroAt": [
+          "animal",
+          "one"
+        ]
+      },
+      "imagePrompt": "macro underwater still of a peacock mantis shrimp, iridescent teal and magenta, dark volcanic sand, single light shaft, prestige documentary",
+      "duration": 15
+    },
+    {
+      "rank": 2,
+      "animal": "Axolotl",
+      "title": "The Axolotl",
+      "subtitle": "It grows back pieces of its own brain",
+      "species": "Ambystoma mexicanum",
+      "script": "Axolotl. Lose a limb and it grows back whole. Muscle, bone, nerves, even part of the spinal cord. Regeneration runs on cells that never finish growing up. It stays a child its entire life. Animal two.",
+      "stat": {
+        "value": 100,
+        "unit": "%",
+        "label": "of a lost limb regrown",
+        "caption": "A body that rebuilds itself"
+      },
+      "cues": {
+        "titleAt": [
+          "axolotl"
+        ],
+        "subtitleAt": [
+          "lose",
+          "a",
+          "limb"
+        ],
+        "statAt": [
+          "grows",
+          "back",
+          "whole"
+        ],
+        "flashAt": [
+          "spinal",
+          "cord"
+        ],
+        "outroAt": [
+          "animal",
+          "two"
+        ]
+      },
+      "imagePrompt": "cinematic still of a pink axolotl in dark water, feathery gills backlit, black-green aquatic plants, shallow depth of field",
+      "duration": 15
+    },
+    {
+      "rank": 3,
+      "animal": "Tardigrade",
+      "title": "The Tardigrade",
+      "subtitle": "It survives the vacuum of space",
+      "species": "Milnesium tardigradum",
+      "script": "Tardigrade. Half a millimetre long, and it survives space. Vacuum, radiation, boiling water, decades of drought. It drains itself into a glass-like state and stops. When water returns, it walks again. Animal three.",
+      "stat": {
+        "value": 6,
+        "unit": "K ATM",
+        "label": "pressure survived",
+        "caption": "The animal that cannot be killed"
+      },
+      "cues": {
+        "titleAt": [
+          "tardigrade"
+        ],
+        "subtitleAt": [
+          "survives",
+          "space"
+        ],
+        "statAt": [
+          "half",
+          "a",
+          "millimetre"
+        ],
+        "flashAt": [
+          "glass",
+          "like",
+          "state"
+        ],
+        "outroAt": [
+          "animal",
+          "three"
+        ]
+      },
+      "imagePrompt": "extreme macro of a tardigrade, translucent segmented body and claws, crystalline ice field, cool blue rim light, documentary microscopy aesthetic",
+      "duration": 15
+    },
+    {
+      "rank": 4,
+      "animal": "Electric Eel",
+      "title": "The Electric Eel",
+      "subtitle": "It hunts with eight hundred volts",
+      "species": "Electrophorus voltai",
+      "script": "Electric eel. Eight hundred and sixty volts, fired into the water. Three organs stack cells like batteries. It can remote control the muscles of a hiding fish, forcing it to twitch and give itself away. Animal four.",
+      "stat": {
+        "value": 860,
+        "unit": "VOLTS",
+        "label": "peak discharge",
+        "caption": "A lightning storm with a spine"
+      },
+      "cues": {
+        "titleAt": [
+          "electric",
+          "eel"
+        ],
+        "subtitleAt": [
+          "eight",
+          "hundred"
+        ],
+        "statAt": [
+          "eight",
+          "hundred",
+          "and",
+          "sixty"
+        ],
+        "flashAt": [
+          "remote",
+          "control"
+        ],
+        "outroAt": [
+          "animal",
+          "four"
+        ]
+      },
+      "imagePrompt": "cinematic underwater still of a large electric eel in murky dark river water, bioelectric shimmer along its flank, single torch beam",
+      "duration": 15
+    },
+    {
+      "rank": 5,
+      "animal": "Immortal Jellyfish",
+      "title": "The Immortal Jellyfish",
+      "subtitle": "It ages backwards to escape death",
+      "species": "Turritopsis dohrnii",
+      "script": "Immortal jellyfish. Wounded or starving, it reverses its own life. The adult body melts back into a juvenile polyp and starts again. It can loop forever. The only animal that never has to grow old. Animal five.",
+      "stat": {
+        "value": 0,
+        "unit": "LIMIT",
+        "label": "known natural lifespan",
+        "caption": "The creature that refuses to end"
+      },
+      "cues": {
+        "titleAt": [
+          "immortal",
+          "jellyfish"
+        ],
+        "subtitleAt": [
+          "reverses",
+          "its",
+          "own",
+          "life"
+        ],
+        "statAt": [
+          "wounded",
+          "or",
+          "starving"
+        ],
+        "flashAt": [
+          "juvenile",
+          "polyp"
+        ],
+        "outroAt": [
+          "animal",
+          "five"
+        ]
+      },
+      "imagePrompt": "cinematic macro of a translucent Turritopsis jellyfish glowing in black water, trailing tentacles, deep red bell, single soft light from below",
+      "duration": 15
+    }
+  ],
+  "generatedBy": "curated",
+  "generatedAt": "2026-11-28T10:50:54+00:00"
+}

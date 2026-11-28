@@ -1,2 +1,11 @@
 # fetch_media.py: Pexels API + media downloads
 requests>=2.32,<3
+
+# voice: Kokoro-82M through kokoro-onnx (scripts/install_kokoro.sh installs these)
+kokoro-onnx>=0.6.1
+soundfile>=0.12
+numpy>=2.0
+
+# word-accurate narration timings (generate_voiceover.py)
+faster-whisper>=1.2
+av<16

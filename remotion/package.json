@@ -1,16 +1,16 @@
 {
-  "name": "kinetic-data-visualizer",
+  "name": "impossible-superpowers",
   "version": "1.0.0",
   "private": true,
   "scripts": {
     "studio": "remotion studio",
-    "render": "remotion render DataVisualizer out/the-50-percent-trap-landscape.mp4",
-    "render:vertical": "remotion render DataVisualizerVertical out/the-50-percent-trap-vertical.mp4"
-    ,"voice": "../.venv-voice/bin/python scripts/make_beat.py"
+    "script": "../.venv-voice/bin/python ../scripts/generate_animal_script.py --provider none",
+    "voice": "../.venv-voice/bin/python ../scripts/generate_voiceover.py",
+    "render": "remotion render AnimalDocLandscape out/mantis-shrimp-landscape.mp4 --crf=16",
+    "render:vertical": "remotion render AnimalDocVertical out/mantis-shrimp-vertical.mp4 --crf=16"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.0",
-    "katex": "^0.16.11",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "remotion": "^4.0.0"
