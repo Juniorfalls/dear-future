@@ -64,3 +64,4 @@ tools/rhubarb/
 remotion/public/vo.wav
 # intermediate Kokoro take (normalized into the episode mp3 and deleted)
 remotion/public/vo_take.wav
+/.agents/skills/img2threejs

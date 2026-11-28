@@ -1,8 +1,9 @@
-# Impossible Superpowers — cinematic animal documentary engine
+# Impossible Superpowers — cinematic 3D animal documentary
 
-A local Remotion + Kokoro-82M pipeline for a nature-documentary channel.
-Full-bleed cinematic stills, film-grain grade, serif title reveals and a
-word-synced karaoke caption. No 3D, no classroom, no data charts.
+A local Remotion + Three.js + Kokoro-82M pipeline for a nature-documentary
+channel: a stylized 3D creature in a graded underwater set, a rotating-camera
+reveal, film grain and serif title cards, narrated by a natural local voice and
+cut to a documentary slot.
 
 Series opener: **5 Animals With Impossible Superpowers**.
 
@@ -30,8 +31,10 @@ cd remotion && npm install
 ../.venv-voice/bin/python ../scripts/generate_voiceover.py
 
 # 5. render
-npx remotion render AnimalDocLandscape out/mantis-shrimp-landscape.mp4 --crf=16
-npx remotion render AnimalDocVertical  out/mantis-shrimp-vertical.mp4  --crf=16
+npx remotion render AnimalScene         out/mantis-shrimp-3d.mp4 --crf=18
+npx remotion render AnimalSceneVertical out/mantis-shrimp-3d-vertical.mp4 --crf=18
+npx remotion render SeriesIntro out/intro.mp4 --crf=18
+npx remotion render SeriesOutro out/outro.mp4 --crf=18
 ```
 
 `--provider openai|openrouter|groq|anthropic` (with the matching `*_API_KEY`)
@@ -66,28 +69,34 @@ times and rewrites `timeline`:
 "timeline": {"statAt": 1.2, ...}
 ```
 
-`AnimalDocumentary.tsx` reads `timeline` for the title stagger, subtitle,
-counting stat reveal, the light-flash on the strike, and the outro. The karaoke
-caption highlights each token from `vo_words.json` directly. Digits in the ASR
-output ("50") are expanded to number words so cues still match.
+`AnimatedAnimalScene.tsx` reads `timeline` for the title stagger, the subtitle,
+the counting stat reveal and the club throw: `flashAt` drives both the punch
+(0 → cock → strike → recoil) and the cavitation flash. The karaoke caption
+highlights each token from `vo_words.json` directly. Digits in the ASR output
+("50") are expanded to number words so cues still match.
 
-## Composition
+## The 3D scene
 
-`src/AnimalDocumentary.tsx` (styles in `src/animal.css`) stacks:
+`src/AnimatedAnimalScene.tsx` renders inside `<ThreeCanvas>` from
+`@remotion/three`, so every transform is a pure function of
+`useCurrentFrame()` — no `useFrame`, no run-time state, scrub-safe.
 
-1. the still with a slow ken-burns push, cool/warm grade, elliptical vignette
-   and animated SVG film grain;
-2. a white/cyan bloom pulse on the strike cue plus a brightness kick;
-3. top chrome — series eyebrow, `01 / 05` counter and progress pips;
-4. lower third — serif title with per-word blur/rise, gold hairline rule,
-   italic subtitle and the species binomial;
-5. the stat block — counting numeral, gold unit, caps label;
-6. a scrim + karaoke caption strip.
+- **Set** — a CSS deep-water gradient behind a transparent WebGL canvas, exponential
+  fog, four additive god-ray cones, a caustic pool, four flat-shaded reef rocks
+  and forty-six rising bubbles.
+- **Rig** — a slow orbit + dolly, three-point underwater lighting (warm key,
+  coral rim, cyan fill) and a strike point light that spikes on the punch.
+- **Creature** — `src/three/MantisShrimp.tsx`, a procedural plush mantis shrimp
+  built from primitives (see `3d/mantis-shrimp/`), animated with a float/bob
+  cycle, per-band swim undulation, paddling legs, darting stalked eyes and a
+  cocked-then-fired raptorial club with a cavitation ring.
+- **Grade and type** — vignette, animated SVG grain, strike bloom, then the same
+  serif title stack, stat block and letterspaced karaoke captions as before
+  (`src/animal.css`).
 
-Both `AnimalDocLandscape` (1920×1080) and `AnimalDocVertical` (1080×1920) run
-the same component; the vertical cut switches to a stacked lower third and a
-tighter crop. Length comes from `animal.json` → `duration`, so a longer take
-just makes a longer video.
+`AnimalScene` is 1920×1080, `AnimalSceneVertical` is 1080×1920 from the same
+component; `SeriesIntro` / `SeriesOutro` in `src/SeriesCard.tsx` open and close
+the full documentary.
 
 ## Files
 
@@ -96,8 +105,11 @@ scripts/install_kokoro.sh        venv + kokoro-onnx + kokoro-tts-tool shim
 scripts/kokoro_tts_tool.py       init / voices / say
 scripts/generate_animal_script.py  LLM prompt + curated five-animal draft
 scripts/generate_voiceover.py    Kokoro narration, -16 LUFS, word alignment
-remotion/src/AnimalDocumentary.tsx  the cinematic composition
-remotion/src/animal.css          grade, typography, landscape + vertical layout
+remotion/src/AnimatedAnimalScene.tsx  the 3D composition (ThreeCanvas + overlay)
+remotion/src/three/MantisShrimp.tsx    procedural plush mantis shrimp
+remotion/src/SeriesCard.tsx           intro / cast outro cards
+remotion/src/animal.css               grade, typography, landscape + vertical layout
+3d/mantis-shrimp/                     img2threejs spec, assessment and build notes
 remotion/public/animal.json      the current episode (data only)
 remotion/public/series.json      all five animals
 remotion/public/animals/         episode stills

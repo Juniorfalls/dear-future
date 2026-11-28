@@ -288,6 +288,7 @@ def apply_to_episode(series: dict, rank: int, episode_path: Path) -> dict:
     if animal is None:
         die(f"no animal ranked {rank}")
     episode = json.loads(episode_path.read_text()) if episode_path.exists() else {}
+    slug = re.sub(r"[^a-z0-9]+", "-", animal["animal"].lower()).strip("-")
     episode.update({
         "series": "IMPOSSIBLE SUPERPOWERS",
         "episode": animal["rank"],
@@ -299,8 +300,9 @@ def apply_to_episode(series: dict, rank: int, episode_path: Path) -> dict:
         "script": animal["script"],
         "stat": animal["stat"],
         "cues": animal["cues"],
-        "image": episode.get("image") or f"animals/{re.sub(r'[^a-z0-9]+', '-', animal['animal'].lower()).strip('-')}.jpg",
-        "audio": episode.get("audio") or f"vo_{animal['rank']}.mp3",
+        # per-animal assets: the still and the take are named after the animal
+        "image": f"animals/{slug}.jpg",
+        "audio": f"vo_{slug}.mp3",
         # Keep the measured length: generate_voiceover.py is authoritative and
         # will rewrite this, plus `timeline`, on the next narration run.
         "duration": max(float(episode.get("duration", 15)), 15.0),
@@ -309,6 +311,20 @@ def apply_to_episode(series: dict, rank: int, episode_path: Path) -> dict:
     episode_path.write_text(json.dumps(episode, indent=2, ensure_ascii=False) + "\n")
     log(f"loaded animal #{rank} ({animal['title']}) into {episode_path.name}")
     log("script changed — re-run generate_voiceover.py to re-time the visuals")
+
+    # the cast list feeds the intro/outro cards in remotion/src/SeriesCard.tsx
+    cast = [
+        {
+            "rank": a["rank"],
+            "title": a["title"],
+            "subtitle": a["subtitle"],
+            "species": a["species"],
+            "image": f"animals/{re.sub(r'[^a-z0-9]+', '-', a['animal'].lower()).strip('-')}.jpg",
+        }
+        for a in series["animals"]
+    ]
+    (episode_path.parent / "cast.json").write_text(json.dumps(cast, indent=2) + "\n")
+    log(f"wrote cast.json ({len(cast)} animals)")
     return episode
 
 

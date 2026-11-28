@@ -11,7 +11,7 @@
   "subtitle": "It punches fast enough to boil the sea",
   "species": "Odontodactylus scyllarus",
   "image": "animals/mantis-shrimp.jpg",
-  "audio": "vo_mantis.mp3",
+  "audio": "vo_mantis-shrimp.mp3",
   "duration": 15.58,
   "script": "Mantis shrimp. Fifty miles an hour, underwater. Fast enough to boil the water it swims in. Every punch fires a bubble that collapses in a flash of light, hotter than the surface of the sun. Animal one: impossible superpowers.",
   "stat": {
@@ -54,6 +54,6 @@
     "flashAt": 8.44,
     "outroAt": 12.06
   },
-  "voiceEnd": 14.52,
+  "voiceEnd": 14.66,
   "voice": "af_heart"
 }

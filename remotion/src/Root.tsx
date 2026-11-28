@@ -1,5 +1,6 @@
 import {Composition} from 'remotion';
-import {AnimalDocumentary} from './AnimalDocumentary';
+import {AnimatedAnimalScene} from './AnimatedAnimalScene';
+import {SeriesIntro, SeriesOutro} from './SeriesCard';
 import episode from '../public/animal.json';
 
 const FPS = 30;
@@ -10,16 +11,18 @@ const durationInFrames = Math.max(30, Math.round((episode as {duration: number})
 export const RemotionRoot = () => (
   <>
     <Composition
-      id="AnimalDocLandscape"
-      component={AnimalDocumentary}
+      id="AnimalScene"
+      component={AnimatedAnimalScene}
       durationInFrames={durationInFrames}
       fps={FPS}
       width={1920}
       height={1080}
     />
+    <Composition id="SeriesIntro" component={SeriesIntro} durationInFrames={90} fps={FPS} width={1920} height={1080} />
+    <Composition id="SeriesOutro" component={SeriesOutro} durationInFrames={300} fps={FPS} width={1920} height={1080} />
     <Composition
-      id="AnimalDocVertical"
-      component={AnimalDocumentary}
+      id="AnimalSceneVertical"
+      component={AnimatedAnimalScene}
       durationInFrames={durationInFrames}
       fps={FPS}
       width={1080}

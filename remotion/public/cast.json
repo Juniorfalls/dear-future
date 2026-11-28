@@ -1,0 +1,37 @@
+[
+  {
+    "rank": 1,
+    "title": "The Mantis Shrimp",
+    "subtitle": "It punches fast enough to boil the sea",
+    "species": "Odontodactylus scyllarus",
+    "image": "animals/mantis-shrimp.jpg"
+  },
+  {
+    "rank": 2,
+    "title": "The Axolotl",
+    "subtitle": "It grows back pieces of its own brain",
+    "species": "Ambystoma mexicanum",
+    "image": "animals/axolotl.jpg"
+  },
+  {
+    "rank": 3,
+    "title": "The Tardigrade",
+    "subtitle": "It survives the vacuum of space",
+    "species": "Milnesium tardigradum",
+    "image": "animals/tardigrade.jpg"
+  },
+  {
+    "rank": 4,
+    "title": "The Electric Eel",
+    "subtitle": "It hunts with eight hundred volts",
+    "species": "Electrophorus voltai",
+    "image": "animals/electric-eel.jpg"
+  },
+  {
+    "rank": 5,
+    "title": "The Immortal Jellyfish",
+    "subtitle": "It ages backwards to escape death",
+    "species": "Turritopsis dohrnii",
+    "image": "animals/immortal-jellyfish.jpg"
+  }
+]
